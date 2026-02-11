@@ -57,6 +57,7 @@ export default function Home() {
       const data = await response.json();
       // Redirect to session page with moderator ID stored in localStorage
       localStorage.setItem(`session_${data.roomId}_userId`, data.moderatorId);
+      localStorage.setItem(`session_${data.roomId}_name`, moderatorName.trim());
       router.push(`/session/${data.roomId}`);
     } catch (err) {
       setError("An unexpected error occurred");
@@ -102,10 +103,7 @@ export default function Home() {
       // Room exists, generate a participant ID and navigate to session
       const participantId = nanoid();
       localStorage.setItem(`session_${trimmedCode}_userId`, participantId);
-      localStorage.setItem(
-        `session_${trimmedCode}_userName`,
-        participantName.trim()
-      );
+      localStorage.setItem(`session_${trimmedCode}_name`, participantName.trim());
 
       router.push(`/session/${trimmedCode}`);
     } catch (err) {

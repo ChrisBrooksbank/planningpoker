@@ -26,10 +26,6 @@ export interface WebSocketHookResult {
   clearError: () => void;
 }
 
-/**
- * Custom hook for managing WebSocket connection with automatic reconnection
- * Implements exponential backoff strategy for reconnection attempts
- */
 export function useWebSocket({
   roomId,
   userId,
@@ -44,74 +40,93 @@ export function useWebSocket({
   const wsRef = useRef<WebSocket | null>(null);
   const reconnectTimeoutRef = useRef<NodeJS.Timeout | null>(null);
   const reconnectDelayRef = useRef(WS_RECONNECT_INTERVAL);
-  const shouldReconnectRef = useRef(true);
   const reconnectAttemptsRef = useRef(0);
+  // Track the current effect cycle to detect stale closures
+  const mountedRef = useRef(false);
 
+  // Store all mutable values in refs so connect() has zero dependencies
+  const roomIdRef = useRef(roomId);
+  const userIdRef = useRef(userId);
+  const onMessageRef = useRef(onMessage);
+  const onConnectRef = useRef(onConnect);
+  const onDisconnectRef = useRef(onDisconnect);
+  const onErrorRef = useRef(onError);
+  roomIdRef.current = roomId;
+  userIdRef.current = userId;
+  onMessageRef.current = onMessage;
+  onConnectRef.current = onConnect;
+  onDisconnectRef.current = onDisconnect;
+  onErrorRef.current = onError;
+
+  // connect reads everything from refs — no dependencies, stable reference
   const connect = useCallback(() => {
+    const currentRoomId = roomIdRef.current;
+    const currentUserId = userIdRef.current;
+
+    if (!currentRoomId || !currentUserId) return;
+    if (!mountedRef.current) return;
+
     // Clean up existing connection
     if (wsRef.current) {
-      wsRef.current.close();
+      const old = wsRef.current;
       wsRef.current = null;
+      old.close();
     }
 
-    // Build WebSocket URL
+    if (reconnectTimeoutRef.current) {
+      clearTimeout(reconnectTimeoutRef.current);
+      reconnectTimeoutRef.current = null;
+    }
+
     const protocol = window.location.protocol === "https:" ? "wss:" : "ws:";
     const host = window.location.host;
-    const wsUrl = `${protocol}//${host}/ws?roomId=${encodeURIComponent(roomId)}&userId=${encodeURIComponent(userId)}`;
+    const wsUrl = `${protocol}//${host}/ws?roomId=${encodeURIComponent(currentRoomId)}&userId=${encodeURIComponent(currentUserId)}`;
 
-    console.log("Connecting to WebSocket:", wsUrl);
     setIsConnecting(true);
 
     const ws = new WebSocket(wsUrl);
     wsRef.current = ws;
 
     ws.onopen = () => {
-      console.log("WebSocket connected");
+      if (wsRef.current !== ws) return;
       setIsConnected(true);
       setIsConnecting(false);
-      setError(null); // Clear any previous errors
-      reconnectDelayRef.current = WS_RECONNECT_INTERVAL; // Reset delay on successful connection
-      reconnectAttemptsRef.current = 0; // Reset reconnect attempts
-      onConnect?.();
+      setError(null);
+      reconnectDelayRef.current = WS_RECONNECT_INTERVAL;
+      reconnectAttemptsRef.current = 0;
+      onConnectRef.current?.();
     };
 
     ws.onmessage = (event) => {
+      if (wsRef.current !== ws) return;
       try {
         const message = JSON.parse(event.data) as ServerMessage;
-        console.log("WebSocket message received:", message);
-        onMessage?.(message);
-      } catch (error) {
-        console.error("Failed to parse WebSocket message:", error);
+        onMessageRef.current?.(message);
+      } catch (err) {
+        console.error("Failed to parse WebSocket message:", err);
       }
     };
 
-    ws.onerror = (error) => {
-      console.error("WebSocket error:", error);
+    ws.onerror = (evt) => {
+      if (wsRef.current !== ws) return;
+      console.error("WebSocket error:", evt);
       setError("Connection error. Attempting to reconnect...");
-      onError?.(error);
+      onErrorRef.current?.(evt);
     };
 
-    ws.onclose = (event) => {
-      console.log("WebSocket disconnected");
+    ws.onclose = () => {
+      if (wsRef.current !== ws) return;
       setIsConnected(false);
       setIsConnecting(false);
       wsRef.current = null;
-      onDisconnect?.();
+      onDisconnectRef.current?.();
 
-      // Attempt reconnection if enabled
-      if (shouldReconnectRef.current) {
+      if (mountedRef.current) {
         reconnectAttemptsRef.current++;
-
-        // Check if this was an abnormal closure
-        if (!event.wasClean) {
-          setError(
-            `Connection lost. Reconnecting (attempt ${reconnectAttemptsRef.current})...`
-          );
-        }
-
-        console.log(`Reconnecting in ${reconnectDelayRef.current}ms...`);
+        setError(
+          `Connection lost. Reconnecting (attempt ${reconnectAttemptsRef.current})...`
+        );
         reconnectTimeoutRef.current = setTimeout(() => {
-          // Increase delay for next attempt (exponential backoff)
           reconnectDelayRef.current = Math.min(
             reconnectDelayRef.current * WS_RECONNECT_BACKOFF,
             WS_MAX_RECONNECT_INTERVAL
@@ -120,7 +135,7 @@ export function useWebSocket({
         }, reconnectDelayRef.current);
       }
     };
-  }, [roomId, userId, onMessage, onConnect, onDisconnect, onError]);
+  }, []); // no dependencies — reads from refs
 
   const sendMessage = useCallback((message: ClientMessage) => {
     if (wsRef.current?.readyState === WebSocket.OPEN) {
@@ -131,9 +146,9 @@ export function useWebSocket({
   }, []);
 
   const reconnect = useCallback(() => {
-    reconnectDelayRef.current = WS_RECONNECT_INTERVAL; // Reset delay
-    reconnectAttemptsRef.current = 0; // Reset attempts
-    setError(null); // Clear error
+    reconnectDelayRef.current = WS_RECONNECT_INTERVAL;
+    reconnectAttemptsRef.current = 0;
+    setError(null);
     connect();
   }, [connect]);
 
@@ -141,23 +156,28 @@ export function useWebSocket({
     setError(null);
   }, []);
 
-  // Initial connection
+  // Single effect keyed on roomId + userId
   useEffect(() => {
-    shouldReconnectRef.current = true;
+    if (!roomId || !userId) return;
+
+    mountedRef.current = true;
     connect();
 
-    // Cleanup on unmount
     return () => {
-      shouldReconnectRef.current = false;
+      mountedRef.current = false;
       if (reconnectTimeoutRef.current) {
         clearTimeout(reconnectTimeoutRef.current);
+        reconnectTimeoutRef.current = null;
       }
       if (wsRef.current) {
-        wsRef.current.close();
+        const ws = wsRef.current;
         wsRef.current = null;
+        ws.close();
       }
+      setIsConnected(false);
+      setIsConnecting(false);
     };
-  }, [connect]);
+  }, [roomId, userId, connect]);
 
   return {
     isConnected,
