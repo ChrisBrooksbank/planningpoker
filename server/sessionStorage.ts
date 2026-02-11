@@ -324,5 +324,9 @@ export class SessionStorage {
   }
 }
 
-// Singleton instance
-export const sessionStorage = new SessionStorage();
+// Use globalThis to share a single instance across Next.js API routes and the custom server,
+// which run in separate module scopes due to webpack bundling.
+const GLOBAL_KEY = "__planningPokerSessionStorage";
+export const sessionStorage: SessionStorage =
+  (globalThis as Record<string, unknown>)[GLOBAL_KEY] as SessionStorage ??
+  ((globalThis as Record<string, unknown>)[GLOBAL_KEY] = new SessionStorage());

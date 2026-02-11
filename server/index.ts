@@ -1,7 +1,9 @@
-import { createServer } from "http";
+import { createServer, IncomingMessage, ServerResponse } from "http";
 import { parse } from "url";
 import next from "next";
+import { nanoid } from "nanoid";
 import { PlanningPokerWebSocketServer } from "./websocket";
+import { sessionStorage } from "./sessionStorage";
 
 const dev = process.env.NODE_ENV !== "production";
 const hostname = process.env.HOSTNAME || "localhost";
@@ -10,18 +12,66 @@ const port = parseInt(process.env.PORT || "3000", 10);
 const app = next({ dev, hostname, port });
 const handle = app.getRequestHandler();
 
+function readBody(req: IncomingMessage): Promise<string> {
+  return new Promise((resolve, reject) => {
+    let data = "";
+    req.on("data", (chunk: Buffer) => (data += chunk));
+    req.on("end", () => resolve(data));
+    req.on("error", reject);
+  });
+}
+
+function sendJson(res: ServerResponse, status: number, body: unknown) {
+  res.writeHead(status, { "Content-Type": "application/json" });
+  res.end(JSON.stringify(body));
+}
+
 app.prepare().then(() => {
-  const server = createServer((req, res) => {
+  const server = createServer(async (req, res) => {
     const parsedUrl = parse(req.url!, true);
+    const { pathname } = parsedUrl;
+
+    // Handle session API routes directly so they share the same sessionStorage
+    // instance as the WebSocket server (Next.js webpack bundles create separate module scopes)
+
+    if (pathname === "/api/sessions" && req.method === "POST") {
+      try {
+        const body = JSON.parse(await readBody(req));
+        const { sessionName, moderatorName } = body;
+        if (!sessionName || typeof sessionName !== "string") {
+          return sendJson(res, 400, { error: "Session name is required" });
+        }
+        if (!moderatorName || typeof moderatorName !== "string") {
+          return sendJson(res, 400, { error: "Moderator name is required" });
+        }
+        const moderatorId = nanoid();
+        const sessionState = sessionStorage.createSession(sessionName, moderatorId, moderatorName);
+        return sendJson(res, 200, {
+          roomId: sessionState.session.id,
+          sessionName: sessionState.session.name,
+          moderatorId,
+        });
+      } catch {
+        return sendJson(res, 500, { error: "Failed to create session" });
+      }
+    }
+
+    const validateMatch = pathname?.match(/^\/api\/sessions\/([^/]+)\/validate$/);
+    if (validateMatch && req.method === "GET") {
+      const roomId = validateMatch[1];
+      if (sessionStorage.sessionExists(roomId)) {
+        return sendJson(res, 200, { exists: true });
+      }
+      return sendJson(res, 404, { error: "Session not found" });
+    }
+
+    // Everything else goes to Next.js
     handle(req, res, parsedUrl);
   });
 
   // Initialize WebSocket server
   const wsServer = new PlanningPokerWebSocketServer(server);
   console.log("WebSocket server initialized");
-
-  // Make WebSocket server available globally for API routes
-  global.wsServer = wsServer;
 
   server.listen(port, () => {
     console.log(`> Ready on http://${hostname}:${port}`);

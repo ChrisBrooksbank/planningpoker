@@ -137,6 +137,7 @@ export class PlanningPokerWebSocketServer {
     );
 
     if (!participants) {
+      console.log("SESSION_NOT_FOUND for room:", roomId, "known rooms:", sessionStorage.getAllSessionIds());
       this.sendError(ws, "SESSION_NOT_FOUND", "Session does not exist");
       return;
     }
@@ -333,7 +334,9 @@ export class PlanningPokerWebSocketServer {
         : undefined,
     };
 
-    ws.send(JSON.stringify(stateMessage));
+    const json = JSON.stringify(stateMessage);
+    console.log("Sending session-state:", json.substring(0, 200));
+    ws.send(json);
   }
 
   /**
