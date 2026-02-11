@@ -1,11 +1,13 @@
 # Phase 6: Testing & Deploy
 
 ## Goals
+
 - Secure, tested, and deployed to production
 
 ## Tasks
 
 ### 6.1 Firestore Security Rules
+
 ```
 rules_version = '2';
 service cloud.firestore {
@@ -28,9 +30,11 @@ service cloud.firestore {
   }
 }
 ```
+
 Note: Since we use anonymous session IDs (no Firebase Auth), rules are permissive. This is acceptable for a free, no-signup tool.
 
 ### 6.2 Unit Tests (Vitest)
+
 - `src/lib/utils/statistics.test.ts`:
   - Test mean, median, mode, distribution calculations
   - Edge cases: single vote, all same, empty, non-numeric
@@ -42,6 +46,7 @@ Note: Since we use anonymous session IDs (no Firebase Auth), rules are permissiv
   - `CreateRoomForm` - form validation, submission
 
 ### 6.3 E2E Tests (Playwright)
+
 - Full voting cycle test:
   1. Open landing page
   2. Create room
@@ -57,17 +62,20 @@ Note: Since we use anonymous session IDs (no Firebase Auth), rules are permissiv
   3. Wait for expiry or stop
 
 ### 6.4 Deploy to Vercel
+
 - Connect GitHub repo to Vercel
 - Set environment variables in Vercel dashboard
 - Configure Firebase for production project
 - Verify WebSocket/real-time connections work in production
 
 ### 6.5 Lighthouse Audit
+
 - Run Lighthouse on landing page
 - Target scores: Performance 95+, Accessibility 95+, Best Practices 95+, SEO 95+
 - Fix any issues found
 
 ## Deliverables
+
 - Firestore security rules deployed
 - Unit tests passing with good coverage
 - E2E test passing for full voting cycle
