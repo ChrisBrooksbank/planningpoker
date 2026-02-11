@@ -7,9 +7,9 @@ describe("generateRoomCode", () => {
     expect(code).toHaveLength(6);
   });
 
-  it("should generate URL-safe characters only", () => {
+  it("should generate uppercase alphanumeric characters only", () => {
     const code = generateRoomCode();
-    expect(code).toMatch(/^[A-Za-z0-9_-]+$/);
+    expect(code).toMatch(/^[A-Z0-9]+$/);
   });
 
   it("should generate unique codes", () => {
@@ -64,13 +64,10 @@ describe("generateRoomCode", () => {
 });
 
 describe("isValidRoomCode", () => {
-  it("should accept valid 6-character codes", () => {
+  it("should accept valid 6-character uppercase codes", () => {
     expect(isValidRoomCode("ABC123")).toBe(true);
     expect(isValidRoomCode("XYZ789")).toBe(true);
-    expect(isValidRoomCode("a1b2c3")).toBe(true);
-    expect(isValidRoomCode("------")).toBe(true);
-    expect(isValidRoomCode("______")).toBe(true);
-    expect(isValidRoomCode("A-B_C1")).toBe(true);
+    expect(isValidRoomCode("A1B2C3")).toBe(true);
   });
 
   it("should reject codes that are too short", () => {
@@ -87,8 +84,8 @@ describe("isValidRoomCode", () => {
   it("should reject codes with invalid characters", () => {
     expect(isValidRoomCode("ABC 12")).toBe(false); // space
     expect(isValidRoomCode("ABC!12")).toBe(false); // special char
-    expect(isValidRoomCode("ABC@12")).toBe(false); // special char
-    expect(isValidRoomCode("ABC.12")).toBe(false); // period
+    expect(isValidRoomCode("abc123")).toBe(false); // lowercase
+    expect(isValidRoomCode("A-B_C1")).toBe(false); // dashes/underscores
     expect(isValidRoomCode("ABC/12")).toBe(false); // slash
   });
 

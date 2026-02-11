@@ -1,6 +1,6 @@
 import { type ClassValue, clsx } from "clsx";
 import { twMerge } from "tailwind-merge";
-import { nanoid } from "nanoid";
+import { customAlphabet } from "nanoid";
 
 /**
  * Utility function to merge Tailwind CSS classes
@@ -14,8 +14,7 @@ export function cn(...inputs: ClassValue[]) {
  * Validates a room code format
  */
 export function isValidRoomCode(code: string): boolean {
-  // URL-safe alphanumeric characters, 6 characters
-  return /^[A-Za-z0-9_-]{6}$/.test(code);
+  return /^[A-Z0-9]{6}$/.test(code);
 }
 
 /**
@@ -55,12 +54,14 @@ export function isNumericCard(value: string): boolean {
  * @returns A unique 6-character room code
  * @throws Error if unable to generate unique code after maxAttempts
  */
+const generateId = customAlphabet("ABCDEFGHIJKLMNOPQRSTUVWXYZ0123456789", 6);
+
 export function generateRoomCode(
   existingCodes: Set<string> = new Set(),
   maxAttempts: number = 10
 ): string {
   for (let i = 0; i < maxAttempts; i++) {
-    const code = nanoid(6);
+    const code = generateId();
     if (!existingCodes.has(code)) {
       return code;
     }
