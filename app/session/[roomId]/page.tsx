@@ -196,8 +196,15 @@ export default function SessionPage() {
     });
   };
 
-  // Handle new round (moderator only)
+  // Handle new round (moderator only) — also sets topic if changed
   const handleNewRound = () => {
+    const trimmed = topicInput.trim();
+    if (trimmed && trimmed !== currentTopic) {
+      sendMessage({
+        type: "set-topic",
+        topic: trimmed,
+      });
+    }
     sendMessage({
       type: "new-round",
     });
@@ -404,27 +411,54 @@ export default function SessionPage() {
 
           {/* Voting area */}
           <div className="lg:col-span-2 space-y-6">
-            {/* Topic section */}
+            {/* Topic & moderator controls */}
             <div className="rounded-lg border border-border bg-card p-6">
-              <h2 className="text-lg font-semibold mb-4">Current Topic</h2>
+              <h2 className="text-lg font-semibold mb-4">
+                {isModerator && isRevealed ? "Next Topic" : "Current Topic"}
+              </h2>
               {isModerator ? (
-                <div className="space-y-2">
+                <div className="space-y-3">
                   <input
                     type="text"
                     value={topicInput}
                     onChange={(e) => setTopicInput(e.target.value)}
-                    placeholder="Enter the story or topic to estimate..."
+                    placeholder={
+                      isRevealed
+                        ? "Enter the next topic to estimate..."
+                        : "Enter the story or topic to estimate..."
+                    }
                     className="w-full px-3 py-2 border border-input rounded-md bg-background focus:outline-none focus:ring-2 focus:ring-ring"
                     maxLength={200}
                     disabled={!isConnected}
                   />
-                  <button
-                    onClick={handleUpdateTopic}
-                    disabled={!isConnected || !isValidTopic(topicInput)}
-                    className="px-4 py-2 bg-primary text-primary-foreground rounded-md hover:bg-primary/90 disabled:opacity-50 disabled:cursor-not-allowed"
-                  >
-                    Update Topic
-                  </button>
+                  <div className="flex gap-2">
+                    {!isRevealed ? (
+                      <>
+                        <button
+                          onClick={handleUpdateTopic}
+                          disabled={!isConnected || !isValidTopic(topicInput)}
+                          className="px-4 py-2 bg-primary text-primary-foreground rounded-md hover:bg-primary/90 disabled:opacity-50 disabled:cursor-not-allowed"
+                        >
+                          Update Topic
+                        </button>
+                        <button
+                          onClick={handleRevealVotes}
+                          disabled={!isConnected}
+                          className="px-4 py-2 bg-primary text-primary-foreground rounded-md hover:bg-primary/90 disabled:opacity-50 disabled:cursor-not-allowed font-semibold"
+                        >
+                          Reveal Votes
+                        </button>
+                      </>
+                    ) : (
+                      <button
+                        onClick={handleNewRound}
+                        disabled={!isConnected}
+                        className="px-6 py-3 bg-primary text-primary-foreground rounded-md hover:bg-primary/90 disabled:opacity-50 disabled:cursor-not-allowed font-semibold"
+                      >
+                        Start Next Round
+                      </button>
+                    )}
+                  </div>
                 </div>
               ) : (
                 <div className="text-foreground">
@@ -436,32 +470,6 @@ export default function SessionPage() {
                 </div>
               )}
             </div>
-
-            {/* Moderator controls */}
-            {isModerator && (
-              <div className="rounded-lg border border-border bg-card p-6">
-                <h2 className="text-lg font-semibold mb-4">
-                  Moderator Controls
-                </h2>
-                {!isRevealed ? (
-                  <button
-                    onClick={handleRevealVotes}
-                    disabled={!isConnected}
-                    className="px-6 py-3 bg-primary text-primary-foreground rounded-md hover:bg-primary/90 disabled:opacity-50 disabled:cursor-not-allowed font-semibold"
-                  >
-                    Reveal Votes
-                  </button>
-                ) : (
-                  <button
-                    onClick={handleNewRound}
-                    disabled={!isConnected}
-                    className="px-6 py-3 bg-primary text-primary-foreground rounded-md hover:bg-primary/90 disabled:opacity-50 disabled:cursor-not-allowed font-semibold"
-                  >
-                    New Round
-                  </button>
-                )}
-              </div>
-            )}
 
             {/* Vote results (shown after reveal, above cards) */}
             {isRevealed && statistics && (
