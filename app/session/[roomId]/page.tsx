@@ -1,22 +1,27 @@
 "use client";
 
-import { useEffect, useState, useRef } from "react";
-import { useParams, useRouter } from "next/navigation";
+import { useEffect, useState, useRef, FormEvent } from "react";
+import { useParams } from "next/navigation";
 import { useWebSocket } from "@/lib/hooks/useWebSocket";
 import type { ServerMessage } from "@/lib/websocket-messages";
 import { ParticipantList } from "@/components/ParticipantList";
 import { CardDeck } from "@/components/CardDeck";
 import { VoteResults } from "@/components/VoteResults";
 import type { Participant, CardValue, Vote, VoteStatistics } from "@/lib/types";
-import { isValidTopic } from "@/lib/utils";
+import { isValidTopic, isValidParticipantName } from "@/lib/utils";
+import { nanoid } from "nanoid";
 
 export default function SessionPage() {
   const params = useParams();
-  const router = useRouter();
   const roomId = params.roomId as string;
   const [userId, setUserId] = useState<string | null>(null);
   const [participantName, setParticipantName] = useState<string | null>(null);
   const [isInitialized, setIsInitialized] = useState(false);
+  const [needsName, setNeedsName] = useState(false);
+  const [nameInput, setNameInput] = useState("");
+  const [joinError, setJoinError] = useState("");
+  const [isJoining, setIsJoining] = useState(false);
+  const [linkCopied, setLinkCopied] = useState(false);
   const [participants, setParticipants] = useState<Participant[]>([]);
   const [selectedCard, setSelectedCard] = useState<CardValue | null>(null);
   const [votedUserIds, setVotedUserIds] = useState<Set<string>>(new Set());
@@ -33,14 +38,65 @@ export default function SessionPage() {
     const storedUserId = localStorage.getItem(`session_${roomId}_userId`);
     const storedName = localStorage.getItem(`session_${roomId}_name`);
     if (!storedUserId || !storedName) {
-      // No userId or name found, redirect to home
-      router.push("/");
+      setNeedsName(true);
       return;
     }
     setUserId(storedUserId);
     setParticipantName(storedName);
     setIsInitialized(true);
-  }, [roomId, router]);
+  }, [roomId]);
+
+  // Handle join form submission
+  const handleJoinSubmit = async (e: FormEvent) => {
+    e.preventDefault();
+    setJoinError("");
+
+    if (!isValidParticipantName(nameInput)) {
+      setJoinError("Your name must be between 1 and 50 characters");
+      return;
+    }
+
+    setIsJoining(true);
+
+    try {
+      const validateResponse = await fetch(
+        `/api/sessions/${roomId}/validate`
+      );
+
+      if (!validateResponse.ok) {
+        if (validateResponse.status === 404) {
+          setJoinError("Room not found. Please check the link and try again.");
+        } else {
+          setJoinError("Failed to validate room");
+        }
+        return;
+      }
+
+      const newUserId = nanoid();
+      const trimmedName = nameInput.trim();
+      localStorage.setItem(`session_${roomId}_userId`, newUserId);
+      localStorage.setItem(`session_${roomId}_name`, trimmedName);
+      setUserId(newUserId);
+      setParticipantName(trimmedName);
+      setNeedsName(false);
+      setIsInitialized(true);
+    } catch {
+      setJoinError("An unexpected error occurred");
+    } finally {
+      setIsJoining(false);
+    }
+  };
+
+  // Handle copy link
+  const handleCopyLink = async () => {
+    try {
+      await navigator.clipboard.writeText(window.location.href);
+      setLinkCopied(true);
+      setTimeout(() => setLinkCopied(false), 2000);
+    } catch {
+      // Clipboard API not available (e.g. HTTP)
+    }
+  };
 
   // Handle WebSocket messages
   const handleMessage = (message: ServerMessage) => {
@@ -314,6 +370,32 @@ export default function SessionPage() {
               )}
             </div>
 
+            {/* Moderator controls */}
+            {isModerator && (
+              <div className="rounded-lg border border-border bg-card p-6">
+                <h2 className="text-lg font-semibold mb-4">
+                  Moderator Controls
+                </h2>
+                {!isRevealed ? (
+                  <button
+                    onClick={handleRevealVotes}
+                    disabled={!isConnected}
+                    className="px-6 py-3 bg-primary text-primary-foreground rounded-md hover:bg-primary/90 disabled:opacity-50 disabled:cursor-not-allowed font-semibold"
+                  >
+                    Reveal Votes
+                  </button>
+                ) : (
+                  <button
+                    onClick={handleNewRound}
+                    disabled={!isConnected}
+                    className="px-6 py-3 bg-primary text-primary-foreground rounded-md hover:bg-primary/90 disabled:opacity-50 disabled:cursor-not-allowed font-semibold"
+                  >
+                    New Round
+                  </button>
+                )}
+              </div>
+            )}
+
             {/* Card deck */}
             <div className="rounded-lg border border-border bg-card p-6">
               <CardDeck
@@ -322,22 +404,6 @@ export default function SessionPage() {
                 disabled={!isConnected}
               />
             </div>
-
-            {/* Moderator controls */}
-            {isModerator && !isRevealed && (
-              <div className="rounded-lg border border-border bg-card p-6">
-                <h2 className="text-lg font-semibold mb-4">
-                  Moderator Controls
-                </h2>
-                <button
-                  onClick={handleRevealVotes}
-                  disabled={!isConnected}
-                  className="px-6 py-3 bg-primary text-primary-foreground rounded-md hover:bg-primary/90 disabled:opacity-50 disabled:cursor-not-allowed font-semibold"
-                >
-                  Reveal Votes
-                </button>
-              </div>
-            )}
 
             {/* Vote results (shown after reveal) */}
             {isRevealed && statistics && (
@@ -348,22 +414,6 @@ export default function SessionPage() {
                   participants={participants}
                   statistics={statistics}
                 />
-              </div>
-            )}
-
-            {/* New Round button (moderator only, shown after reveal) */}
-            {isModerator && isRevealed && (
-              <div className="rounded-lg border border-border bg-card p-6">
-                <h2 className="text-lg font-semibold mb-4">
-                  Moderator Controls
-                </h2>
-                <button
-                  onClick={handleNewRound}
-                  disabled={!isConnected}
-                  className="px-6 py-3 bg-primary text-primary-foreground rounded-md hover:bg-primary/90 disabled:opacity-50 disabled:cursor-not-allowed font-semibold"
-                >
-                  New Round
-                </button>
               </div>
             )}
           </div>
