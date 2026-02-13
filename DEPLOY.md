@@ -5,12 +5,13 @@
 - Azure CLI installed (`winget install -e --id Microsoft.AzureCLI`)
 - Logged in (`az login`)
 - Node.js 20 LTS locally for building
+- Python 3 (for creating cross-platform zip on Windows)
 
 ## Step 1: Create Azure Resources
 
 ```bash
-# Resource group
-az group create --name rg-planningpoker --location eastus
+# Resource group (use a region where you have B1 quota)
+az group create --name rg-planningpoker --location westeurope
 
 # App Service plan (B1 Linux - minimum tier for WebSocket support)
 az appservice plan create \
@@ -33,17 +34,13 @@ az webapp create \
 APP_NAME=planningpoker-<your-unique-name>
 RG=rg-planningpoker
 
-# Enable WebSockets
+# Enable WebSockets, set startup command, enable Always On
 az webapp config set \
   --name $APP_NAME \
   --resource-group $RG \
-  --web-sockets-enabled true
-
-# Set startup command
-az webapp config set \
-  --name $APP_NAME \
-  --resource-group $RG \
-  --startup-file "node dist/server/index.js"
+  --web-sockets-enabled true \
+  --startup-file "node dist/server/index.js" \
+  --always-on true
 
 # Set environment variables
 az webapp config appsettings set \
@@ -53,11 +50,12 @@ az webapp config appsettings set \
     NODE_ENV=production \
     SCM_DO_BUILD_DURING_DEPLOYMENT=false
 
-# Enable Always On (prevents idle shutdown, preserves in-memory sessions)
-az webapp config set \
+# Enable application logging
+az webapp log config \
   --name $APP_NAME \
   --resource-group $RG \
-  --always-on true
+  --docker-container-logging filesystem \
+  --application-logging filesystem
 ```
 
 ## Step 3: Build & Deploy
@@ -66,19 +64,35 @@ az webapp config set \
 # Build locally
 npm run build
 
-# Create deployment zip (from repo root)
-# PowerShell:
-Compress-Archive -Path .next, dist, node_modules, package.json, next.config.ts -DestinationPath deploy.zip -Force
+# Create deployment zip with forward-slash paths (IMPORTANT on Windows)
+# PowerShell's Compress-Archive creates backslash paths that break on Linux.
+# Use Python instead:
+python3 -c "
+import zipfile, os
+dirs = ['.next', 'dist', 'node_modules']
+files = ['package.json', 'next.config.ts']
+with zipfile.ZipFile('deploy.zip', 'w', zipfile.ZIP_DEFLATED) as zf:
+    for d in dirs:
+        for root, dirnames, filenames in os.walk(d):
+            for fn in filenames:
+                filepath = os.path.join(root, fn)
+                zf.write(filepath, filepath.replace(os.sep, '/'))
+    for f in files:
+        zf.write(f, f)
+print('deploy.zip created')
+"
 
-# Or bash:
-zip -r deploy.zip .next dist node_modules package.json next.config.ts
+# On Linux/macOS you can use zip directly:
+# zip -r deploy.zip .next dist node_modules package.json next.config.ts
 
-# Deploy
+# Deploy (use --async true for large zips to avoid gateway timeout)
 az webapp deploy \
   --name $APP_NAME \
   --resource-group $RG \
   --src-path deploy.zip \
-  --type zip
+  --type zip \
+  --clean true \
+  --async true
 ```
 
 ## Step 4: Verify
@@ -89,6 +103,9 @@ az webapp log tail --name $APP_NAME --resource-group $RG
 
 # Open in browser
 az webapp browse --name $APP_NAME --resource-group $RG
+
+# Or check with curl
+curl -s https://$APP_NAME.azurewebsites.net -o /dev/null -w "%{http_code}"
 ```
 
 Test by:
@@ -100,8 +117,20 @@ Test by:
 
 ```bash
 npm run build
-Compress-Archive -Path .next, dist, node_modules, package.json, next.config.ts -DestinationPath deploy.zip -Force
-az webapp deploy --name $APP_NAME --resource-group $RG --src-path deploy.zip --type zip
+python3 -c "
+import zipfile, os
+dirs = ['.next', 'dist', 'node_modules']
+files = ['package.json', 'next.config.ts']
+with zipfile.ZipFile('deploy.zip', 'w', zipfile.ZIP_DEFLATED) as zf:
+    for d in dirs:
+        for root, dirnames, filenames in os.walk(d):
+            for fn in filenames:
+                filepath = os.path.join(root, fn)
+                zf.write(filepath, filepath.replace(os.sep, '/'))
+    for f in files:
+        zf.write(f, f)
+"
+az webapp deploy --name $APP_NAME --resource-group $RG --src-path deploy.zip --type zip --clean true --async true
 ```
 
 ## Teardown
@@ -109,3 +138,16 @@ az webapp deploy --name $APP_NAME --resource-group $RG --src-path deploy.zip --t
 ```bash
 az group delete --name rg-planningpoker --yes
 ```
+
+## Gotchas
+
+- **Windows zip paths**: PowerShell `Compress-Archive` creates zips with backslash
+  (`\`) path separators. Azure App Service runs Linux and can't resolve these.
+  Always use Python's `zipfile` or a Unix `zip` command.
+- **WEBSITE_RUN_FROM_PACKAGE**: Do NOT use this setting. It mounts the zip as a
+  read-only filesystem, but Next.js needs to write to
+  `node_modules/next/next-swc-fallback` at startup.
+- **Region quota**: B1 VM quota varies by region and subscription. If creation
+  fails with a quota error, try a different region (e.g. `westeurope`, `uksouth`).
+- **Large zip deploy timeout**: The 167MB zip (mostly `node_modules`) can cause
+  504 gateway timeouts. Use `--async true` to avoid this.
