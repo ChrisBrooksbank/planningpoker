@@ -2,10 +2,11 @@
   "name": "planningpoker",
   "version": "0.1.0",
   "private": true,
+  "type": "module",
   "scripts": {
     "dev": "tsx watch server/index.ts",
-    "build": "next build",
-    "start": "tsx server/index.ts",
+    "build": "next build && tsc --project tsconfig.server.json",
+    "start": "node dist/server/index.js",
     "lint": "next lint",
     "format": "prettier --write .",
     "typecheck": "tsc --noEmit",

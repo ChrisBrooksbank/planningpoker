@@ -1,4 +1,4 @@
-import { PlanningPokerWebSocketServer } from "./websocket";
+import { PlanningPokerWebSocketServer } from "./websocket.js";
 
 declare global {
   // eslint-disable-next-line no-var

@@ -1,6 +1,6 @@
 // WebSocket message types for Planning Poker real-time sync
 
-import { CardValue, Participant, Vote, VoteStatistics } from "./types";
+import { CardValue, Participant, Vote, VoteStatistics } from "./types.js";
 
 // Base message interface - all messages must have a type field
 export interface BaseMessage {

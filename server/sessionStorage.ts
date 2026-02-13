@@ -4,8 +4,8 @@ import type {
   Vote,
   SessionState,
   VoteStatistics,
-} from "../lib/types";
-import { generateRoomCode } from "../lib/utils";
+} from "../lib/types.js";
+import { generateRoomCode } from "../lib/utils.js";
 
 /**
  * In-memory session storage for Planning Poker sessions

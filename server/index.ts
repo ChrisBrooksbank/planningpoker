@@ -2,14 +2,15 @@ import { createServer, IncomingMessage, ServerResponse } from "http";
 import { parse } from "url";
 import next from "next";
 import { nanoid } from "nanoid";
-import { PlanningPokerWebSocketServer } from "./websocket";
-import { sessionStorage } from "./sessionStorage";
+import { PlanningPokerWebSocketServer } from "./websocket.js";
+import { sessionStorage } from "./sessionStorage.js";
 
 const dev = process.env.NODE_ENV !== "production";
-const hostname = process.env.HOSTNAME || "localhost";
+const hostname = process.env.HOSTNAME || (dev ? "localhost" : "0.0.0.0");
 const port = parseInt(process.env.PORT || "3000", 10);
 
-const app = next({ dev, hostname, port });
+// eslint-disable-next-line @typescript-eslint/no-explicit-any
+const app = (next as any)({ dev, hostname, port });
 const handle = app.getRequestHandler();
 
 function readBody(req: IncomingMessage): Promise<string> {

@@ -1,7 +1,7 @@
 import { WebSocketServer, WebSocket } from "ws";
 import { IncomingMessage } from "http";
 import { Server as HTTPServer } from "http";
-import { sessionStorage } from "./sessionStorage";
+import { sessionStorage } from "./sessionStorage.js";
 import type {
   ClientMessage,
   ServerMessage,
@@ -11,8 +11,8 @@ import type {
   RevealVotesMessage,
   NewRoundMessage,
   SessionStateMessage,
-} from "../lib/websocket-messages";
-import type { Participant, Vote, CardValue } from "../lib/types";
+} from "../lib/websocket-messages.js";
+import type { Participant, Vote, CardValue } from "../lib/types.js";
 
 export interface RoomClient {
   ws: WebSocket;
@@ -65,11 +65,20 @@ export class PlanningPokerWebSocketServer {
             `Client disconnected: userId=${client.userId}, roomId=${client.roomId}`
           );
           this.clients.delete(ws);
+          sessionStorage.markParticipantDisconnected(client.roomId, client.userId);
 
           // Notify other clients in the room about the disconnection
           this.broadcastToRoom(client.roomId, {
             type: "participant-left",
             userId: client.userId,
+          });
+
+          // Send updated session state to all remaining clients so they get
+          // the authoritative participant list with isConnected: false
+          this.clients.forEach((c, clientWs) => {
+            if (c.roomId === client.roomId && clientWs.readyState === 1) {
+              this.sendSessionState(clientWs, client.roomId);
+            }
           });
         }
       });
