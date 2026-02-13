@@ -1,13 +1,12 @@
 import { describe, it, expect, beforeEach, vi } from "vitest";
 import { render, screen, waitFor, act } from "@testing-library/react";
 import userEvent from "@testing-library/user-event";
-import { useRouter, useParams } from "next/navigation";
+import { useParams } from "next/navigation";
 import SessionPage from "@/app/session/[roomId]/page";
 import { useWebSocket } from "@/lib/hooks/useWebSocket";
 
 // Mock Next.js navigation hooks
 vi.mock("next/navigation", () => ({
-  useRouter: vi.fn(),
   useParams: vi.fn(),
 }));
 
@@ -17,15 +16,11 @@ vi.mock("@/lib/hooks/useWebSocket", () => ({
 }));
 
 describe("SessionPage", () => {
-  const mockPush = vi.fn();
   const mockSendMessage = vi.fn();
   const mockReconnect = vi.fn();
 
   beforeEach(() => {
     vi.clearAllMocks();
-    (useRouter as ReturnType<typeof vi.fn>).mockReturnValue({
-      push: mockPush,
-    });
     (useParams as ReturnType<typeof vi.fn>).mockReturnValue({
       roomId: "TEST123",
     });
@@ -50,7 +45,7 @@ describe("SessionPage", () => {
     });
   });
 
-  it("should redirect to home if no userId in localStorage", async () => {
+  it("should show join form if no userId in localStorage", async () => {
     (window.localStorage.getItem as ReturnType<typeof vi.fn>).mockReturnValue(
       null
     );
@@ -58,11 +53,13 @@ describe("SessionPage", () => {
     render(<SessionPage />);
 
     await waitFor(() => {
-      expect(mockPush).toHaveBeenCalledWith("/");
+      expect(screen.getByText("Join Planning Poker")).toBeInTheDocument();
+      expect(screen.getByLabelText("Your Name")).toBeInTheDocument();
+      expect(screen.getByText("Join Session")).toBeInTheDocument();
     });
   });
 
-  it("should redirect to home if no participantName in localStorage", async () => {
+  it("should show join form if no participantName in localStorage", async () => {
     (
       window.localStorage.getItem as ReturnType<typeof vi.fn>
     ).mockImplementation((key: string) => {
@@ -73,18 +70,93 @@ describe("SessionPage", () => {
     render(<SessionPage />);
 
     await waitFor(() => {
-      expect(mockPush).toHaveBeenCalledWith("/");
+      expect(screen.getByText("Join Planning Poker")).toBeInTheDocument();
     });
   });
 
-  it("should render loading state initially", () => {
+  it("should show join form with room code", () => {
     (window.localStorage.getItem as ReturnType<typeof vi.fn>).mockReturnValue(
       null
     );
 
     render(<SessionPage />);
 
-    expect(screen.getByText("Loading session...")).toBeInTheDocument();
+    expect(screen.getByText("TEST123")).toBeInTheDocument();
+  });
+
+  it("should show validation error for empty name on join form", async () => {
+    const user = userEvent.setup();
+    (window.localStorage.getItem as ReturnType<typeof vi.fn>).mockReturnValue(
+      null
+    );
+
+    render(<SessionPage />);
+
+    const button = await screen.findByText("Join Session");
+    await user.click(button);
+
+    await waitFor(() => {
+      expect(
+        screen.getByText("Your name must be between 1 and 50 characters")
+      ).toBeInTheDocument();
+    });
+  });
+
+  it("should show error when room not found on join", async () => {
+    const user = userEvent.setup();
+    (window.localStorage.getItem as ReturnType<typeof vi.fn>).mockReturnValue(
+      null
+    );
+
+    global.fetch = vi.fn().mockResolvedValue({
+      ok: false,
+      status: 404,
+    });
+
+    render(<SessionPage />);
+
+    const input = screen.getByLabelText("Your Name");
+    await user.type(input, "Jane");
+    const button = screen.getByText("Join Session");
+    await user.click(button);
+
+    await waitFor(() => {
+      expect(
+        screen.getByText("Room not found. Please check the link and try again.")
+      ).toBeInTheDocument();
+    });
+  });
+
+  it("should join session successfully from join form", async () => {
+    const user = userEvent.setup();
+    (window.localStorage.getItem as ReturnType<typeof vi.fn>).mockReturnValue(
+      null
+    );
+
+    global.fetch = vi.fn().mockResolvedValue({
+      ok: true,
+    });
+
+    render(<SessionPage />);
+
+    const input = screen.getByLabelText("Your Name");
+    await user.type(input, "Jane");
+    const button = screen.getByText("Join Session");
+    await user.click(button);
+
+    await waitFor(() => {
+      expect(window.localStorage.setItem).toHaveBeenCalledWith(
+        "session_TEST123_userId",
+        expect.any(String)
+      );
+      expect(window.localStorage.setItem).toHaveBeenCalledWith(
+        "session_TEST123_name",
+        "Jane"
+      );
+      // Should now show the session UI instead of join form
+      expect(screen.queryByText("Join Planning Poker")).not.toBeInTheDocument();
+      expect(screen.getByText("Planning Poker")).toBeInTheDocument();
+    });
   });
 
   it("should initialize WebSocket connection with userId from localStorage", async () => {
@@ -240,6 +312,50 @@ describe("SessionPage", () => {
 
     await waitFor(() => {
       expect(screen.getByText("TEST123")).toBeInTheDocument();
+    });
+  });
+
+  it("should show Copy Link button next to room code", async () => {
+    (
+      window.localStorage.getItem as ReturnType<typeof vi.fn>
+    ).mockImplementation((key: string) => {
+      if (key === "session_TEST123_userId") return "user123";
+      if (key === "session_TEST123_name") return "Test User";
+      return null;
+    });
+
+    render(<SessionPage />);
+
+    await waitFor(() => {
+      expect(screen.getByText("Copy Link")).toBeInTheDocument();
+    });
+  });
+
+  it("should copy link and show 'Copied!' feedback", async () => {
+    const user = userEvent.setup();
+    (
+      window.localStorage.getItem as ReturnType<typeof vi.fn>
+    ).mockImplementation((key: string) => {
+      if (key === "session_TEST123_userId") return "user123";
+      if (key === "session_TEST123_name") return "Test User";
+      return null;
+    });
+
+    const writeText = vi.fn().mockResolvedValue(undefined);
+    Object.defineProperty(navigator, "clipboard", {
+      value: { writeText },
+      writable: true,
+      configurable: true,
+    });
+
+    render(<SessionPage />);
+
+    const copyButton = await screen.findByText("Copy Link");
+    await user.click(copyButton);
+
+    await waitFor(() => {
+      expect(writeText).toHaveBeenCalledWith(window.location.href);
+      expect(screen.getByText("Copied!")).toBeInTheDocument();
     });
   });
 
@@ -412,17 +528,15 @@ describe("SessionPage", () => {
     });
   });
 
-  it("should display loading spinner when initializing session", () => {
+  it("should display join form when no credentials in localStorage", () => {
     (window.localStorage.getItem as ReturnType<typeof vi.fn>).mockReturnValue(
       null
     );
 
-    const { container } = render(<SessionPage />);
+    render(<SessionPage />);
 
-    expect(screen.getByText("Loading session...")).toBeInTheDocument();
-    // Check for spinner element
-    const spinner = container.querySelector(".animate-spin");
-    expect(spinner).toBeInTheDocument();
+    expect(screen.getByText("Join Planning Poker")).toBeInTheDocument();
+    expect(screen.getByLabelText("Your Name")).toBeInTheDocument();
   });
 
   it("should retrieve userId and name with correct localStorage keys", async () => {

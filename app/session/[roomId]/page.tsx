@@ -247,6 +247,59 @@ export default function SessionPage() {
     }
   }, [isConnected, participantName, sendMessage]);
 
+  // Show join form if user has no credentials for this room
+  if (needsName) {
+    return (
+      <main className="flex min-h-screen flex-col items-center justify-center p-8">
+        <div className="w-full max-w-md space-y-8">
+          <div className="text-center">
+            <h1 className="text-2xl font-bold mb-2">Join Planning Poker</h1>
+            <p className="text-sm text-muted-foreground">
+              Enter your name to join room{" "}
+              <span className="font-mono font-semibold">{roomId}</span>
+            </p>
+          </div>
+
+          <form onSubmit={handleJoinSubmit} className="space-y-4">
+            <div>
+              <label
+                htmlFor="joinName"
+                className="block text-sm font-medium mb-2"
+              >
+                Your Name
+              </label>
+              <input
+                id="joinName"
+                type="text"
+                value={nameInput}
+                onChange={(e) => setNameInput(e.target.value)}
+                placeholder="e.g., Jane Smith"
+                className="w-full rounded-lg border border-input bg-background px-4 py-3 text-foreground placeholder:text-muted-foreground focus:outline-none focus:ring-2 focus:ring-ring"
+                maxLength={50}
+                disabled={isJoining}
+                autoFocus
+              />
+            </div>
+
+            {joinError && (
+              <div className="rounded-lg bg-red-50 dark:bg-red-900/20 border border-red-200 dark:border-red-800 px-4 py-3 text-sm text-red-800 dark:text-red-200">
+                {joinError}
+              </div>
+            )}
+
+            <button
+              type="submit"
+              disabled={isJoining}
+              className="w-full rounded-lg bg-primary px-6 py-3 text-lg font-semibold text-primary-foreground hover:opacity-90 transition-opacity disabled:opacity-50 disabled:cursor-not-allowed"
+            >
+              {isJoining ? "Joining..." : "Join Session"}
+            </button>
+          </form>
+        </div>
+      </main>
+    );
+  }
+
   // Don't render until we have a userId
   if (!isInitialized || !userId) {
     return (
@@ -266,10 +319,18 @@ export default function SessionPage() {
           <div className="flex items-center justify-between">
             <div>
               <h1 className="text-3xl font-bold mb-2">Planning Poker</h1>
-              <p className="text-sm text-muted-foreground">
-                Room Code:{" "}
-                <span className="font-mono font-semibold">{roomId}</span>
-              </p>
+              <div className="flex items-center gap-2">
+                <p className="text-sm text-muted-foreground">
+                  Room Code:{" "}
+                  <span className="font-mono font-semibold">{roomId}</span>
+                </p>
+                <button
+                  onClick={handleCopyLink}
+                  className="text-xs px-2 py-1 rounded border border-border hover:bg-muted transition-colors"
+                >
+                  {linkCopied ? "Copied!" : "Copy Link"}
+                </button>
+              </div>
             </div>
             <div className="flex items-center gap-2">
               <div
