@@ -8,7 +8,7 @@ import { ParticipantList } from "@/components/ParticipantList";
 import { CardDeck } from "@/components/CardDeck";
 import { VoteResults } from "@/components/VoteResults";
 import type { Participant, CardValue, Vote, VoteStatistics } from "@/lib/types";
-import { isValidTopic, isValidParticipantName } from "@/lib/utils";
+import { isValidParticipantName } from "@/lib/utils";
 import { nanoid } from "nanoid";
 
 export default function SessionPage() {
@@ -178,26 +178,8 @@ export default function SessionPage() {
     });
   };
 
-  // Handle topic update (moderator only)
-  const handleUpdateTopic = () => {
-    if (!isValidTopic(topicInput)) {
-      return;
-    }
-    sendMessage({
-      type: "set-topic",
-      topic: topicInput.trim(),
-    });
-  };
-
-  // Handle reveal votes (moderator only)
-  const handleRevealVotes = () => {
-    sendMessage({
-      type: "reveal-votes",
-    });
-  };
-
-  // Handle new round (moderator only) — also sets topic if changed
-  const handleNewRound = () => {
+  // Handle starting a round with the current topic (moderator only)
+  const handleStartRound = () => {
     const trimmed = topicInput.trim();
     if (trimmed && trimmed !== currentTopic) {
       sendMessage({
@@ -207,6 +189,13 @@ export default function SessionPage() {
     }
     sendMessage({
       type: "new-round",
+    });
+  };
+
+  // Handle reveal votes (moderator only)
+  const handleRevealVotes = () => {
+    sendMessage({
+      type: "reveal-votes",
     });
   };
 
@@ -413,49 +402,33 @@ export default function SessionPage() {
           <div className="lg:col-span-2 space-y-6">
             {/* Topic & moderator controls */}
             <div className="rounded-lg border border-border bg-card p-6">
-              <h2 className="text-lg font-semibold mb-4">
-                {isModerator && isRevealed ? "Next Topic" : "Current Topic"}
-              </h2>
+              <h2 className="text-lg font-semibold mb-4">Topic</h2>
               {isModerator ? (
                 <div className="space-y-3">
                   <input
                     type="text"
                     value={topicInput}
                     onChange={(e) => setTopicInput(e.target.value)}
-                    placeholder={
-                      isRevealed
-                        ? "Enter the next topic to estimate..."
-                        : "Enter the story or topic to estimate..."
-                    }
+                    placeholder="What are we estimating?"
                     className="w-full px-3 py-2 border border-input rounded-md bg-background focus:outline-none focus:ring-2 focus:ring-ring"
                     maxLength={200}
                     disabled={!isConnected}
                   />
                   <div className="flex gap-2">
-                    {!isRevealed ? (
-                      <>
-                        <button
-                          onClick={handleUpdateTopic}
-                          disabled={!isConnected || !isValidTopic(topicInput)}
-                          className="px-4 py-2 bg-primary text-primary-foreground rounded-md hover:bg-primary/90 disabled:opacity-50 disabled:cursor-not-allowed"
-                        >
-                          Update Topic
-                        </button>
-                        <button
-                          onClick={handleRevealVotes}
-                          disabled={!isConnected}
-                          className="px-4 py-2 bg-primary text-primary-foreground rounded-md hover:bg-primary/90 disabled:opacity-50 disabled:cursor-not-allowed font-semibold"
-                        >
-                          Reveal Votes
-                        </button>
-                      </>
-                    ) : (
+                    <button
+                      onClick={handleStartRound}
+                      disabled={!isConnected}
+                      className="px-6 py-3 bg-primary text-primary-foreground rounded-md hover:bg-primary/90 disabled:opacity-50 disabled:cursor-not-allowed font-semibold"
+                    >
+                      Vote!
+                    </button>
+                    {!isRevealed && (
                       <button
-                        onClick={handleNewRound}
+                        onClick={handleRevealVotes}
                         disabled={!isConnected}
                         className="px-6 py-3 bg-primary text-primary-foreground rounded-md hover:bg-primary/90 disabled:opacity-50 disabled:cursor-not-allowed font-semibold"
                       >
-                        Start Next Round
+                        Reveal
                       </button>
                     )}
                   </div>
