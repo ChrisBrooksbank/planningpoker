@@ -89,12 +89,14 @@ export default function SessionPage() {
 
   // Handle copy link
   const handleCopyLink = async () => {
+    const url = window.location.href;
     try {
-      await navigator.clipboard.writeText(window.location.href);
+      await navigator.clipboard.writeText(url);
       setLinkCopied(true);
       setTimeout(() => setLinkCopied(false), 2000);
     } catch {
-      // Clipboard API not available (e.g. HTTP)
+      // Clipboard API may be unavailable — show prompt as fallback
+      window.prompt("Copy this link to share:", url);
     }
   };
 
@@ -326,7 +328,11 @@ export default function SessionPage() {
                 </p>
                 <button
                   onClick={handleCopyLink}
-                  className="text-xs px-2 py-1 rounded border border-border hover:bg-muted transition-colors"
+                  className={`text-xs px-2 py-1 rounded border transition-colors ${
+                    linkCopied
+                      ? "bg-green-100 border-green-400 text-green-700 dark:bg-green-900/30 dark:border-green-600 dark:text-green-300"
+                      : "border-border hover:bg-muted"
+                  }`}
                 >
                   {linkCopied ? "Copied!" : "Copy Link"}
                 </button>
@@ -457,16 +463,7 @@ export default function SessionPage() {
               </div>
             )}
 
-            {/* Card deck */}
-            <div className="rounded-lg border border-border bg-card p-6">
-              <CardDeck
-                selectedValue={selectedCard}
-                onSelectCard={handleSelectCard}
-                disabled={!isConnected}
-              />
-            </div>
-
-            {/* Vote results (shown after reveal) */}
+            {/* Vote results (shown after reveal, above cards) */}
             {isRevealed && statistics && (
               <div className="rounded-lg border border-border bg-card p-6">
                 <h2 className="text-lg font-semibold mb-4">Results</h2>
@@ -477,6 +474,15 @@ export default function SessionPage() {
                 />
               </div>
             )}
+
+            {/* Card deck */}
+            <div className="rounded-lg border border-border bg-card p-6">
+              <CardDeck
+                selectedValue={selectedCard}
+                onSelectCard={handleSelectCard}
+                disabled={!isConnected}
+              />
+            </div>
           </div>
         </div>
       </div>
