@@ -6,6 +6,18 @@ interface VoteResultsProps {
   statistics: VoteStatistics;
 }
 
+function VoteValueDisplay({ value }: { value: string }) {
+  if (value === "coffee") {
+    return (
+      <>
+        <span aria-hidden="true">☕</span>
+        <span className="sr-only">Coffee break</span>
+      </>
+    );
+  }
+  return <>{value}</>;
+}
+
 export function VoteResults({
   votes,
   participants,
@@ -23,21 +35,31 @@ export function VoteResults({
     }))
     .sort((a, b) => a.participantName.localeCompare(b.participantName));
 
+  function getVoteLabel(value: string): string {
+    if (value === "coffee") return "coffee break";
+    return value;
+  }
+
   return (
     <div className="space-y-6">
       {/* Votes section */}
       <div>
         <h3 className="text-lg font-semibold mb-3">Votes</h3>
-        <div className="space-y-2">
+        <ul className="space-y-2" aria-label="Individual votes">
           {votesArray.length === 0 ? (
-            <p className="text-muted-foreground italic">No votes yet</p>
+            <li>
+              <p className="text-muted-foreground italic">No votes yet</p>
+            </li>
           ) : (
             votesArray.map(({ userId, participantName, vote }) => (
-              <div
+              <li
                 key={userId}
                 className="flex items-center justify-between p-3 rounded-md bg-muted"
+                aria-label={`${participantName} voted ${getVoteLabel(vote.value)}`}
               >
-                <span className="font-medium">{participantName}</span>
+                <span className="font-medium truncate max-w-[200px]" title={participantName}>
+                  {participantName}
+                </span>
                 <span
                   className={`px-3 py-1 rounded-md font-semibold ${
                     vote.value === "?"
@@ -47,19 +69,19 @@ export function VoteResults({
                         : "bg-primary/20 text-primary"
                   }`}
                 >
-                  {vote.value === "coffee" ? "☕" : vote.value}
+                  <VoteValueDisplay value={vote.value} />
                 </span>
-              </div>
+              </li>
             ))
           )}
-        </div>
+        </ul>
       </div>
 
       {/* Statistics section */}
       <div>
         <h3 className="text-lg font-semibold mb-3">Statistics</h3>
         <div className="grid grid-cols-2 gap-4">
-          <div className="p-4 rounded-md bg-muted">
+          <div className="p-4 rounded-md bg-muted" role="group" aria-label={`Average: ${statistics.average !== null ? statistics.average.toFixed(1) : "N/A"}`}>
             <p className="text-sm text-muted-foreground mb-1">Average</p>
             <p className="text-2xl font-bold">
               {statistics.average !== null
@@ -67,17 +89,15 @@ export function VoteResults({
                 : "N/A"}
             </p>
           </div>
-          <div className="p-4 rounded-md bg-muted">
+          <div className="p-4 rounded-md bg-muted" role="group" aria-label={`Most Common: ${statistics.mode !== null ? (statistics.mode === "coffee" ? "Coffee break" : statistics.mode) : "N/A"}`}>
             <p className="text-sm text-muted-foreground mb-1">Most Common</p>
             <p className="text-2xl font-bold">
               {statistics.mode !== null
-                ? statistics.mode === "coffee"
-                  ? "☕"
-                  : statistics.mode
+                ? <VoteValueDisplay value={statistics.mode} />
                 : "N/A"}
             </p>
           </div>
-          <div className="p-4 rounded-md bg-muted">
+          <div className="p-4 rounded-md bg-muted" role="group" aria-label={`Range: ${statistics.min !== null && statistics.max !== null ? `${statistics.min} - ${statistics.max}` : "N/A"}`}>
             <p className="text-sm text-muted-foreground mb-1">Range</p>
             <p className="text-2xl font-bold">
               {statistics.min !== null && statistics.max !== null
@@ -85,7 +105,7 @@ export function VoteResults({
                 : "N/A"}
             </p>
           </div>
-          <div className="p-4 rounded-md bg-muted">
+          <div className="p-4 rounded-md bg-muted" role="group" aria-label={`Spread: ${statistics.range !== null ? statistics.range : "N/A"}`}>
             <p className="text-sm text-muted-foreground mb-1">Spread</p>
             <p className="text-2xl font-bold">
               {statistics.range !== null ? statistics.range : "N/A"}

@@ -217,8 +217,8 @@ describe("ParticipantList", () => {
       />
     );
 
-    // Should show "✓ Voted" for user-1 (Alice) and user-3 (Charlie)
-    const votedIndicators = screen.getAllByText("✓ Voted");
+    // Should show "Voted" for user-1 (Alice) and user-3 (Charlie)
+    const votedIndicators = screen.getAllByText("Voted");
     expect(votedIndicators.length).toBe(2);
   });
 
@@ -233,8 +233,8 @@ describe("ParticipantList", () => {
       />
     );
 
-    // Only one "✓ Voted" indicator should appear
-    const votedIndicators = screen.getAllByText("✓ Voted");
+    // Only one "Voted" indicator should appear
+    const votedIndicators = screen.getAllByText("Voted");
     expect(votedIndicators.length).toBe(1);
   });
 
@@ -249,7 +249,7 @@ describe("ParticipantList", () => {
       />
     );
 
-    expect(screen.queryByText("✓ Voted")).not.toBeInTheDocument();
+    expect(screen.queryByText("Voted")).not.toBeInTheDocument();
   });
 
   it("handles votedUserIds prop being omitted", () => {
@@ -258,6 +258,6 @@ describe("ParticipantList", () => {
     );
 
     // No voted indicators should appear
-    expect(screen.queryByText("✓ Voted")).not.toBeInTheDocument();
+    expect(screen.queryByText("Voted")).not.toBeInTheDocument();
   });
 });

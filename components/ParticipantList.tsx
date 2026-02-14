@@ -25,38 +25,55 @@ export function ParticipantList({
       <h2 className="text-lg font-semibold mb-4">
         Participants ({participants.length})
       </h2>
-      <ul className="space-y-2">
-        {participants.map((participant) => (
-          <li
-            key={participant.id}
-            className="flex items-center justify-between py-2 px-3 rounded-md bg-muted/50"
-          >
-            <div className="flex items-center gap-2">
-              <span className="text-sm font-medium">
-                {participant.name}
-                {participant.id === currentUserId && (
-                  <span className="text-muted-foreground"> (You)</span>
-                )}
-              </span>
-              {participant.isModerator && (
-                <span className="inline-flex items-center rounded-full bg-primary px-2 py-0.5 text-xs font-medium text-primary-foreground">
-                  Moderator
+      <ul className="space-y-2" aria-label="Participant list" aria-live="polite">
+        {participants.map((participant) => {
+          const isYou = participant.id === currentUserId;
+          const hasVoted = votedUserIds.has(participant.id);
+          const connectionStatus = participant.isConnected ? "Online" : "Offline";
+          const ariaLabel = [
+            participant.name,
+            isYou ? "You" : null,
+            participant.isModerator ? "Moderator" : null,
+            hasVoted ? "Voted" : null,
+            connectionStatus,
+          ]
+            .filter(Boolean)
+            .join(", ");
+
+          return (
+            <li
+              key={participant.id}
+              className="flex items-center justify-between py-2 px-3 rounded-md bg-muted/50"
+              aria-label={ariaLabel}
+            >
+              <div className="flex items-center gap-2">
+                <span className="text-base font-medium truncate max-w-[160px]" title={participant.name}>
+                  {participant.name}
+                  {isYou && (
+                    <span className="text-foreground/70 font-semibold"> (You)</span>
+                  )}
                 </span>
-              )}
-            </div>
-            <div className="flex items-center gap-2">
-              {votedUserIds.has(participant.id) && (
-                <span className="text-xs text-muted-foreground">✓ Voted</span>
-              )}
-              <div
-                className={`h-2 w-2 rounded-full ${
-                  participant.isConnected ? "bg-green-500" : "bg-gray-400"
-                }`}
-                title={participant.isConnected ? "Online" : "Offline"}
-              />
-            </div>
-          </li>
-        ))}
+                {participant.isModerator && (
+                  <span className="inline-flex items-center rounded-full bg-primary px-2 py-0.5 text-xs font-medium text-primary-foreground">
+                    Moderator
+                  </span>
+                )}
+              </div>
+              <div className="flex items-center gap-2">
+                {hasVoted && (
+                  <span className="text-xs text-muted-foreground" aria-hidden="true">Voted</span>
+                )}
+                <div
+                  className={`h-2 w-2 rounded-full ${
+                    participant.isConnected ? "bg-green-500" : "bg-gray-400"
+                  }`}
+                  aria-hidden="true"
+                />
+                <span className="sr-only">{connectionStatus}</span>
+              </div>
+            </li>
+          );
+        })}
       </ul>
     </div>
   );
