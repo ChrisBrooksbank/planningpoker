@@ -49,10 +49,12 @@ export function ParticipantList({
               <div className="flex items-center gap-2">
                 <span className="text-base font-medium truncate max-w-[160px]" title={participant.name}>
                   {participant.name}
-                  {isYou && (
-                    <span className="text-foreground/70 font-semibold"> (You)</span>
-                  )}
                 </span>
+                {isYou && (
+                  <span className="inline-flex items-center rounded-full bg-secondary px-2 py-0.5 text-xs font-medium text-secondary-foreground">
+                    You
+                  </span>
+                )}
                 {participant.isModerator && (
                   <span className="inline-flex items-center rounded-full bg-primary px-2 py-0.5 text-xs font-medium text-primary-foreground">
                     Moderator

@@ -70,12 +70,12 @@ describe("ParticipantList", () => {
     expect(screen.queryByText("Moderator")).not.toBeInTheDocument();
   });
 
-  it("marks current user with '(You)' indicator", () => {
+  it("marks current user with 'You' badge", () => {
     render(
       <ParticipantList participants={mockParticipants} currentUserId="user-2" />
     );
 
-    expect(screen.getByText("(You)")).toBeInTheDocument();
+    expect(screen.getByText("You")).toBeInTheDocument();
   });
 
   it("shows online status for connected participants", () => {
@@ -132,7 +132,7 @@ describe("ParticipantList", () => {
 
     expect(screen.getByText("Participants (1)")).toBeInTheDocument();
     expect(screen.getByText("Alice")).toBeInTheDocument();
-    expect(screen.getByText("(You)")).toBeInTheDocument();
+    expect(screen.getByText("You")).toBeInTheDocument();
     expect(screen.getByText("Moderator")).toBeInTheDocument();
   });
 
