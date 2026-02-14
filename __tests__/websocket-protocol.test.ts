@@ -172,11 +172,11 @@ describe("WebSocket Message Protocol", () => {
           `ws://localhost:${port}/ws?roomId=${roomId}&userId=user-2`
         );
 
-        let connected = 0;
+        let joined = 0;
 
         const checkReady = () => {
-          connected++;
-          if (connected === 2) {
+          joined++;
+          if (joined === 2) {
             ws1.send(JSON.stringify({ type: "submit-vote", value: "5" }));
           }
         };
@@ -184,6 +184,8 @@ describe("WebSocket Message Protocol", () => {
         ws1.on("message", (data) => {
           const message = JSON.parse(data.toString());
           if (message.type === "connected") {
+            ws1.send(JSON.stringify({ type: "join-session", participantName: "User One" }));
+          } else if (message.type === "session-state") {
             checkReady();
           }
         });
@@ -191,6 +193,8 @@ describe("WebSocket Message Protocol", () => {
         ws2.on("message", (data) => {
           const message = JSON.parse(data.toString());
           if (message.type === "connected") {
+            ws2.send(JSON.stringify({ type: "join-session", participantName: "User Two" }));
+          } else if (message.type === "session-state") {
             checkReady();
           } else if (message.type === "vote-submitted") {
             const msg = message as VoteSubmittedMessage;
@@ -213,10 +217,14 @@ describe("WebSocket Message Protocol", () => {
         );
 
         let voteCount = 0;
+        let joined = false;
 
         ws.on("message", (data) => {
           const message = JSON.parse(data.toString());
           if (message.type === "connected") {
+            ws.send(JSON.stringify({ type: "join-session", participantName: "User One" }));
+          } else if (message.type === "session-state" && !joined) {
+            joined = true;
             ws.send(JSON.stringify({ type: "submit-vote", value: "3" }));
           } else if (message.type === "vote-submitted") {
             voteCount++;

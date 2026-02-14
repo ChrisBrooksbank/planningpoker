@@ -13,10 +13,21 @@ const port = parseInt(process.env.PORT || "3000", 10);
 const app = (next as any)({ dev, hostname, port });
 const handle = app.getRequestHandler();
 
+const MAX_BODY_SIZE = 10 * 1024; // 10 KB
+
 function readBody(req: IncomingMessage): Promise<string> {
   return new Promise((resolve, reject) => {
     let data = "";
-    req.on("data", (chunk: Buffer) => (data += chunk));
+    let size = 0;
+    req.on("data", (chunk: Buffer) => {
+      size += chunk.length;
+      if (size > MAX_BODY_SIZE) {
+        req.destroy();
+        reject(new Error("Request body too large"));
+        return;
+      }
+      data += chunk;
+    });
     req.on("end", () => resolve(data));
     req.on("error", reject);
   });

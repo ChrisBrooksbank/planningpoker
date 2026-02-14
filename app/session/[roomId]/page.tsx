@@ -138,6 +138,17 @@ export default function SessionPage() {
           setRevealedVotes({});
         }
         setStatistics(message.statistics ?? null);
+        // Sync selectedCard with server state (handles reconnect after round change)
+        if (userId) {
+          const myVote = message.votes[userId];
+          if (!myVote) {
+            // User hasn't voted in this round — clear stale selection
+            setSelectedCard(null);
+          } else if (message.isRevealed && myVote.value !== undefined) {
+            // Votes revealed — restore our selection
+            setSelectedCard(myVote.value);
+          }
+        }
         break;
 
       case "participant-joined":
@@ -444,7 +455,7 @@ export default function SessionPage() {
                       disabled={!isConnected}
                       className="px-6 py-3 bg-primary text-primary-foreground rounded-md hover:bg-primary/90 disabled:opacity-50 disabled:cursor-not-allowed font-semibold"
                     >
-                      Vote!
+                      Start Vote
                     </button>
                     {!isRevealed && (
                       <button

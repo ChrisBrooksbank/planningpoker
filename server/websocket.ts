@@ -19,6 +19,8 @@ export interface RoomClient {
   ws: WebSocket;
   roomId: string;
   userId: string;
+  messageCount: number;
+  messageWindowStart: number;
 }
 
 export class PlanningPokerWebSocketServer {
@@ -37,12 +39,19 @@ export class PlanningPokerWebSocketServer {
       if (!(ws as any).isAlive) {
         console.log(`Terminating dead connection: userId=${client.userId}, roomId=${client.roomId}`);
         this.clients.delete(ws);
-        sessionStorage.markParticipantDisconnected(client.roomId, client.userId);
-        this.broadcastToRoom(client.roomId, {
-          type: "participant-left",
-          userId: client.userId,
-        });
         ws.terminate();
+
+        // Only mark disconnected if no other connection exists for this user in this room
+        const hasOtherConnection = Array.from(this.clients.values()).some(
+          c => c.userId === client.userId && c.roomId === client.roomId
+        );
+        if (!hasOtherConnection) {
+          sessionStorage.markParticipantDisconnected(client.roomId, client.userId);
+          this.broadcastToRoom(client.roomId, {
+            type: "participant-left",
+            userId: client.userId,
+          });
+        }
         return;
       }
       (ws as any).isAlive = false;
@@ -66,7 +75,7 @@ export class PlanningPokerWebSocketServer {
 
       // Register client and mark as alive for heartbeat
       (ws as any).isAlive = true;
-      this.clients.set(ws, { ws, roomId, userId });
+      this.clients.set(ws, { ws, roomId, userId, messageCount: 0, messageWindowStart: Date.now() });
 
       // Track pong responses for heartbeat
       ws.on("pong", () => { (ws as any).isAlive = true; });
@@ -90,21 +99,18 @@ export class PlanningPokerWebSocketServer {
             `Client disconnected: userId=${client.userId}, roomId=${client.roomId}`
           );
           this.clients.delete(ws);
-          sessionStorage.markParticipantDisconnected(client.roomId, client.userId);
 
-          // Notify other clients in the room about the disconnection
-          this.broadcastToRoom(client.roomId, {
-            type: "participant-left",
-            userId: client.userId,
-          });
-
-          // Send updated session state to all remaining clients so they get
-          // the authoritative participant list with isConnected: false
-          this.clients.forEach((c, clientWs) => {
-            if (c.roomId === client.roomId && clientWs.readyState === 1) {
-              this.sendSessionState(clientWs, client.roomId);
-            }
-          });
+          // Only mark disconnected if no other connection exists for this user in this room
+          const hasOtherConnection = Array.from(this.clients.values()).some(
+            c => c.userId === client.userId && c.roomId === client.roomId
+          );
+          if (!hasOtherConnection) {
+            sessionStorage.markParticipantDisconnected(client.roomId, client.userId);
+            this.broadcastToRoom(client.roomId, {
+              type: "participant-left",
+              userId: client.userId,
+            });
+          }
         }
       });
 
@@ -124,9 +130,24 @@ export class PlanningPokerWebSocketServer {
     });
   }
 
+  private static readonly RATE_LIMIT_WINDOW_MS = 1000;
+  private static readonly RATE_LIMIT_MAX_MESSAGES = 20;
+
   private handleMessage(ws: WebSocket, message: ClientMessage) {
     const client = this.clients.get(ws);
     if (!client) {
+      return;
+    }
+
+    // Rate limiting
+    const now = Date.now();
+    if (now - client.messageWindowStart > PlanningPokerWebSocketServer.RATE_LIMIT_WINDOW_MS) {
+      client.messageCount = 0;
+      client.messageWindowStart = now;
+    }
+    client.messageCount++;
+    if (client.messageCount > PlanningPokerWebSocketServer.RATE_LIMIT_MAX_MESSAGES) {
+      this.sendError(ws, "RATE_LIMITED", "Too many messages, slow down");
       return;
     }
 
@@ -222,11 +243,29 @@ export class PlanningPokerWebSocketServer {
       return;
     }
 
+    const session = sessionStorage.getSession(roomId);
+    if (!session) {
+      this.sendError(ws, "SESSION_NOT_FOUND", "Session does not exist");
+      return;
+    }
+
+    // Reject votes after reveal
+    if (session.session.isRevealed) {
+      this.sendError(ws, "VOTES_REVEALED", "Cannot vote after votes are revealed");
+      return;
+    }
+
+    // Verify user is a participant
+    if (!session.participants.some(p => p.id === userId)) {
+      this.sendError(ws, "NOT_A_PARTICIPANT", "You must join the session before voting");
+      return;
+    }
+
     // Submit vote to session storage
     const success = sessionStorage.submitVote(roomId, userId, value);
 
     if (!success) {
-      this.sendError(ws, "SESSION_NOT_FOUND", "Session does not exist");
+      this.sendError(ws, "VOTE_FAILED", "Failed to submit vote");
       return;
     }
 
@@ -464,6 +503,14 @@ export class PlanningPokerWebSocketServer {
       }
     });
     return users;
+  }
+
+  /**
+   * Shut down the WebSocket server and clear the heartbeat interval
+   */
+  public close() {
+    clearInterval(this.heartbeatInterval);
+    this.wss.close();
   }
 
   /**

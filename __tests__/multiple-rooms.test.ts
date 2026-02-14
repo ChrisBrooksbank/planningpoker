@@ -151,14 +151,14 @@ describe("Multiple Simultaneous Rooms", () => {
           `ws://localhost:${port}/ws?roomId=${room2Id}&userId=r2u1`
         );
 
-        let connectedCount = 0;
+        let joinedCount = 0;
         let room1VoteReceived = false;
         let room2VoteReceived = false;
 
-        const checkAllConnected = () => {
-          connectedCount++;
-          if (connectedCount === 2) {
-            // All connected, submit votes directly
+        const checkAllJoined = () => {
+          joinedCount++;
+          if (joinedCount === 2) {
+            // All joined, submit votes
             room1User.send(JSON.stringify({ type: "submit-vote", value: "5" }));
             room2User.send(JSON.stringify({ type: "submit-vote", value: "8" }));
           }
@@ -185,7 +185,9 @@ describe("Multiple Simultaneous Rooms", () => {
         room1User.on("message", (data) => {
           const message = JSON.parse(data.toString());
           if (message.type === "connected") {
-            checkAllConnected();
+            room1User.send(JSON.stringify({ type: "join-session", participantName: "R1 User 1" }));
+          } else if (message.type === "session-state") {
+            checkAllJoined();
           } else if (message.type === "vote-submitted") {
             const msg = message as VoteSubmittedMessage;
             expect(msg.userId).toBe("r1u1");
@@ -198,7 +200,9 @@ describe("Multiple Simultaneous Rooms", () => {
         room2User.on("message", (data) => {
           const message = JSON.parse(data.toString());
           if (message.type === "connected") {
-            checkAllConnected();
+            room2User.send(JSON.stringify({ type: "join-session", participantName: "R2 User 1" }));
+          } else if (message.type === "session-state") {
+            checkAllJoined();
           } else if (message.type === "vote-submitted") {
             const msg = message as VoteSubmittedMessage;
             expect(msg.userId).toBe("r2u1");
@@ -455,16 +459,16 @@ describe("Multiple Simultaneous Rooms", () => {
         `ws://localhost:${port}/ws?roomId=${room2Id}&userId=r2u2`
       );
 
-      let connectedCount = 0;
+      let joinedCount = 0;
       let room1VotesCount = 0;
       let room2VotesCount = 0;
       let room1Revealed = false;
       let room2Revealed = false;
 
-      const checkAllConnected = () => {
-        connectedCount++;
-        if (connectedCount === 6) {
-          // Start voting in both rooms simultaneously
+      const checkAllJoined = () => {
+        joinedCount++;
+        if (joinedCount === 4) {
+          // All non-moderator users joined, start voting
           room1User1.send(JSON.stringify({ type: "submit-vote", value: "3" }));
           room1User2.send(JSON.stringify({ type: "submit-vote", value: "5" }));
           room2User1.send(JSON.stringify({ type: "submit-vote", value: "13" }));
@@ -475,7 +479,6 @@ describe("Multiple Simultaneous Rooms", () => {
       const checkRoom1VotesComplete = () => {
         room1VotesCount++;
         if (room1VotesCount === 2) {
-          // All room1 votes received, reveal
           room1Mod.send(JSON.stringify({ type: "reveal-votes" }));
         }
       };
@@ -483,30 +486,25 @@ describe("Multiple Simultaneous Rooms", () => {
       const checkRoom2VotesComplete = () => {
         room2VotesCount++;
         if (room2VotesCount === 2) {
-          // All room2 votes received, reveal
           room2Mod.send(JSON.stringify({ type: "reveal-votes" }));
         }
       };
 
       const checkBothRoomsRevealed = () => {
         if (room1Revealed && room2Revealed) {
-          // Verify final state
           const room1Session = sessionStorage.getSession(room1Id);
           const room2Session = sessionStorage.getSession(room2Id);
 
-          // Room 1: votes 3, 5 -> average 4
           expect(room1Session?.session.isRevealed).toBe(true);
           const room1Votes = sessionStorage.getVotes(room1Id);
           expect(room1Votes?.get("r1u1")?.value).toBe("3");
           expect(room1Votes?.get("r1u2")?.value).toBe("5");
 
-          // Room 2: votes 13, 21 -> average 17
           expect(room2Session?.session.isRevealed).toBe(true);
           const room2Votes = sessionStorage.getVotes(room2Id);
           expect(room2Votes?.get("r2u1")?.value).toBe("13");
           expect(room2Votes?.get("r2u2")?.value).toBe("21");
 
-          // Clean up
           room1Mod.close();
           room1User1.close();
           room1User2.close();
@@ -520,7 +518,7 @@ describe("Multiple Simultaneous Rooms", () => {
       room1Mod.on("message", (data) => {
         const message = JSON.parse(data.toString());
         if (message.type === "connected") {
-          checkAllConnected();
+          // Moderator is already a participant from createSession
         } else if (message.type === "vote-submitted") {
           checkRoom1VotesComplete();
         } else if (message.type === "votes-revealed") {
@@ -534,21 +532,25 @@ describe("Multiple Simultaneous Rooms", () => {
       room1User1.on("message", (data) => {
         const message = JSON.parse(data.toString());
         if (message.type === "connected") {
-          checkAllConnected();
+          room1User1.send(JSON.stringify({ type: "join-session", participantName: "R1 User 1" }));
+        } else if (message.type === "session-state") {
+          checkAllJoined();
         }
       });
 
       room1User2.on("message", (data) => {
         const message = JSON.parse(data.toString());
         if (message.type === "connected") {
-          checkAllConnected();
+          room1User2.send(JSON.stringify({ type: "join-session", participantName: "R1 User 2" }));
+        } else if (message.type === "session-state") {
+          checkAllJoined();
         }
       });
 
       room2Mod.on("message", (data) => {
         const message = JSON.parse(data.toString());
         if (message.type === "connected") {
-          checkAllConnected();
+          // Moderator is already a participant from createSession
         } else if (message.type === "vote-submitted") {
           checkRoom2VotesComplete();
         } else if (message.type === "votes-revealed") {
@@ -562,14 +564,18 @@ describe("Multiple Simultaneous Rooms", () => {
       room2User1.on("message", (data) => {
         const message = JSON.parse(data.toString());
         if (message.type === "connected") {
-          checkAllConnected();
+          room2User1.send(JSON.stringify({ type: "join-session", participantName: "R2 User 1" }));
+        } else if (message.type === "session-state") {
+          checkAllJoined();
         }
       });
 
       room2User2.on("message", (data) => {
         const message = JSON.parse(data.toString());
         if (message.type === "connected") {
-          checkAllConnected();
+          room2User2.send(JSON.stringify({ type: "join-session", participantName: "R2 User 2" }));
+        } else if (message.type === "session-state") {
+          checkAllJoined();
         }
       });
     });
@@ -584,13 +590,12 @@ describe("Multiple Simultaneous Rooms", () => {
         `ws://localhost:${port}/ws?roomId=${room2Id}&userId=r2u1`
       );
 
-      let connectedCount = 0;
-      let room1MessageReceived = false;
+      let joinedCount = 0;
       let receivedIncorrectMessage = false;
 
-      const checkAllConnected = () => {
-        connectedCount++;
-        if (connectedCount === 2) {
+      const checkAllJoined = () => {
+        joinedCount++;
+        if (joinedCount === 2) {
           // Submit vote in room1 only
           room1User.send(JSON.stringify({ type: "submit-vote", value: "5" }));
         }
@@ -599,9 +604,10 @@ describe("Multiple Simultaneous Rooms", () => {
       room1User.on("message", (data) => {
         const message = JSON.parse(data.toString());
         if (message.type === "connected") {
-          checkAllConnected();
+          room1User.send(JSON.stringify({ type: "join-session", participantName: "R1 User 1" }));
+        } else if (message.type === "session-state") {
+          checkAllJoined();
         } else if (message.type === "vote-submitted") {
-          room1MessageReceived = true;
           // Give time for any potential message leak
           setTimeout(() => {
             expect(receivedIncorrectMessage).toBe(false);
@@ -615,7 +621,9 @@ describe("Multiple Simultaneous Rooms", () => {
       room2User.on("message", (data) => {
         const message = JSON.parse(data.toString());
         if (message.type === "connected") {
-          checkAllConnected();
+          room2User.send(JSON.stringify({ type: "join-session", participantName: "R2 User 1" }));
+        } else if (message.type === "session-state") {
+          checkAllJoined();
         } else if (message.type === "vote-submitted") {
           // This should never happen - room2 shouldn't receive room1's vote message
           receivedIncorrectMessage = true;
