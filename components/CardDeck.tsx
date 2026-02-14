@@ -71,7 +71,8 @@ export function CardDeck({
             disabled={disabled}
             tabIndex={index === focusedIndex ? 0 : -1}
             className={`
-              aspect-[2/3] rounded-lg border-2 font-semibold text-xl sm:text-lg
+              aspect-[3/4] sm:aspect-[2/3] rounded-lg border-2 font-bold sm:font-semibold text-2xl sm:text-lg
+              shadow-sm sm:shadow-none
               transition-all duration-200
               hover:scale-105 active:scale-95
               disabled:opacity-50 disabled:cursor-not-allowed disabled:hover:scale-100
@@ -79,7 +80,7 @@ export function CardDeck({
               ${
                 selectedValue === value
                   ? "border-primary bg-primary text-primary-foreground shadow-lg scale-105"
-                  : "border-muted-foreground/25 sm:border-border bg-card hover:border-primary/50 hover:bg-muted"
+                  : "border-foreground/20 sm:border-border bg-card hover:border-primary/50 hover:bg-muted"
               }
             `}
             role="radio"

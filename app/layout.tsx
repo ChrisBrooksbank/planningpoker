@@ -41,7 +41,7 @@ export default function RootLayout({
         </a>
         <script
           dangerouslySetInnerHTML={{
-            __html: `if('serviceWorker' in navigator){navigator.serviceWorker.register('/sw.js')}`,
+            __html: `if('serviceWorker' in navigator){navigator.serviceWorker.getRegistrations().then(function(regs){regs.forEach(function(r){r.unregister()})})}`,
           }}
         />
         <ThemeProvider defaultTheme="system" storageKey="planning-poker-theme">
