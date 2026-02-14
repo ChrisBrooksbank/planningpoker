@@ -55,7 +55,7 @@ export function VoteResults({
                 className="flex items-center justify-between p-3 rounded-md bg-muted"
                 aria-label={`${participantName} voted ${getVoteLabel(vote.value)}`}
               >
-                <span className="font-medium truncate max-w-[200px]" title={participantName}>
+                <span className="font-medium truncate max-w-[140px] sm:max-w-[200px]" title={participantName}>
                   {participantName}
                 </span>
                 <span
@@ -78,34 +78,34 @@ export function VoteResults({
       {/* Statistics section */}
       <div>
         <h3 className="text-lg font-semibold mb-3">Statistics</h3>
-        <div className="grid grid-cols-2 gap-4">
-          <div className="p-4 rounded-md bg-muted" role="group" aria-label={`Average: ${statistics.average !== null ? statistics.average.toFixed(1) : "N/A"}`}>
+        <div className="grid grid-cols-2 gap-2 sm:gap-4">
+          <div className="p-2.5 sm:p-4 rounded-md bg-muted" role="group" aria-label={`Average: ${statistics.average !== null ? statistics.average.toFixed(1) : "N/A"}`}>
             <p className="text-sm text-muted-foreground mb-1">Average</p>
-            <p className="text-2xl font-bold">
+            <p className="text-xl sm:text-2xl font-bold">
               {statistics.average !== null
                 ? statistics.average.toFixed(1)
                 : "N/A"}
             </p>
           </div>
-          <div className="p-4 rounded-md bg-muted" role="group" aria-label={`Most Common: ${statistics.mode !== null ? (statistics.mode === "coffee" ? "Coffee break" : statistics.mode) : "N/A"}`}>
+          <div className="p-2.5 sm:p-4 rounded-md bg-muted" role="group" aria-label={`Most Common: ${statistics.mode !== null ? (statistics.mode === "coffee" ? "Coffee break" : statistics.mode) : "N/A"}`}>
             <p className="text-sm text-muted-foreground mb-1">Most Common</p>
-            <p className="text-2xl font-bold">
+            <p className="text-xl sm:text-2xl font-bold">
               {statistics.mode !== null
                 ? <VoteValueDisplay value={statistics.mode} />
                 : "N/A"}
             </p>
           </div>
-          <div className="p-4 rounded-md bg-muted" role="group" aria-label={`Range: ${statistics.min !== null && statistics.max !== null ? `${statistics.min} - ${statistics.max}` : "N/A"}`}>
+          <div className="p-2.5 sm:p-4 rounded-md bg-muted" role="group" aria-label={`Range: ${statistics.min !== null && statistics.max !== null ? `${statistics.min} - ${statistics.max}` : "N/A"}`}>
             <p className="text-sm text-muted-foreground mb-1">Range</p>
-            <p className="text-2xl font-bold">
+            <p className="text-xl sm:text-2xl font-bold">
               {statistics.min !== null && statistics.max !== null
                 ? `${statistics.min} - ${statistics.max}`
                 : "N/A"}
             </p>
           </div>
-          <div className="p-4 rounded-md bg-muted" role="group" aria-label={`Spread: ${statistics.range !== null ? statistics.range : "N/A"}`}>
+          <div className="p-2.5 sm:p-4 rounded-md bg-muted" role="group" aria-label={`Spread: ${statistics.range !== null ? statistics.range : "N/A"}`}>
             <p className="text-sm text-muted-foreground mb-1">Spread</p>
-            <p className="text-2xl font-bold">
+            <p className="text-xl sm:text-2xl font-bold">
               {statistics.range !== null ? statistics.range : "N/A"}
             </p>
           </div>

@@ -116,11 +116,11 @@ export default function Home() {
 
   if (mode === "landing") {
     return (
-      <main id="main-content" className="flex min-h-screen flex-col items-center justify-center p-8">
-        <div className="w-full max-w-md space-y-8">
+      <main id="main-content" className="flex min-h-screen flex-col items-center justify-center p-4 sm:p-8">
+        <div className="w-full max-w-md space-y-6 sm:space-y-8">
           <div className="text-center">
-            <h1 className="text-4xl font-bold mb-4">Planning Poker</h1>
-            <p className="text-lg text-muted-foreground">
+            <h1 className="text-3xl sm:text-4xl font-bold mb-3 sm:mb-4">Planning Poker</h1>
+            <p className="text-base sm:text-lg text-muted-foreground">
               Real-time collaborative story point estimation
             </p>
           </div>
@@ -147,8 +147,8 @@ export default function Home() {
 
   if (mode === "create") {
     return (
-      <main id="main-content" className="flex min-h-screen flex-col items-center justify-center p-8">
-        <div className="w-full max-w-md space-y-8">
+      <main id="main-content" className="flex min-h-screen flex-col items-center justify-center p-4 sm:p-8">
+        <div className="w-full max-w-md space-y-6 sm:space-y-8">
           <button
             onClick={() => {
               setMode("landing");
@@ -236,8 +236,8 @@ export default function Home() {
 
   // Join mode
   return (
-    <main id="main-content" className="flex min-h-screen flex-col items-center justify-center p-8">
-      <div className="w-full max-w-md space-y-8">
+    <main id="main-content" className="flex min-h-screen flex-col items-center justify-center p-4 sm:p-8">
+      <div className="w-full max-w-md space-y-6 sm:space-y-8">
         <button
           onClick={() => {
             setMode("landing");

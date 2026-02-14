@@ -13,8 +13,8 @@ export function ParticipantList({
 }: ParticipantListProps) {
   if (participants.length === 0) {
     return (
-      <div className="rounded-lg border border-border bg-card p-4">
-        <h2 className="text-lg font-semibold mb-4">Participants</h2>
+      <div className="rounded-lg border border-border bg-card p-3 sm:p-4">
+        <h2 className="text-base sm:text-lg font-semibold mb-2 sm:mb-4">Participants</h2>
         <p className="text-sm text-muted-foreground">No participants yet</p>
       </div>
     );
@@ -23,14 +23,14 @@ export function ParticipantList({
   const votedCount = participants.filter(p => votedUserIds.has(p.id)).length;
 
   return (
-    <div className="rounded-lg border border-border bg-card p-4">
-      <h2 className="text-lg font-semibold mb-4">
+    <div className="rounded-lg border border-border bg-card p-3 sm:p-4">
+      <h2 className="text-base sm:text-lg font-semibold mb-2 sm:mb-4">
         Participants ({participants.length})
       </h2>
       <span role="status" aria-live="polite" className="sr-only">
         {participants.length} participants, {votedCount} voted
       </span>
-      <ul className="space-y-2" aria-label="Participant list">
+      <ul className="space-y-2 max-h-[180px] lg:max-h-none overflow-y-auto" aria-label="Participant list">
         {participants.map((participant) => {
           const isYou = participant.id === currentUserId;
           const hasVoted = votedUserIds.has(participant.id);
@@ -52,7 +52,7 @@ export function ParticipantList({
               aria-label={ariaLabel}
             >
               <div className="flex items-center gap-2">
-                <span className="text-base font-medium truncate max-w-[160px]" title={participant.name}>
+                <span className="text-base font-medium truncate max-w-[120px] sm:max-w-[160px]" title={participant.name}>
                   {participant.name}
                 </span>
                 {isYou && (

@@ -310,8 +310,8 @@ export default function SessionPage() {
   // Show join form if user has no credentials for this room
   if (needsName) {
     return (
-      <main id="main-content" className="flex min-h-screen flex-col items-center justify-center p-8">
-        <div className="w-full max-w-md space-y-8">
+      <main id="main-content" className="flex min-h-screen flex-col items-center justify-center p-4 sm:p-8">
+        <div className="w-full max-w-md space-y-6 sm:space-y-8">
           <div className="text-center">
             <h1 className="text-2xl font-bold mb-2">Join Planning Poker</h1>
             <p className="text-sm text-muted-foreground">
@@ -365,7 +365,7 @@ export default function SessionPage() {
   // Don't render until we have a userId
   if (!isInitialized || !userId) {
     return (
-      <main id="main-content" className="flex min-h-screen flex-col items-center justify-center p-8">
+      <main id="main-content" className="flex min-h-screen flex-col items-center justify-center p-4 sm:p-8">
         <div className="text-center space-y-4">
           <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-primary mx-auto" aria-hidden="true"></div>
           <p className="text-muted-foreground" role="status" aria-live="polite">Loading session...</p>
@@ -375,12 +375,12 @@ export default function SessionPage() {
   }
 
   return (
-    <main id="main-content" className="flex min-h-screen flex-col p-8">
+    <main id="main-content" className="flex min-h-screen flex-col p-4 sm:p-8">
       <div className="w-full max-w-6xl mx-auto">
-        <div className="mb-8">
-          <div className="flex items-center justify-between">
+        <div className="mb-4 sm:mb-8">
+          <div className="flex items-start justify-between gap-2">
             <div>
-              <h1 className="text-3xl font-bold mb-2">Planning Poker</h1>
+              <h1 className="text-xl sm:text-3xl font-bold mb-1 sm:mb-2">Planning Poker</h1>
               <div className="flex items-center gap-2">
                 <p className="text-sm text-muted-foreground">
                   Room Code:{" "}
@@ -401,7 +401,7 @@ export default function SessionPage() {
                 </span>
               </div>
             </div>
-            <div className="flex items-center gap-2">
+            <div className="flex items-center gap-1.5 sm:gap-2 shrink-0">
               <div
                 className={`h-3 w-3 rounded-full ${
                   isConnected
@@ -412,7 +412,7 @@ export default function SessionPage() {
                 }`}
                 aria-hidden="true"
               />
-              <span className="text-sm text-muted-foreground" role="status" aria-live="polite">
+              <span className="text-xs sm:text-sm text-muted-foreground" role="status" aria-live="polite">
                 {isConnected
                   ? "Connected"
                   : isConnecting
@@ -456,9 +456,9 @@ export default function SessionPage() {
         </div>
 
         {/* Main session content */}
-        <div className="grid grid-cols-1 lg:grid-cols-3 gap-6">
+        <div className="grid grid-cols-1 lg:grid-cols-3 gap-4 sm:gap-6">
           {/* Participant list */}
-          <div className="lg:col-span-1">
+          <div className="lg:col-span-1 order-2 lg:order-1">
             <ParticipantList
               participants={participants}
               currentUserId={userId}
@@ -467,10 +467,10 @@ export default function SessionPage() {
           </div>
 
           {/* Voting area */}
-          <div className="lg:col-span-2 space-y-6">
+          <div className="lg:col-span-2 space-y-4 sm:space-y-6 order-1 lg:order-2">
             {/* Topic & moderator controls */}
-            <div className="rounded-lg border border-border bg-card p-6">
-              <h2 className="text-lg font-semibold mb-4">Topic</h2>
+            <div className="rounded-lg border border-border bg-card p-3 sm:p-6">
+              <h2 className="text-base sm:text-lg font-semibold mb-2 sm:mb-4">Topic</h2>
               {isModerator ? (
                 <div className="space-y-3">
                   <input
@@ -515,8 +515,8 @@ export default function SessionPage() {
 
             {/* Vote results (shown after reveal, above cards) */}
             {isRevealed && statistics && (
-              <div ref={resultsRef} tabIndex={-1} aria-label="Voting results revealed" className="rounded-lg border border-border bg-card p-6 focus:outline-none">
-                <h2 className="text-lg font-semibold mb-4">Results</h2>
+              <div ref={resultsRef} tabIndex={-1} aria-label="Voting results revealed" className="rounded-lg border border-border bg-card p-3 sm:p-6 focus:outline-none">
+                <h2 className="text-base sm:text-lg font-semibold mb-2 sm:mb-4">Results</h2>
                 <VoteResults
                   votes={revealedVotes}
                   participants={participants}
@@ -537,7 +537,7 @@ export default function SessionPage() {
             />
 
             {/* Card deck */}
-            <div className="rounded-lg border border-border bg-card p-6">
+            <div className="rounded-lg border border-border bg-card p-3 sm:p-6">
               <CardDeck
                 selectedValue={selectedCard}
                 onSelectCard={handleSelectCard}

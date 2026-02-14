@@ -55,11 +55,11 @@ export function CardDeck({
 
   return (
     <div className="w-full">
-      <h2 className="text-lg font-semibold mb-4">Select Your Estimate</h2>
+      <h2 className="text-base sm:text-lg font-semibold mb-2 sm:mb-4">Select Your Estimate</h2>
       <div
         role="radiogroup"
         aria-label="Estimation cards"
-        className="grid grid-cols-5 gap-3"
+        className="grid grid-cols-5 gap-2 sm:gap-3"
         onKeyDown={handleKeyDown}
       >
         {CARD_VALUES.map((value, index) => (
@@ -71,7 +71,7 @@ export function CardDeck({
             disabled={disabled}
             tabIndex={index === focusedIndex ? 0 : -1}
             className={`
-              aspect-[2/3] rounded-lg border-2 font-semibold text-lg
+              aspect-[2/3] rounded-lg border-2 font-semibold text-base sm:text-lg
               transition-all duration-200
               hover:scale-105 active:scale-95
               disabled:opacity-50 disabled:cursor-not-allowed disabled:hover:scale-100
@@ -91,7 +91,7 @@ export function CardDeck({
         ))}
       </div>
       {selectedValue && (
-        <p className="mt-4 text-sm text-muted-foreground" aria-live="polite">
+        <p className="mt-2 sm:mt-4 text-sm text-muted-foreground" aria-live="polite">
           Selected: <span className="font-semibold">{selectedValue}</span>
         </p>
       )}
