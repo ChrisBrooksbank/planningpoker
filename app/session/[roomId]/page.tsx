@@ -310,7 +310,7 @@ export default function SessionPage() {
   // Show join form if user has no credentials for this room
   if (needsName) {
     return (
-      <main className="flex min-h-screen flex-col items-center justify-center p-8">
+      <main id="main-content" className="flex min-h-screen flex-col items-center justify-center p-8">
         <div className="w-full max-w-md space-y-8">
           <div className="text-center">
             <h1 className="text-2xl font-bold mb-2">Join Planning Poker</h1>
@@ -365,7 +365,7 @@ export default function SessionPage() {
   // Don't render until we have a userId
   if (!isInitialized || !userId) {
     return (
-      <main className="flex min-h-screen flex-col items-center justify-center p-8">
+      <main id="main-content" className="flex min-h-screen flex-col items-center justify-center p-8">
         <div className="text-center space-y-4">
           <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-primary mx-auto" aria-hidden="true"></div>
           <p className="text-muted-foreground" role="status" aria-live="polite">Loading session...</p>
@@ -375,7 +375,7 @@ export default function SessionPage() {
   }
 
   return (
-    <main className="flex min-h-screen flex-col p-8">
+    <main id="main-content" className="flex min-h-screen flex-col p-8">
       <div className="w-full max-w-6xl mx-auto">
         <div className="mb-8">
           <div className="flex items-center justify-between">

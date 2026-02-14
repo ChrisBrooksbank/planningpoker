@@ -48,7 +48,7 @@ describe("CardDeck", () => {
 
     const card8 = screen.getByLabelText("Select 8");
     expect(card8).toHaveClass("border-primary", "bg-primary");
-    expect(card8).toHaveAttribute("aria-pressed", "true");
+    expect(card8).toHaveAttribute("aria-checked", "true");
   });
 
   it("does not highlight unselected cards", () => {
@@ -57,7 +57,7 @@ describe("CardDeck", () => {
 
     const card5 = screen.getByLabelText("Select 5");
     expect(card5).not.toHaveClass("border-primary", "bg-primary");
-    expect(card5).toHaveAttribute("aria-pressed", "false");
+    expect(card5).toHaveAttribute("aria-checked", "false");
   });
 
   it("shows selected value text when a card is selected", () => {
@@ -86,7 +86,7 @@ describe("CardDeck", () => {
 
     // Initially, card 5 is selected
     expect(screen.getByLabelText("Select 5")).toHaveAttribute(
-      "aria-pressed",
+      "aria-checked",
       "true"
     );
 
@@ -100,11 +100,11 @@ describe("CardDeck", () => {
 
     // Now card 8 should be selected
     expect(screen.getByLabelText("Select 8")).toHaveAttribute(
-      "aria-pressed",
+      "aria-checked",
       "true"
     );
     expect(screen.getByLabelText("Select 5")).toHaveAttribute(
-      "aria-pressed",
+      "aria-checked",
       "false"
     );
   });
@@ -138,8 +138,8 @@ describe("CardDeck", () => {
     const onSelectCard = vi.fn();
     render(<CardDeck selectedValue={null} onSelectCard={onSelectCard} />);
 
-    const buttons = screen.getAllByRole("button");
-    expect(buttons).toHaveLength(CARD_VALUES.length);
+    const radios = screen.getAllByRole("radio");
+    expect(radios).toHaveLength(CARD_VALUES.length);
   });
 
   it("applies hover styles to unselected cards", () => {
@@ -148,5 +148,100 @@ describe("CardDeck", () => {
 
     const card3 = screen.getByLabelText("Select 3");
     expect(card3).toHaveClass("hover:border-primary/50", "hover:bg-muted");
+  });
+
+  it("has radiogroup role with aria-label on container", () => {
+    const onSelectCard = vi.fn();
+    render(<CardDeck selectedValue={null} onSelectCard={onSelectCard} />);
+
+    const radiogroup = screen.getByRole("radiogroup");
+    expect(radiogroup).toHaveAttribute("aria-label", "Estimation cards");
+  });
+
+  it("gives only the first card tabIndex=0 by default", () => {
+    const onSelectCard = vi.fn();
+    render(<CardDeck selectedValue={null} onSelectCard={onSelectCard} />);
+
+    const radios = screen.getAllByRole("radio");
+    expect(radios[0]).toHaveAttribute("tabindex", "0");
+    radios.slice(1).forEach((radio) => {
+      expect(radio).toHaveAttribute("tabindex", "-1");
+    });
+  });
+
+  it("moves focus with ArrowRight key (wrapping)", async () => {
+    const user = userEvent.setup();
+    const onSelectCard = vi.fn();
+    render(<CardDeck selectedValue={null} onSelectCard={onSelectCard} />);
+
+    const radios = screen.getAllByRole("radio");
+    // Focus the first card
+    radios[0].focus();
+    expect(radios[0]).toHaveFocus();
+
+    // ArrowRight moves to second card
+    await user.keyboard("{ArrowRight}");
+    expect(radios[1]).toHaveFocus();
+
+    // ArrowRight again moves to third
+    await user.keyboard("{ArrowRight}");
+    expect(radios[2]).toHaveFocus();
+  });
+
+  it("moves focus with ArrowLeft key (wrapping)", async () => {
+    const user = userEvent.setup();
+    const onSelectCard = vi.fn();
+    render(<CardDeck selectedValue={null} onSelectCard={onSelectCard} />);
+
+    const radios = screen.getAllByRole("radio");
+    // Focus the first card
+    radios[0].focus();
+
+    // ArrowLeft wraps to last card
+    await user.keyboard("{ArrowLeft}");
+    expect(radios[radios.length - 1]).toHaveFocus();
+  });
+
+  it("moves focus to first card with Home key", async () => {
+    const user = userEvent.setup();
+    const onSelectCard = vi.fn();
+    render(<CardDeck selectedValue={null} onSelectCard={onSelectCard} />);
+
+    const radios = screen.getAllByRole("radio");
+    // Focus the first card, move right twice
+    radios[0].focus();
+    await user.keyboard("{ArrowRight}");
+    await user.keyboard("{ArrowRight}");
+    expect(radios[2]).toHaveFocus();
+
+    // Home goes back to first
+    await user.keyboard("{Home}");
+    expect(radios[0]).toHaveFocus();
+  });
+
+  it("moves focus to last card with End key", async () => {
+    const user = userEvent.setup();
+    const onSelectCard = vi.fn();
+    render(<CardDeck selectedValue={null} onSelectCard={onSelectCard} />);
+
+    const radios = screen.getAllByRole("radio");
+    radios[0].focus();
+
+    await user.keyboard("{End}");
+    expect(radios[radios.length - 1]).toHaveFocus();
+  });
+
+  it("selects card on Enter key", async () => {
+    const user = userEvent.setup();
+    const onSelectCard = vi.fn();
+    render(<CardDeck selectedValue={null} onSelectCard={onSelectCard} />);
+
+    const radios = screen.getAllByRole("radio");
+    // Focus first card, move to second, press Enter
+    radios[0].focus();
+    await user.keyboard("{ArrowRight}");
+    await user.keyboard("{Enter}");
+
+    expect(onSelectCard).toHaveBeenCalledWith(CARD_VALUES[1]);
   });
 });

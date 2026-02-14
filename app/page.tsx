@@ -116,7 +116,7 @@ export default function Home() {
 
   if (mode === "landing") {
     return (
-      <main className="flex min-h-screen flex-col items-center justify-center p-8">
+      <main id="main-content" className="flex min-h-screen flex-col items-center justify-center p-8">
         <div className="w-full max-w-md space-y-8">
           <div className="text-center">
             <h1 className="text-4xl font-bold mb-4">Planning Poker</h1>
@@ -147,7 +147,7 @@ export default function Home() {
 
   if (mode === "create") {
     return (
-      <main className="flex min-h-screen flex-col items-center justify-center p-8">
+      <main id="main-content" className="flex min-h-screen flex-col items-center justify-center p-8">
         <div className="w-full max-w-md space-y-8">
           <button
             onClick={() => {
@@ -236,7 +236,7 @@ export default function Home() {
 
   // Join mode
   return (
-    <main className="flex min-h-screen flex-col items-center justify-center p-8">
+    <main id="main-content" className="flex min-h-screen flex-col items-center justify-center p-8">
       <div className="w-full max-w-md space-y-8">
         <button
           onClick={() => {
