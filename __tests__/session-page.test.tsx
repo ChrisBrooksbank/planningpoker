@@ -608,6 +608,7 @@ describe("SessionPage", () => {
         sessionName: "Test Session",
         moderatorId: "user123",
         isRevealed: false,
+        isVotingOpen: true,
         participants: [
           {
             id: "user123",
@@ -719,6 +720,7 @@ describe("SessionPage", () => {
         sessionName: "Test Session",
         moderatorId: "user123",
         isRevealed: false,
+        isVotingOpen: true,
         participants: [
           {
             id: "user456",
@@ -849,7 +851,34 @@ describe("SessionPage", () => {
       return null;
     });
 
+    let onMessageCallback: (message: unknown) => void = () => {};
+    (useWebSocket as ReturnType<typeof vi.fn>).mockImplementation((config) => {
+      onMessageCallback = config.onMessage;
+      return {
+        isConnected: true,
+        isConnecting: false,
+        error: null,
+        sendMessage: mockSendMessage,
+        reconnect: mockReconnect,
+        clearError: vi.fn(),
+      };
+    });
+
     render(<SessionPage />);
+
+    // Open voting by simulating a session-state with isVotingOpen: true
+    await act(async () => {
+      onMessageCallback({
+        type: "session-state",
+        sessionId: "TEST123",
+        sessionName: "Test Session",
+        moderatorId: "moderator123",
+        isRevealed: false,
+        isVotingOpen: true,
+        participants: [],
+        votes: {},
+      });
+    });
 
     await waitFor(() => {
       expect(screen.getByText("Select Your Estimate")).toBeInTheDocument();
@@ -879,7 +908,34 @@ describe("SessionPage", () => {
       return null;
     });
 
+    let onMessageCallback: (message: unknown) => void = () => {};
+    (useWebSocket as ReturnType<typeof vi.fn>).mockImplementation((config) => {
+      onMessageCallback = config.onMessage;
+      return {
+        isConnected: true,
+        isConnecting: false,
+        error: null,
+        sendMessage: mockSendMessage,
+        reconnect: mockReconnect,
+        clearError: vi.fn(),
+      };
+    });
+
     render(<SessionPage />);
+
+    // Open voting
+    await act(async () => {
+      onMessageCallback({
+        type: "session-state",
+        sessionId: "TEST123",
+        sessionName: "Test Session",
+        moderatorId: "moderator123",
+        isRevealed: false,
+        isVotingOpen: true,
+        participants: [],
+        votes: {},
+      });
+    });
 
     await waitFor(() => {
       expect(screen.getByText("Select Your Estimate")).toBeInTheDocument();
@@ -977,6 +1033,7 @@ describe("SessionPage", () => {
         sessionName: "Test Session",
         moderatorId: "user123",
         isRevealed: false,
+        isVotingOpen: true,
         participants: [
           {
             id: "user123",
@@ -1064,6 +1121,7 @@ describe("SessionPage", () => {
           sessionName: "Test Session",
           moderatorId: "moderator123",
           isRevealed: false,
+          isVotingOpen: true,
           participants: [],
           votes: {},
         });
@@ -1113,6 +1171,7 @@ describe("SessionPage", () => {
           moderatorId: "moderator123",
           currentTopic: "Build login page",
           isRevealed: false,
+          isVotingOpen: true,
           participants: [],
           votes: {},
         });
@@ -1163,6 +1222,7 @@ describe("SessionPage", () => {
           sessionName: "Test Session",
           moderatorId: "moderator123",
           isRevealed: false,
+          isVotingOpen: true,
           participants: [],
           votes: {},
         });
@@ -1209,6 +1269,7 @@ describe("SessionPage", () => {
           sessionName: "Test Session",
           moderatorId: "moderator123",
           isRevealed: false,
+          isVotingOpen: true,
           participants: [],
           votes: {},
         });
@@ -1271,6 +1332,7 @@ describe("SessionPage", () => {
           moderatorId: "moderator123",
           currentTopic: "Old topic",
           isRevealed: false,
+          isVotingOpen: true,
           participants: [],
           votes: {},
         });
@@ -1329,6 +1391,7 @@ describe("SessionPage", () => {
           sessionName: "Test Session",
           moderatorId: "moderator123",
           isRevealed: false,
+          isVotingOpen: true,
           participants: [],
           votes: {},
         });
@@ -1378,6 +1441,7 @@ describe("SessionPage", () => {
           sessionName: "Test Session",
           moderatorId: "moderator123",
           isRevealed: false,
+          isVotingOpen: true,
           participants: [],
           votes: {},
         });
@@ -1427,6 +1491,7 @@ describe("SessionPage", () => {
           moderatorId: "moderator123",
           currentTopic: "Existing topic",
           isRevealed: false,
+          isVotingOpen: true,
           participants: [],
           votes: {},
         });
@@ -1478,6 +1543,7 @@ describe("SessionPage", () => {
           sessionName: "Test Session",
           moderatorId: "moderator123",
           isRevealed: false,
+          isVotingOpen: true,
           participants: [],
           votes: {},
         });
@@ -1541,6 +1607,7 @@ describe("SessionPage", () => {
           sessionName: "Test Session",
           moderatorId: "moderator123",
           isRevealed: false,
+          isVotingOpen: true,
           participants: [],
           votes: {},
         });
@@ -1586,6 +1653,7 @@ describe("SessionPage", () => {
           sessionName: "Test Session",
           moderatorId: "moderator123",
           isRevealed: false,
+          isVotingOpen: true,
           participants: [],
           votes: {},
         });
@@ -1635,6 +1703,7 @@ describe("SessionPage", () => {
           sessionName: "Test Session",
           moderatorId: "moderator123",
           isRevealed: true,
+          isVotingOpen: false,
           participants: [],
           votes: {},
         });
@@ -1685,6 +1754,7 @@ describe("SessionPage", () => {
           sessionName: "Test Session",
           moderatorId: "moderator123",
           isRevealed: false,
+          isVotingOpen: true,
           participants: [],
           votes: {},
         });
@@ -1738,6 +1808,7 @@ describe("SessionPage", () => {
           sessionName: "Test Session",
           moderatorId: "moderator123",
           isRevealed: false,
+          isVotingOpen: true,
           participants: [],
           votes: {},
         });
@@ -1783,6 +1854,7 @@ describe("SessionPage", () => {
           sessionName: "Test Session",
           moderatorId: "moderator123",
           isRevealed: false,
+          isVotingOpen: true,
           participants: [],
           votes: {},
         });
@@ -1851,6 +1923,7 @@ describe("SessionPage", () => {
           sessionName: "Test Session",
           moderatorId: "moderator123",
           isRevealed: false,
+          isVotingOpen: true,
           participants: [
             {
               id: "user123",
@@ -1936,6 +2009,7 @@ describe("SessionPage", () => {
           sessionName: "Test Session",
           moderatorId: "moderator123",
           isRevealed: false,
+          isVotingOpen: true,
           participants: [
             {
               id: "user123",
@@ -2033,6 +2107,7 @@ describe("SessionPage", () => {
           sessionName: "Test Session",
           moderatorId: "moderator123",
           isRevealed: false,
+          isVotingOpen: true,
           participants: [
             {
               id: "user123",
@@ -2105,6 +2180,7 @@ describe("SessionPage", () => {
           sessionName: "Test Session",
           moderatorId: "moderator123",
           isRevealed: false,
+          isVotingOpen: true,
           participants: [],
           votes: {},
         });
@@ -2181,6 +2257,7 @@ describe("SessionPage", () => {
           moderatorId: "moderator123",
           currentTopic: "Test topic",
           isRevealed: false,
+          isVotingOpen: true,
           participants: [],
           votes: {},
         });
@@ -2286,6 +2363,7 @@ describe("SessionPage", () => {
           sessionName: "Test Session",
           moderatorId: "moderator123",
           isRevealed: false,
+          isVotingOpen: true,
           participants: [],
           votes: {},
         });
@@ -2332,6 +2410,7 @@ describe("SessionPage", () => {
           sessionName: "Test Session",
           moderatorId: "moderator123",
           isRevealed: false,
+          isVotingOpen: true,
           participants: [
             {
               id: "voter123",
@@ -2424,6 +2503,7 @@ describe("SessionPage", () => {
           sessionName: "Test Session",
           moderatorId: "moderator123",
           isRevealed: false,
+          isVotingOpen: true,
           participants: [
             {
               id: "moderator123",
@@ -2513,6 +2593,7 @@ describe("SessionPage", () => {
           sessionName: "Test Session",
           moderatorId: "moderator123",
           isRevealed: false,
+          isVotingOpen: true,
           participants: [],
           votes: {},
         });
@@ -2579,6 +2660,7 @@ describe("SessionPage", () => {
           sessionName: "Test Session",
           moderatorId: "moderator123",
           isRevealed: false,
+          isVotingOpen: true,
           participants: [],
           votes: {},
         });
@@ -2643,6 +2725,7 @@ describe("SessionPage", () => {
           sessionName: "Test Session",
           moderatorId: "moderator123",
           isRevealed: false,
+          isVotingOpen: true,
           participants: [],
           votes: {},
         });
@@ -2693,6 +2776,7 @@ describe("SessionPage", () => {
           sessionName: "Test Session",
           moderatorId: "moderator123",
           isRevealed: false,
+          isVotingOpen: true,
           participants: [],
           votes: {},
         });
@@ -2746,6 +2830,7 @@ describe("SessionPage", () => {
           sessionName: "Test Session",
           moderatorId: "moderator123",
           isRevealed: false,
+          isVotingOpen: true,
           participants: [],
           votes: {},
         });
@@ -2791,6 +2876,7 @@ describe("SessionPage", () => {
           sessionName: "Test Session",
           moderatorId: "moderator123",
           isRevealed: false,
+          isVotingOpen: true,
           participants: [
             {
               id: "user123",

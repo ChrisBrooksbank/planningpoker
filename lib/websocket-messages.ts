@@ -83,6 +83,7 @@ export interface SessionStateMessage extends BaseMessage {
   moderatorId: string;
   currentTopic?: string;
   isRevealed: boolean;
+  isVotingOpen: boolean;
   participants: Participant[];
   votes: Record<string, { hasVoted: boolean; value?: CardValue }>; // value only if revealed
   statistics?: VoteStatistics; // only if revealed

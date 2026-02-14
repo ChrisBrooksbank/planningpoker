@@ -250,6 +250,12 @@ export class PlanningPokerWebSocketServer {
       return;
     }
 
+    // Reject votes when voting is not open
+    if (!session.session.isVotingOpen) {
+      this.sendError(ws, "VOTING_NOT_OPEN", "Voting is not open");
+      return;
+    }
+
     // Reject votes after reveal
     if (session.session.isRevealed) {
       this.sendError(ws, "VOTES_REVEALED", "Cannot vote after votes are revealed");
@@ -425,6 +431,7 @@ export class PlanningPokerWebSocketServer {
       moderatorId: session.session.moderatorId,
       currentTopic: session.session.currentTopic,
       isRevealed: session.session.isRevealed,
+      isVotingOpen: session.session.isVotingOpen,
       participants: session.participants,
       votes,
       statistics: session.session.isRevealed

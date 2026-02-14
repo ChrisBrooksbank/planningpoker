@@ -35,6 +35,9 @@ describe("Participant Join/Leave During Active Voting", () => {
     );
     roomId = session.session.id;
 
+    // Start a round so voting is open
+    sessionStorage.startNewRound(roomId);
+
     return new Promise<void>((resolve) => {
       httpServer = createServer();
       httpServer.listen(0, () => {

@@ -29,6 +29,9 @@ describe("WebSocket Message Protocol", () => {
     );
     roomId = session.session.id;
 
+    // Start a round so isVotingOpen is true for most tests
+    sessionStorage.startNewRound(roomId);
+
     return new Promise<void>((resolve) => {
       httpServer = createServer();
       httpServer.listen(0, () => {
@@ -238,6 +241,40 @@ describe("WebSocket Message Protocol", () => {
               ws.close();
               resolve();
             }
+          }
+        });
+      });
+    });
+
+    it("should reject vote when voting is not open", () => {
+      // Create a fresh session without starting a round
+      const freshSession = sessionStorage.createSession(
+        "Fresh Session",
+        "mod-1",
+        "Mod"
+      );
+      const freshRoomId = freshSession.session.id;
+
+      return new Promise<void>((resolve) => {
+        const ws = new WebSocket(
+          `ws://localhost:${port}/ws?roomId=${freshRoomId}&userId=mod-1`
+        );
+
+        let joined = false;
+
+        ws.on("message", (data) => {
+          const message = JSON.parse(data.toString());
+          if (message.type === "connected") {
+            ws.send(JSON.stringify({ type: "join-session", participantName: "Mod" }));
+          } else if (message.type === "session-state" && !joined) {
+            joined = true;
+            // Try to vote before round starts
+            ws.send(JSON.stringify({ type: "submit-vote", value: "5" }));
+          } else if (message.type === "error") {
+            const msg = message as ErrorMessage;
+            expect(msg.code).toBe("VOTING_NOT_OPEN");
+            ws.close();
+            resolve();
           }
         });
       });

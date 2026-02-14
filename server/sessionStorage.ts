@@ -37,6 +37,7 @@ export class SessionStorage {
       moderatorId,
       currentTopic: undefined,
       isRevealed: false,
+      isVotingOpen: false,
     };
 
     const moderator: Participant = {
@@ -231,6 +232,7 @@ export class SessionStorage {
     }
 
     sessionState.session.isRevealed = true;
+    sessionState.session.isVotingOpen = false;
 
     // Calculate statistics
     const votes = Array.from(sessionState.votes.values());
@@ -293,6 +295,7 @@ export class SessionStorage {
 
     sessionState.votes.clear();
     sessionState.session.isRevealed = false;
+    sessionState.session.isVotingOpen = true;
     sessionState.statistics = null;
 
     return true;

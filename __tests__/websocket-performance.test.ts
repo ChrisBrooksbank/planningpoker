@@ -43,6 +43,7 @@ describe("WebSocket Performance - Real-Time Sync", () => {
         "Moderator"
       );
       const roomId = session.session.id;
+      sessionStorage.startNewRound(roomId);
       const userId1 = "user1";
       const userId2 = "user2";
 
@@ -126,6 +127,7 @@ describe("WebSocket Performance - Real-Time Sync", () => {
         "Moderator"
       );
       const roomId = session.session.id;
+      sessionStorage.startNewRound(roomId);
       const userId1 = "user1";
       const userId2 = "user2";
 
@@ -209,6 +211,7 @@ describe("WebSocket Performance - Real-Time Sync", () => {
         "Moderator"
       );
       const roomId = session.session.id;
+      sessionStorage.startNewRound(roomId);
       const userId1 = "user1";
       const userId2 = "user2";
 
@@ -296,6 +299,7 @@ describe("WebSocket Performance - Real-Time Sync", () => {
         "Moderator"
       );
       const roomId = session.session.id;
+      sessionStorage.startNewRound(roomId);
       const userId1 = "user1";
       const userId2 = "user2";
 
@@ -373,6 +377,7 @@ describe("WebSocket Performance - Real-Time Sync", () => {
         "Moderator"
       );
       const roomId = session.session.id;
+      sessionStorage.startNewRound(roomId);
       const userId1 = "user1";
       const userId2 = "user2";
 
@@ -444,6 +449,7 @@ describe("WebSocket Performance - Real-Time Sync", () => {
         "Moderator"
       );
       const roomId = session.session.id;
+      sessionStorage.startNewRound(roomId);
       const userId1 = "user1";
       const userId2 = "user2";
 

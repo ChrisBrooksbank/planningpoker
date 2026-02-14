@@ -30,6 +30,7 @@ export default function SessionPage() {
   const [topicInput, setTopicInput] = useState<string>("");
   const [moderatorId, setModeratorId] = useState<string | null>(null);
   const [isRevealed, setIsRevealed] = useState<boolean>(false);
+  const [isVotingOpen, setIsVotingOpen] = useState<boolean>(false);
   const [revealedVotes, setRevealedVotes] = useState<Record<string, Vote>>({});
   const [statistics, setStatistics] = useState<VoteStatistics | null>(null);
   const hasJoinedRef = useRef(false);
@@ -122,8 +123,9 @@ export default function SessionPage() {
         setModeratorId(message.moderatorId);
         setCurrentTopic(message.currentTopic || "");
         setTopicInput(message.currentTopic || "");
-        // Update reveal state
+        // Update reveal state and voting open state
         setIsRevealed(message.isRevealed);
+        setIsVotingOpen(message.isVotingOpen);
         // Rebuild votedUserIds from message.votes
         setVotedUserIds(new Set(Object.keys(message.votes)));
         // Restore revealed votes and statistics if isRevealed
@@ -186,6 +188,7 @@ export default function SessionPage() {
       case "votes-revealed":
         // Update reveal state when votes are revealed
         setIsRevealed(true);
+        setIsVotingOpen(false);
         setRevealedVotes(message.votes);
         setStatistics(message.statistics);
         break;
@@ -193,6 +196,7 @@ export default function SessionPage() {
       case "round-started":
         // Reset UI state for new voting round
         setIsRevealed(false);
+        setIsVotingOpen(true);
         setRevealedVotes({});
         setStatistics(null);
         setSelectedCard(null);
@@ -203,6 +207,7 @@ export default function SessionPage() {
         // Revert optimistic card selection on vote-related errors
         if (
           message.code === "VOTES_REVEALED" ||
+          message.code === "VOTING_NOT_OPEN" ||
           message.code === "INVALID_VOTE" ||
           message.code === "VOTE_FAILED" ||
           message.code === "NOT_A_PARTICIPANT"
@@ -515,12 +520,19 @@ export default function SessionPage() {
               </div>
             )}
 
+            {/* Waiting message when voting hasn't started */}
+            {!isVotingOpen && !isRevealed && (
+              <div className="rounded-lg border border-border bg-card p-6 text-center text-muted-foreground italic">
+                Waiting for moderator to start a voting round...
+              </div>
+            )}
+
             {/* Card deck */}
             <div className="rounded-lg border border-border bg-card p-6">
               <CardDeck
                 selectedValue={selectedCard}
                 onSelectCard={handleSelectCard}
-                disabled={!isConnected || isRevealed}
+                disabled={!isConnected || !isVotingOpen}
               />
             </div>
           </div>

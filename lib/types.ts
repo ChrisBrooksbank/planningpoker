@@ -8,6 +8,7 @@ export interface Session {
   moderatorId: string;
   currentTopic?: string;
   isRevealed: boolean;
+  isVotingOpen: boolean;
 }
 
 // User/Participant Types

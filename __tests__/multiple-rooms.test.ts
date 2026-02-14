@@ -38,6 +38,10 @@ describe("Multiple Simultaneous Rooms", () => {
     room1Id = session1.session.id;
     room2Id = session2.session.id;
 
+    // Start rounds so voting is open
+    sessionStorage.startNewRound(room1Id);
+    sessionStorage.startNewRound(room2Id);
+
     return new Promise<void>((resolve) => {
       httpServer = createServer();
       httpServer.listen(0, () => {

@@ -17,6 +17,7 @@ describe("SessionStorage", () => {
       expect(state.session.name).toBe("Team Standup");
       expect(state.session.moderatorId).toBe("user1");
       expect(state.session.isRevealed).toBe(false);
+      expect(state.session.isVotingOpen).toBe(false);
       expect(state.session.currentTopic).toBeUndefined();
     });
 
@@ -275,6 +276,7 @@ describe("SessionStorage", () => {
       const stats = storage.revealVotes(state.session.id);
 
       expect(state.session.isRevealed).toBe(true);
+      expect(state.session.isVotingOpen).toBe(false);
       expect(stats?.average).toBe(6);
       expect(stats?.mode).toBe("5");
       expect(stats?.min).toBe(5);
@@ -345,6 +347,7 @@ describe("SessionStorage", () => {
       expect(success).toBe(true);
       expect(state.votes.size).toBe(0);
       expect(state.session.isRevealed).toBe(false);
+      expect(state.session.isVotingOpen).toBe(true);
       expect(state.statistics).toBeNull();
     });
 
