@@ -9,6 +9,7 @@ import { CardDeck } from "@/components/CardDeck";
 import { VoteResults } from "@/components/VoteResults";
 import type { Participant, CardValue, Vote, VoteStatistics } from "@/lib/types";
 import { isValidParticipantName } from "@/lib/utils";
+import { SessionHint } from "@/components/SessionHint";
 import { nanoid } from "nanoid";
 
 export default function SessionPage() {
@@ -253,6 +254,8 @@ export default function SessionPage() {
 
   // Check if current user is moderator
   const isModerator = userId === moderatorId;
+  const moderatorName = participants.find(p => p.id === moderatorId)?.name ?? "the moderator";
+  const hasVoted = userId ? votedUserIds.has(userId) : false;
 
   // Handle connection events
   const handleConnect = () => {
@@ -520,12 +523,16 @@ export default function SessionPage() {
               </div>
             )}
 
-            {/* Waiting message when voting hasn't started */}
-            {!isVotingOpen && !isRevealed && (
-              <div className="rounded-lg border border-border bg-card p-6 text-center text-muted-foreground italic">
-                Waiting for moderator to start a voting round...
-              </div>
-            )}
+            {/* Contextual session hint */}
+            <SessionHint
+              isModerator={isModerator}
+              isVotingOpen={isVotingOpen}
+              isRevealed={isRevealed}
+              hasVoted={hasVoted}
+              moderatorName={moderatorName}
+              votedCount={votedUserIds.size}
+              totalParticipants={participants.length}
+            />
 
             {/* Card deck */}
             <div className="rounded-lg border border-border bg-card p-6">
