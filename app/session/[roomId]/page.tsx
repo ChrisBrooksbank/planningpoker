@@ -222,15 +222,6 @@ export default function SessionPage() {
     }
   }, [userId]);
 
-  // Handle card selection and vote submission
-  const handleSelectCard = (value: CardValue) => {
-    setSelectedCard(value);
-    sendMessage({
-      type: "submit-vote",
-      value,
-    });
-  };
-
   // Handle starting a round with the current topic (moderator only)
   const handleStartRound = () => {
     const trimmed = topicInput.trim();
@@ -288,6 +279,15 @@ export default function SessionPage() {
     onDisconnect: handleDisconnect,
     onError: handleError,
   });
+
+  // Handle card selection and vote submission
+  const handleSelectCard = useCallback((value: CardValue) => {
+    setSelectedCard(value);
+    sendMessage({
+      type: "submit-vote",
+      value,
+    });
+  }, [sendMessage]);
 
   // Send join-session message when connected
   useEffect(() => {
@@ -393,10 +393,12 @@ export default function SessionPage() {
                       ? "bg-green-100 border-green-400 text-green-700 dark:bg-green-900/30 dark:border-green-600 dark:text-green-300"
                       : "border-border hover:bg-muted"
                   }`}
-                  aria-live="polite"
                 >
                   {linkCopied ? "Copied!" : "Copy Link"}
                 </button>
+                <span role="status" aria-live="polite" className="sr-only">
+                  {linkCopied ? "Link copied to clipboard" : ""}
+                </span>
               </div>
             </div>
             <div className="flex items-center gap-2">
@@ -513,7 +515,7 @@ export default function SessionPage() {
 
             {/* Vote results (shown after reveal, above cards) */}
             {isRevealed && statistics && (
-              <div ref={resultsRef} tabIndex={-1} className="rounded-lg border border-border bg-card p-6 focus:outline-none">
+              <div ref={resultsRef} tabIndex={-1} aria-label="Voting results revealed" className="rounded-lg border border-border bg-card p-6 focus:outline-none">
                 <h2 className="text-lg font-semibold mb-4">Results</h2>
                 <VoteResults
                   votes={revealedVotes}

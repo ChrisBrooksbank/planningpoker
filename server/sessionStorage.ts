@@ -4,7 +4,9 @@ import type {
   Vote,
   SessionState,
   VoteStatistics,
+  CardValue,
 } from "../lib/types.js";
+import { CARD_VALUES } from "../lib/types.js";
 import { generateRoomCode } from "../lib/utils.js";
 
 /**
@@ -52,6 +54,7 @@ export class SessionStorage {
       participants: [moderator],
       votes: new Map(),
       statistics: null,
+      lastActivity: Date.now(),
     };
 
     this.sessions.set(roomId, sessionState);
@@ -97,6 +100,8 @@ export class SessionStorage {
     const existingParticipant = sessionState.participants.find(
       (p) => p.id === userId
     );
+
+    sessionState.lastActivity = Date.now();
 
     if (existingParticipant) {
       // Update existing participant to connected
@@ -184,6 +189,7 @@ export class SessionStorage {
     }
 
     sessionState.session.currentTopic = topic;
+    sessionState.lastActivity = Date.now();
     return true;
   }
 
@@ -200,6 +206,10 @@ export class SessionStorage {
       return false;
     }
 
+    if (!CARD_VALUES.includes(value as CardValue)) {
+      return false;
+    }
+
     const vote: Vote = {
       userId,
       value: value as Vote["value"],
@@ -207,6 +217,7 @@ export class SessionStorage {
     };
 
     sessionState.votes.set(userId, vote);
+    sessionState.lastActivity = Date.now();
     return true;
   }
 
@@ -233,6 +244,7 @@ export class SessionStorage {
 
     sessionState.session.isRevealed = true;
     sessionState.session.isVotingOpen = false;
+    sessionState.lastActivity = Date.now();
 
     // Calculate statistics
     const votes = Array.from(sessionState.votes.values());
@@ -297,6 +309,7 @@ export class SessionStorage {
     sessionState.session.isRevealed = false;
     sessionState.session.isVotingOpen = true;
     sessionState.statistics = null;
+    sessionState.lastActivity = Date.now();
 
     return true;
   }

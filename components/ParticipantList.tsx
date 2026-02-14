@@ -20,12 +20,17 @@ export function ParticipantList({
     );
   }
 
+  const votedCount = participants.filter(p => votedUserIds.has(p.id)).length;
+
   return (
     <div className="rounded-lg border border-border bg-card p-4">
       <h2 className="text-lg font-semibold mb-4">
         Participants ({participants.length})
       </h2>
-      <ul className="space-y-2" aria-label="Participant list" aria-live="polite">
+      <span role="status" aria-live="polite" className="sr-only">
+        {participants.length} participants, {votedCount} voted
+      </span>
+      <ul className="space-y-2" aria-label="Participant list">
         {participants.map((participant) => {
           const isYou = participant.id === currentUserId;
           const hasVoted = votedUserIds.has(participant.id);

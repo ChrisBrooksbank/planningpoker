@@ -56,4 +56,5 @@ export interface SessionState {
   participants: Participant[];
   votes: Map<string, Vote>; // userId -> Vote
   statistics: VoteStatistics | null; // null until revealed
+  lastActivity: number; // timestamp of last message/join activity
 }

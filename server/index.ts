@@ -91,7 +91,7 @@ app.prepare().then(() => {
     const TTL = 24 * 60 * 60 * 1000;
     for (const roomId of sessionStorage.getAllSessionIds()) {
       const session = sessionStorage.getSession(roomId);
-      if (session && now - session.session.createdAt > TTL) {
+      if (session && now - session.lastActivity > TTL) {
         const hasConnected = session.participants.some(p => p.isConnected);
         if (!hasConnected) {
           sessionStorage.deleteSession(roomId);

@@ -573,7 +573,7 @@ describe("WebSocket Message Protocol", () => {
             ws.send(JSON.stringify({ type: "unknown-type", data: "test" }));
           } else if (message.type === "error") {
             const msg = message as ErrorMessage;
-            expect(msg.code).toBe("UNKNOWN_MESSAGE_TYPE");
+            expect(msg.code).toBe("INVALID_MESSAGE");
             ws.close();
             resolve();
           }

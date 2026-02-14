@@ -2,6 +2,9 @@ import { WebSocketServer, WebSocket } from "ws";
 import { IncomingMessage } from "http";
 import { Server as HTTPServer } from "http";
 import { sessionStorage } from "./sessionStorage.js";
+import {
+  isClientMessage,
+} from "../lib/websocket-messages.js";
 import type {
   ClientMessage,
   ServerMessage,
@@ -26,12 +29,32 @@ export interface RoomClient {
 export class PlanningPokerWebSocketServer {
   private wss: WebSocketServer;
   private clients: Map<WebSocket, RoomClient> = new Map();
+  private roomClients: Map<string, Set<WebSocket>> = new Map();
   private heartbeatInterval: NodeJS.Timeout;
 
   constructor(server: HTTPServer) {
-    this.wss = new WebSocketServer({ server, path: "/ws" });
+    this.wss = new WebSocketServer({ server, path: "/ws", maxPayload: 64 * 1024 });
     this.setupWebSocketServer();
     this.heartbeatInterval = setInterval(() => this.checkConnections(), 30000);
+  }
+
+  private addToRoomIndex(roomId: string, ws: WebSocket) {
+    let set = this.roomClients.get(roomId);
+    if (!set) {
+      set = new Set();
+      this.roomClients.set(roomId, set);
+    }
+    set.add(ws);
+  }
+
+  private removeFromRoomIndex(roomId: string, ws: WebSocket) {
+    const set = this.roomClients.get(roomId);
+    if (set) {
+      set.delete(ws);
+      if (set.size === 0) {
+        this.roomClients.delete(roomId);
+      }
+    }
   }
 
   private checkConnections() {
@@ -39,6 +62,7 @@ export class PlanningPokerWebSocketServer {
       if (!(ws as any).isAlive) {
         console.log(`Terminating dead connection: userId=${client.userId}, roomId=${client.roomId}`);
         this.clients.delete(ws);
+        this.removeFromRoomIndex(client.roomId, ws);
         ws.terminate();
 
         // Only mark disconnected if no other connection exists for this user in this room
@@ -76,6 +100,7 @@ export class PlanningPokerWebSocketServer {
       // Register client and mark as alive for heartbeat
       (ws as any).isAlive = true;
       this.clients.set(ws, { ws, roomId, userId, messageCount: 0, messageWindowStart: Date.now() });
+      this.addToRoomIndex(roomId, ws);
 
       // Track pong responses for heartbeat
       ws.on("pong", () => { (ws as any).isAlive = true; });
@@ -83,7 +108,11 @@ export class PlanningPokerWebSocketServer {
       // Handle messages
       ws.on("message", (data: Buffer) => {
         try {
-          const message = JSON.parse(data.toString()) as ClientMessage;
+          const message = JSON.parse(data.toString());
+          if (!isClientMessage(message)) {
+            this.sendError(ws, "INVALID_MESSAGE", "Unknown or invalid message type");
+            return;
+          }
           this.handleMessage(ws, message);
         } catch (error) {
           console.error("Failed to parse WebSocket message:", error);
@@ -99,6 +128,7 @@ export class PlanningPokerWebSocketServer {
             `Client disconnected: userId=${client.userId}, roomId=${client.roomId}`
           );
           this.clients.delete(ws);
+          this.removeFromRoomIndex(client.roomId, ws);
 
           // Only mark disconnected if no other connection exists for this user in this room
           const hasOtherConnection = Array.from(this.clients.values()).some(
@@ -197,6 +227,10 @@ export class PlanningPokerWebSocketServer {
       return;
     }
 
+    // Check if this is a reconnecting participant
+    const existingSession = sessionStorage.getSession(roomId);
+    const wasExisting = existingSession?.participants.some(p => p.id === userId) ?? false;
+
     // Add participant to session storage
     const participants = sessionStorage.addParticipant(
       roomId,
@@ -213,7 +247,7 @@ export class PlanningPokerWebSocketServer {
     // Send current session state to the joining client
     this.sendSessionState(ws, roomId);
 
-    // Broadcast to other participants that someone joined
+    // Broadcast to participants that someone joined (or reconnected with updated name)
     const participant = participants.find((p) => p.id === userId);
     if (participant) {
       this.broadcastToRoom(
@@ -222,7 +256,7 @@ export class PlanningPokerWebSocketServer {
           type: "participant-joined",
           participant,
         },
-        ws
+        wasExisting ? undefined : ws
       );
     }
   }
@@ -295,8 +329,15 @@ export class PlanningPokerWebSocketServer {
     const { roomId, userId } = client;
     const { topic } = message;
 
-    // Validate topic length
-    if (typeof topic !== "string" || topic.length > 200) {
+    // Validate topic
+    if (typeof topic !== "string") {
+      this.sendError(ws, "INVALID_TOPIC", "Topic must be a string");
+      return;
+    }
+
+    const trimmedTopic = topic.trim();
+
+    if (trimmedTopic.length > 200) {
       this.sendError(ws, "INVALID_TOPIC", "Topic must be 200 characters or fewer");
       return;
     }
@@ -314,12 +355,12 @@ export class PlanningPokerWebSocketServer {
     }
 
     // Set topic in session storage
-    sessionStorage.setTopic(roomId, topic);
+    sessionStorage.setTopic(roomId, trimmedTopic);
 
     // Broadcast to all participants
     this.broadcastToRoom(roomId, {
       type: "topic-changed",
-      topic,
+      topic: trimmedTopic,
     });
   }
 
@@ -342,6 +383,10 @@ export class PlanningPokerWebSocketServer {
 
     if (session.session.moderatorId !== userId) {
       this.sendError(ws, "UNAUTHORIZED", "Only moderator can reveal votes");
+      return;
+    }
+
+    if (session.session.isRevealed) {
       return;
     }
 
@@ -484,12 +529,14 @@ export class PlanningPokerWebSocketServer {
     exclude?: WebSocket
   ) {
     const messageStr = JSON.stringify(message);
+    const roomSet = this.roomClients.get(roomId);
+    if (!roomSet) return;
 
-    this.clients.forEach((client, ws) => {
-      if (client.roomId === roomId && ws !== exclude) {
+    for (const ws of roomSet) {
+      if (ws !== exclude) {
         this.safeSend(ws, messageStr);
       }
-    });
+    }
   }
 
   /**
@@ -552,11 +599,16 @@ export class PlanningPokerWebSocketServer {
    * @param roomId - The room context
    */
   public disconnectUser(userId: string, roomId: string) {
+    const toDisconnect: WebSocket[] = [];
     this.clients.forEach((client, ws) => {
       if (client.userId === userId && client.roomId === roomId) {
-        ws.close();
-        this.clients.delete(ws);
+        toDisconnect.push(ws);
       }
     });
+    for (const ws of toDisconnect) {
+      this.clients.delete(ws);
+      this.removeFromRoomIndex(roomId, ws);
+      ws.close();
+    }
   }
 }

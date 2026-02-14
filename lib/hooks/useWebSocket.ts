@@ -5,6 +5,7 @@ import {
   WS_RECONNECT_INTERVAL,
   WS_MAX_RECONNECT_INTERVAL,
   WS_RECONNECT_BACKOFF,
+  WS_MAX_RECONNECT_ATTEMPTS,
 } from "@/lib/constants";
 import type { ClientMessage, ServerMessage } from "@/lib/websocket-messages";
 
@@ -123,6 +124,12 @@ export function useWebSocket({
 
       if (mountedRef.current) {
         reconnectAttemptsRef.current++;
+        if (reconnectAttemptsRef.current >= WS_MAX_RECONNECT_ATTEMPTS) {
+          setError(
+            "Unable to connect. The session may no longer exist. Use Reconnect to try again."
+          );
+          return;
+        }
         setError(
           `Connection lost. Reconnecting (attempt ${reconnectAttemptsRef.current})...`
         );
