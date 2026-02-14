@@ -436,7 +436,7 @@ describe("Home Page", () => {
 
       await waitFor(() => {
         expect(localStorage.setItem).toHaveBeenCalledWith(
-          "session_ABC123_userName",
+          "session_ABC123_name",
           "Jane Doe"
         );
         expect(mockPush).toHaveBeenCalledWith("/session/ABC123");
@@ -485,7 +485,7 @@ describe("Home Page", () => {
 
       await waitFor(() => {
         expect(localStorage.setItem).toHaveBeenCalledWith(
-          "session_ABC123_userName",
+          "session_ABC123_name",
           "Jane Doe"
         );
       });

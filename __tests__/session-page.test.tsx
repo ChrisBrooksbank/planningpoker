@@ -996,7 +996,7 @@ describe("SessionPage", () => {
     });
 
     // Initially no voted indicators
-    expect(screen.queryByText("✓ Voted")).not.toBeInTheDocument();
+    expect(screen.queryByText("Voted")).not.toBeInTheDocument();
 
     // Simulate vote-submitted message
     await act(async () => {
@@ -1008,7 +1008,7 @@ describe("SessionPage", () => {
 
     // Should now show voted indicator for user456
     await waitFor(() => {
-      expect(screen.getByText("✓ Voted")).toBeInTheDocument();
+      expect(screen.getByText("Voted")).toBeInTheDocument();
     });
   });
 
@@ -1025,7 +1025,7 @@ describe("SessionPage", () => {
       render(<SessionPage />);
 
       await waitFor(() => {
-        expect(screen.getByText("Current Topic")).toBeInTheDocument();
+        expect(screen.getByText("Topic")).toBeInTheDocument();
       });
     });
 
@@ -1071,9 +1071,9 @@ describe("SessionPage", () => {
 
       await waitFor(() => {
         expect(
-          screen.getByPlaceholderText("Enter the story or topic to estimate...")
+          screen.getByPlaceholderText("What are we estimating?")
         ).toBeInTheDocument();
-        expect(screen.getByText("Update Topic")).toBeInTheDocument();
+        expect(screen.getByText("Start Vote")).toBeInTheDocument();
       });
     });
 
@@ -1122,7 +1122,7 @@ describe("SessionPage", () => {
         expect(screen.getByText("Build login page")).toBeInTheDocument();
         expect(
           screen.queryByPlaceholderText(
-            "Enter the story or topic to estimate..."
+            "What are we estimating?"
           )
         ).not.toBeInTheDocument();
       });
@@ -1173,7 +1173,7 @@ describe("SessionPage", () => {
       });
     });
 
-    it("should send set-topic message when moderator clicks Update Topic", async () => {
+    it("should send set-topic message when moderator clicks Start Vote", async () => {
       const user = userEvent.setup();
       (
         window.localStorage.getItem as ReturnType<typeof vi.fn>
@@ -1215,15 +1215,15 @@ describe("SessionPage", () => {
       });
 
       const input = await screen.findByPlaceholderText(
-        "Enter the story or topic to estimate..."
+        "What are we estimating?"
       );
-      const button = screen.getByText("Update Topic");
+      const button = screen.getByText("Start Vote");
 
       // Type into input
       await user.clear(input);
       await user.type(input, "New user story");
 
-      // Click Update Topic button
+      // Click Start Vote button
       await user.click(button);
 
       // Verify set-topic message was sent
@@ -1335,9 +1335,9 @@ describe("SessionPage", () => {
       });
 
       const input = await screen.findByPlaceholderText(
-        "Enter the story or topic to estimate..."
+        "What are we estimating?"
       );
-      const button = screen.getByText("Update Topic");
+      const button = screen.getByText("Start Vote");
 
       expect(input).toBeDisabled();
       expect(button).toBeDisabled();
@@ -1384,7 +1384,7 @@ describe("SessionPage", () => {
       });
 
       const input = (await screen.findByPlaceholderText(
-        "Enter the story or topic to estimate..."
+        "What are we estimating?"
       )) as HTMLInputElement;
 
       // Input should have maxLength attribute
@@ -1433,7 +1433,7 @@ describe("SessionPage", () => {
       });
 
       const input = (await screen.findByPlaceholderText(
-        "Enter the story or topic to estimate..."
+        "What are we estimating?"
       )) as HTMLInputElement;
 
       // Input should be populated with existing topic
@@ -1484,15 +1484,15 @@ describe("SessionPage", () => {
       });
 
       const input = await screen.findByPlaceholderText(
-        "Enter the story or topic to estimate..."
+        "What are we estimating?"
       );
-      const button = screen.getByText("Update Topic");
+      const button = screen.getByText("Start Vote");
 
       // Type into input with whitespace
       await user.clear(input);
       await user.type(input, "  Topic with spaces  ");
 
-      // Click Update Topic button
+      // Click Start Vote button
       await user.click(button);
 
       // Verify set-topic message was sent with trimmed topic
@@ -1547,7 +1547,7 @@ describe("SessionPage", () => {
       });
 
       await waitFor(() => {
-        expect(screen.getByText("Reveal Votes")).toBeInTheDocument();
+        expect(screen.getByText("Reveal")).toBeInTheDocument();
       });
     });
 
@@ -1593,11 +1593,11 @@ describe("SessionPage", () => {
 
       // Wait for page to render
       await waitFor(() => {
-        expect(screen.getByText("Current Topic")).toBeInTheDocument();
+        expect(screen.getByText("Topic")).toBeInTheDocument();
       });
 
       // Should not show reveal votes button
-      expect(screen.queryByText("Reveal Votes")).not.toBeInTheDocument();
+      expect(screen.queryByText("Reveal")).not.toBeInTheDocument();
     });
 
     it("should not show reveal votes button when votes are already revealed", async () => {
@@ -1642,14 +1642,14 @@ describe("SessionPage", () => {
 
       // Wait for page to render
       await waitFor(() => {
-        expect(screen.getByText("Current Topic")).toBeInTheDocument();
+        expect(screen.getByText("Topic")).toBeInTheDocument();
       });
 
       // Should not show reveal votes button
-      expect(screen.queryByText("Reveal Votes")).not.toBeInTheDocument();
+      expect(screen.queryByText("Reveal")).not.toBeInTheDocument();
     });
 
-    it("should send reveal-votes message when moderator clicks Reveal Votes", async () => {
+    it("should send reveal-votes message when moderator clicks Reveal", async () => {
       const user = userEvent.setup();
       (
         window.localStorage.getItem as ReturnType<typeof vi.fn>
@@ -1690,7 +1690,7 @@ describe("SessionPage", () => {
         });
       });
 
-      const button = await screen.findByText("Reveal Votes");
+      const button = await screen.findByText("Reveal");
 
       // Click Reveal Votes button
       await user.click(button);
@@ -1743,7 +1743,7 @@ describe("SessionPage", () => {
         });
       });
 
-      const button = await screen.findByText("Reveal Votes");
+      const button = await screen.findByText("Reveal");
 
       expect(button).toBeDisabled();
     });
@@ -1790,7 +1790,7 @@ describe("SessionPage", () => {
 
       // Button should be visible
       await waitFor(() => {
-        expect(screen.getByText("Reveal Votes")).toBeInTheDocument();
+        expect(screen.getByText("Reveal")).toBeInTheDocument();
       });
 
       // Send votes-revealed message
@@ -1810,7 +1810,7 @@ describe("SessionPage", () => {
 
       // Button should no longer be visible
       await waitFor(() => {
-        expect(screen.queryByText("Reveal Votes")).not.toBeInTheDocument();
+        expect(screen.queryByText("Reveal")).not.toBeInTheDocument();
       });
     });
   });
@@ -1991,7 +1991,7 @@ describe("SessionPage", () => {
       render(<SessionPage />);
 
       await waitFor(() => {
-        expect(screen.getByText("Current Topic")).toBeInTheDocument();
+        expect(screen.getByText("Topic")).toBeInTheDocument();
       });
 
       // Results should not be visible
@@ -2113,13 +2113,13 @@ describe("SessionPage", () => {
       // Moderator should see topic input and Update Topic button
       await waitFor(() => {
         expect(
-          screen.getByPlaceholderText("Enter the story or topic to estimate...")
+          screen.getByPlaceholderText("What are we estimating?")
         ).toBeInTheDocument();
-        expect(screen.getByText("Update Topic")).toBeInTheDocument();
+        expect(screen.getByText("Start Vote")).toBeInTheDocument();
       });
 
       // Moderator should see Reveal Votes button when not revealed
-      expect(screen.getByText("Reveal Votes")).toBeInTheDocument();
+      expect(screen.getByText("Reveal")).toBeInTheDocument();
 
       // Send votes-revealed message
       await act(async () => {
@@ -2136,13 +2136,13 @@ describe("SessionPage", () => {
         });
       });
 
-      // After reveal, moderator should see New Round button
+      // After reveal, moderator should still see Start Vote button
       await waitFor(() => {
-        expect(screen.getByText("New Round")).toBeInTheDocument();
+        expect(screen.getByText("Start Vote")).toBeInTheDocument();
       });
 
-      // Reveal Votes button should be hidden after reveal
-      expect(screen.queryByText("Reveal Votes")).not.toBeInTheDocument();
+      // Reveal button should be hidden after reveal
+      expect(screen.queryByText("Reveal")).not.toBeInTheDocument();
     });
 
     it("should hide all moderator controls (topic input, reveal, new round) from voters", async () => {
@@ -2193,12 +2193,12 @@ describe("SessionPage", () => {
 
       // Voter should NOT see topic input or Update Topic button
       expect(
-        screen.queryByPlaceholderText("Enter the story or topic to estimate...")
+        screen.queryByPlaceholderText("What are we estimating?")
       ).not.toBeInTheDocument();
-      expect(screen.queryByText("Update Topic")).not.toBeInTheDocument();
+      expect(screen.queryByText("Start Vote")).not.toBeInTheDocument();
 
       // Voter should NOT see Reveal Votes button
-      expect(screen.queryByText("Reveal Votes")).not.toBeInTheDocument();
+      expect(screen.queryByText("Reveal")).not.toBeInTheDocument();
 
       // Send votes-revealed message
       await act(async () => {
@@ -2215,11 +2215,11 @@ describe("SessionPage", () => {
         });
       });
 
-      // After reveal, voter should NOT see New Round button
+      // After reveal, voter should NOT see Start Vote button
       await waitFor(() => {
         expect(screen.getByText("Results")).toBeInTheDocument();
       });
-      expect(screen.queryByText("New Round")).not.toBeInTheDocument();
+      expect(screen.queryByText("Start Vote")).not.toBeInTheDocument();
     });
 
     it("should show voter UI (card deck) to all participants including moderator", async () => {
@@ -2478,7 +2478,7 @@ describe("SessionPage", () => {
   });
 
   describe("New Round", () => {
-    it("should show new round button for moderator when votes are revealed", async () => {
+    it("should show start vote button for moderator before and after reveal", async () => {
       (
         window.localStorage.getItem as ReturnType<typeof vi.fn>
       ).mockImplementation((key: string) => {
@@ -2518,8 +2518,10 @@ describe("SessionPage", () => {
         });
       });
 
-      // New Round button should not be visible before reveal
-      expect(screen.queryByText("New Round")).not.toBeInTheDocument();
+      // Start Vote button should be visible before reveal
+      await waitFor(() => {
+        expect(screen.getByText("Start Vote")).toBeInTheDocument();
+      });
 
       // Send votes-revealed message
       await act(async () => {
@@ -2536,13 +2538,13 @@ describe("SessionPage", () => {
         });
       });
 
-      // New Round button should now be visible
+      // Start Vote button should still be visible after reveal
       await waitFor(() => {
-        expect(screen.getByText("New Round")).toBeInTheDocument();
+        expect(screen.getByText("Start Vote")).toBeInTheDocument();
       });
     });
 
-    it("should not show new round button for non-moderator", async () => {
+    it("should not show start vote button for non-moderator", async () => {
       (
         window.localStorage.getItem as ReturnType<typeof vi.fn>
       ).mockImplementation((key: string) => {
@@ -2602,11 +2604,11 @@ describe("SessionPage", () => {
         expect(screen.getByText("Results")).toBeInTheDocument();
       });
 
-      // New Round button should not be visible for non-moderator
-      expect(screen.queryByText("New Round")).not.toBeInTheDocument();
+      // Start Vote button should not be visible for non-moderator
+      expect(screen.queryByText("Start Vote")).not.toBeInTheDocument();
     });
 
-    it("should not show new round button when votes are not revealed", async () => {
+    it("should show start vote button for moderator when votes are not revealed", async () => {
       (
         window.localStorage.getItem as ReturnType<typeof vi.fn>
       ).mockImplementation((key: string) => {
@@ -2648,14 +2650,14 @@ describe("SessionPage", () => {
 
       // Wait for page to render
       await waitFor(() => {
-        expect(screen.getByText("Current Topic")).toBeInTheDocument();
+        expect(screen.getByText("Topic")).toBeInTheDocument();
       });
 
-      // New Round button should not be visible
-      expect(screen.queryByText("New Round")).not.toBeInTheDocument();
+      // Start Vote button should be visible for moderator
+      expect(screen.getByText("Start Vote")).toBeInTheDocument();
     });
 
-    it("should send new-round message when moderator clicks New Round", async () => {
+    it("should send new-round message when moderator clicks Start Vote", async () => {
       const user = userEvent.setup();
       (
         window.localStorage.getItem as ReturnType<typeof vi.fn>
@@ -2696,24 +2698,9 @@ describe("SessionPage", () => {
         });
       });
 
-      // Send votes-revealed message
-      await act(async () => {
-        onMessageCallback({
-          type: "votes-revealed",
-          votes: {},
-          statistics: {
-            average: null,
-            mode: null,
-            min: null,
-            max: null,
-            range: null,
-          },
-        });
-      });
+      const button = await screen.findByText("Start Vote");
 
-      const button = await screen.findByText("New Round");
-
-      // Click New Round button
+      // Click Start Vote button
       await user.click(button);
 
       // Verify new-round message was sent
@@ -2724,7 +2711,7 @@ describe("SessionPage", () => {
       });
     });
 
-    it("should disable new round button when disconnected", async () => {
+    it("should disable start vote button when disconnected", async () => {
       (
         window.localStorage.getItem as ReturnType<typeof vi.fn>
       ).mockImplementation((key: string) => {
@@ -2764,22 +2751,7 @@ describe("SessionPage", () => {
         });
       });
 
-      // Send votes-revealed message
-      await act(async () => {
-        onMessageCallback({
-          type: "votes-revealed",
-          votes: {},
-          statistics: {
-            average: null,
-            mode: null,
-            min: null,
-            max: null,
-            range: null,
-          },
-        });
-      });
-
-      const button = await screen.findByText("New Round");
+      const button = await screen.findByText("Start Vote");
 
       expect(button).toBeDisabled();
     });

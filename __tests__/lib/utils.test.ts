@@ -23,16 +23,17 @@ describe("cn (className merger)", () => {
 });
 
 describe("isValidRoomCode", () => {
-  it("accepts valid 6-character alphanumeric codes", () => {
+  it("accepts valid 6-character uppercase alphanumeric codes", () => {
     expect(isValidRoomCode("ABC123")).toBe(true);
-    expect(isValidRoomCode("xyz789")).toBe(true);
-    expect(isValidRoomCode("a1B2c3")).toBe(true);
+    expect(isValidRoomCode("XYZ789")).toBe(true);
+    expect(isValidRoomCode("A1B2C3")).toBe(true);
   });
 
-  it("accepts URL-safe characters (underscore, hyphen)", () => {
-    expect(isValidRoomCode("AB_-12")).toBe(true);
-    expect(isValidRoomCode("------")).toBe(true);
-    expect(isValidRoomCode("______")).toBe(true);
+  it("rejects lowercase and special characters", () => {
+    expect(isValidRoomCode("abc123")).toBe(false);
+    expect(isValidRoomCode("AB_-12")).toBe(false);
+    expect(isValidRoomCode("------")).toBe(false);
+    expect(isValidRoomCode("______")).toBe(false);
   });
 
   it("rejects codes with wrong length", () => {
