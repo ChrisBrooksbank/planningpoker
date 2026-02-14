@@ -12,6 +12,7 @@ import type {
   NewRoundMessage,
   SessionStateMessage,
 } from "../lib/websocket-messages.js";
+import { CARD_VALUES } from "../lib/types.js";
 import type { Participant, Vote, CardValue } from "../lib/types.js";
 
 export interface RoomClient {
@@ -23,10 +24,30 @@ export interface RoomClient {
 export class PlanningPokerWebSocketServer {
   private wss: WebSocketServer;
   private clients: Map<WebSocket, RoomClient> = new Map();
+  private heartbeatInterval: NodeJS.Timeout;
 
   constructor(server: HTTPServer) {
     this.wss = new WebSocketServer({ server, path: "/ws" });
     this.setupWebSocketServer();
+    this.heartbeatInterval = setInterval(() => this.checkConnections(), 30000);
+  }
+
+  private checkConnections() {
+    this.clients.forEach((client, ws) => {
+      if (!(ws as any).isAlive) {
+        console.log(`Terminating dead connection: userId=${client.userId}, roomId=${client.roomId}`);
+        this.clients.delete(ws);
+        sessionStorage.markParticipantDisconnected(client.roomId, client.userId);
+        this.broadcastToRoom(client.roomId, {
+          type: "participant-left",
+          userId: client.userId,
+        });
+        ws.terminate();
+        return;
+      }
+      (ws as any).isAlive = false;
+      ws.ping();
+    });
   }
 
   private setupWebSocketServer() {
@@ -43,8 +64,12 @@ export class PlanningPokerWebSocketServer {
         return;
       }
 
-      // Register client
+      // Register client and mark as alive for heartbeat
+      (ws as any).isAlive = true;
       this.clients.set(ws, { ws, roomId, userId });
+
+      // Track pong responses for heartbeat
+      ws.on("pong", () => { (ws as any).isAlive = true; });
 
       // Handle messages
       ws.on("message", (data: Buffer) => {
@@ -81,6 +106,11 @@ export class PlanningPokerWebSocketServer {
             }
           });
         }
+      });
+
+      // Handle errors
+      ws.on("error", (err) => {
+        console.error(`WebSocket error for userId=${userId}, roomId=${roomId}:`, err);
       });
 
       // Send connection acknowledgment
@@ -138,11 +168,18 @@ export class PlanningPokerWebSocketServer {
     const { roomId, userId } = client;
     const { participantName } = message;
 
+    // Validate participant name
+    const trimmedName = typeof participantName === "string" ? participantName.trim() : "";
+    if (trimmedName.length < 1 || trimmedName.length > 50) {
+      this.sendError(ws, "INVALID_NAME", "Name must be between 1 and 50 characters");
+      return;
+    }
+
     // Add participant to session storage
     const participants = sessionStorage.addParticipant(
       roomId,
       userId,
-      participantName
+      trimmedName
     );
 
     if (!participants) {
@@ -179,6 +216,12 @@ export class PlanningPokerWebSocketServer {
     const { roomId, userId } = client;
     const { value } = message;
 
+    // Validate vote value against allowed card values
+    if (!CARD_VALUES.includes(value as CardValue)) {
+      this.sendError(ws, "INVALID_VOTE", "Invalid vote value");
+      return;
+    }
+
     // Submit vote to session storage
     const success = sessionStorage.submitVote(roomId, userId, value);
 
@@ -205,6 +248,12 @@ export class PlanningPokerWebSocketServer {
   ) {
     const { roomId, userId } = client;
     const { topic } = message;
+
+    // Validate topic length
+    if (typeof topic !== "string" || topic.length > 200) {
+      this.sendError(ws, "INVALID_TOPIC", "Topic must be 200 characters or fewer");
+      return;
+    }
 
     // Verify user is moderator
     const session = sessionStorage.getSession(roomId);

@@ -22,6 +22,7 @@ export default function SessionPage() {
   const [joinError, setJoinError] = useState("");
   const [isJoining, setIsJoining] = useState(false);
   const [linkCopied, setLinkCopied] = useState(false);
+  const linkCopiedTimeoutRef = useRef<NodeJS.Timeout | null>(null);
   const [participants, setParticipants] = useState<Participant[]>([]);
   const [selectedCard, setSelectedCard] = useState<CardValue | null>(null);
   const [votedUserIds, setVotedUserIds] = useState<Set<string>>(new Set());
@@ -45,6 +46,13 @@ export default function SessionPage() {
     setParticipantName(storedName);
     setIsInitialized(true);
   }, [roomId]);
+
+  // Clean up timeout on unmount
+  useEffect(() => {
+    return () => {
+      if (linkCopiedTimeoutRef.current) clearTimeout(linkCopiedTimeoutRef.current);
+    };
+  }, []);
 
   // Handle join form submission
   const handleJoinSubmit = async (e: FormEvent) => {
@@ -93,7 +101,8 @@ export default function SessionPage() {
     try {
       await navigator.clipboard.writeText(url);
       setLinkCopied(true);
-      setTimeout(() => setLinkCopied(false), 2000);
+      if (linkCopiedTimeoutRef.current) clearTimeout(linkCopiedTimeoutRef.current);
+      linkCopiedTimeoutRef.current = setTimeout(() => setLinkCopied(false), 2000);
     } catch {
       // Clipboard API may be unavailable — show prompt as fallback
       window.prompt("Copy this link to share:", url);
@@ -114,6 +123,21 @@ export default function SessionPage() {
         setTopicInput(message.currentTopic || "");
         // Update reveal state
         setIsRevealed(message.isRevealed);
+        // Rebuild votedUserIds from message.votes
+        setVotedUserIds(new Set(Object.keys(message.votes)));
+        // Restore revealed votes and statistics if isRevealed
+        if (message.isRevealed && message.votes) {
+          const revealed: Record<string, Vote> = {};
+          for (const [uid, v] of Object.entries(message.votes)) {
+            if (v.value !== undefined) {
+              revealed[uid] = { userId: uid, value: v.value, submittedAt: 0 };
+            }
+          }
+          setRevealedVotes(revealed);
+        } else {
+          setRevealedVotes({});
+        }
+        setStatistics(message.statistics ?? null);
         break;
 
       case "participant-joined":

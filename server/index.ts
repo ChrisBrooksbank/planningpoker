@@ -74,6 +74,22 @@ app.prepare().then(() => {
   const wsServer = new PlanningPokerWebSocketServer(server);
   console.log("WebSocket server initialized");
 
+  // Clean up stale sessions with no connected participants after 24 hours
+  setInterval(() => {
+    const now = Date.now();
+    const TTL = 24 * 60 * 60 * 1000;
+    for (const roomId of sessionStorage.getAllSessionIds()) {
+      const session = sessionStorage.getSession(roomId);
+      if (session && now - session.session.createdAt > TTL) {
+        const hasConnected = session.participants.some(p => p.isConnected);
+        if (!hasConnected) {
+          sessionStorage.deleteSession(roomId);
+          console.log(`Cleaned up stale session: ${roomId}`);
+        }
+      }
+    }
+  }, 60 * 60 * 1000);
+
   server.listen(port, () => {
     console.log(`> Ready on http://${hostname}:${port}`);
     console.log(`> WebSocket server on ws://${hostname}:${port}/ws`);
