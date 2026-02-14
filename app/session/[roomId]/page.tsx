@@ -114,8 +114,6 @@ export default function SessionPage() {
 
   // Handle WebSocket messages
   const handleMessage = useCallback((message: ServerMessage) => {
-    console.log("Received message:", message);
-
     switch (message.type) {
       case "session-state":
         // Update participants from session state
@@ -250,13 +248,12 @@ export default function SessionPage() {
 
   // Handle connection events
   const handleConnect = () => {
-    console.log("Connected to session");
     // Reset join flag so we send join-session message on reconnection
     hasJoinedRef.current = false;
   };
 
   const handleDisconnect = () => {
-    console.log("Disconnected from session");
+    // no-op — reconnection is handled by useWebSocket
   };
 
   const handleError = (error: Event) => {

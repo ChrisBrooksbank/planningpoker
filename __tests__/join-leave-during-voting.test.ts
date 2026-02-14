@@ -270,6 +270,13 @@ describe("Participant Join/Leave During Active Voting", () => {
         let user1VoteSubmitted = false;
         let user1Disconnected = false;
 
+        function trySubmitVote() {
+          if (modReady && user1Ready && !user1VoteSubmitted) {
+            user1VoteSubmitted = true;
+            user1.send(JSON.stringify({ type: "submit-vote", value: "8" }));
+          }
+        }
+
         moderator.on("message", (data) => {
           const message = JSON.parse(data.toString());
 
@@ -282,6 +289,7 @@ describe("Participant Join/Leave During Active Voting", () => {
             );
           } else if (message.type === "session-state" && !modReady) {
             modReady = true;
+            trySubmitVote();
           } else if (message.type === "vote-submitted") {
             const msg = message as VoteSubmittedMessage;
             if (msg.userId === "user1") {
@@ -326,10 +334,7 @@ describe("Participant Join/Leave During Active Voting", () => {
             );
           } else if (message.type === "session-state" && !user1Ready) {
             user1Ready = true;
-            if (modReady) {
-              // Submit vote
-              user1.send(JSON.stringify({ type: "submit-vote", value: "8" }));
-            }
+            trySubmitVote();
           }
         });
       });

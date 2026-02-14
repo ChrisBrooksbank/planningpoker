@@ -15,27 +15,56 @@ const handle = app.getRequestHandler();
 
 const MAX_BODY_SIZE = 10 * 1024; // 10 KB
 
+const BODY_TIMEOUT_MS = 10_000;
+
 function readBody(req: IncomingMessage): Promise<string> {
   return new Promise((resolve, reject) => {
     let data = "";
     let size = 0;
+    const timer = setTimeout(() => {
+      req.destroy();
+      reject(new Error("Request body timeout"));
+    }, BODY_TIMEOUT_MS);
     req.on("data", (chunk: Buffer) => {
       size += chunk.length;
       if (size > MAX_BODY_SIZE) {
+        clearTimeout(timer);
         req.destroy();
         reject(new Error("Request body too large"));
         return;
       }
       data += chunk;
     });
-    req.on("end", () => resolve(data));
-    req.on("error", reject);
+    req.on("end", () => { clearTimeout(timer); resolve(data); });
+    req.on("error", (err) => { clearTimeout(timer); reject(err); });
   });
 }
 
 function sendJson(res: ServerResponse, status: number, body: unknown) {
   res.writeHead(status, { "Content-Type": "application/json" });
   res.end(JSON.stringify(body));
+}
+
+const MAX_SESSIONS = 1000;
+const SESSION_RATE_LIMIT = 10; // max sessions per IP per minute
+const SESSION_RATE_WINDOW_MS = 60_000;
+const sessionCreationRateLimit = new Map<string, { count: number; windowStart: number }>();
+
+function getClientIp(req: IncomingMessage): string {
+  const forwarded = req.headers["x-forwarded-for"];
+  if (typeof forwarded === "string") return forwarded.split(",")[0].trim();
+  return req.socket.remoteAddress || "unknown";
+}
+
+function isSessionRateLimited(ip: string): boolean {
+  const now = Date.now();
+  const entry = sessionCreationRateLimit.get(ip);
+  if (!entry || now - entry.windowStart > SESSION_RATE_WINDOW_MS) {
+    sessionCreationRateLimit.set(ip, { count: 1, windowStart: now });
+    return false;
+  }
+  entry.count++;
+  return entry.count > SESSION_RATE_LIMIT;
 }
 
 app.prepare().then(() => {
@@ -47,6 +76,13 @@ app.prepare().then(() => {
     // instance as the WebSocket server (Next.js webpack bundles create separate module scopes)
 
     if (pathname === "/api/sessions" && req.method === "POST") {
+      if (sessionStorage.getSessionCount() >= MAX_SESSIONS) {
+        return sendJson(res, 503, { error: "Server is at capacity, please try again later" });
+      }
+      const ip = getClientIp(req);
+      if (isSessionRateLimited(ip)) {
+        return sendJson(res, 429, { error: "Too many sessions created, please try again later" });
+      }
       try {
         const body = JSON.parse(await readBody(req));
         const { sessionName, moderatorName } = body;
@@ -85,7 +121,7 @@ app.prepare().then(() => {
   const wsServer = new PlanningPokerWebSocketServer(server);
   console.log("WebSocket server initialized");
 
-  // Clean up stale sessions with no connected participants after 24 hours
+  // Clean up stale sessions and rate-limit entries hourly
   const cleanupInterval = setInterval(() => {
     const now = Date.now();
     const TTL = 24 * 60 * 60 * 1000;
@@ -97,6 +133,12 @@ app.prepare().then(() => {
           sessionStorage.deleteSession(roomId);
           console.log(`Cleaned up stale session: ${roomId}`);
         }
+      }
+    }
+    // Purge expired rate-limit entries
+    for (const [ip, entry] of sessionCreationRateLimit) {
+      if (now - entry.windowStart > SESSION_RATE_WINDOW_MS) {
+        sessionCreationRateLimit.delete(ip);
       }
     }
   }, 60 * 60 * 1000);

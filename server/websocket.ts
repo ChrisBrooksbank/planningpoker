@@ -57,25 +57,28 @@ export class PlanningPokerWebSocketServer {
     }
   }
 
+  private handleClientDisconnect(ws: WebSocket, client: RoomClient) {
+    this.clients.delete(ws);
+    this.removeFromRoomIndex(client.roomId, ws);
+
+    // Only mark disconnected if no other connection exists for this user in this room
+    const hasOtherConnection = Array.from(this.clients.values()).some(
+      c => c.userId === client.userId && c.roomId === client.roomId
+    );
+    if (!hasOtherConnection) {
+      sessionStorage.markParticipantDisconnected(client.roomId, client.userId);
+      this.broadcastToRoom(client.roomId, {
+        type: "participant-left",
+        userId: client.userId,
+      });
+    }
+  }
+
   private checkConnections() {
     this.clients.forEach((client, ws) => {
       if (!(ws as any).isAlive) {
-        console.log(`Terminating dead connection: userId=${client.userId}, roomId=${client.roomId}`);
-        this.clients.delete(ws);
-        this.removeFromRoomIndex(client.roomId, ws);
+        this.handleClientDisconnect(ws, client);
         ws.terminate();
-
-        // Only mark disconnected if no other connection exists for this user in this room
-        const hasOtherConnection = Array.from(this.clients.values()).some(
-          c => c.userId === client.userId && c.roomId === client.roomId
-        );
-        if (!hasOtherConnection) {
-          sessionStorage.markParticipantDisconnected(client.roomId, client.userId);
-          this.broadcastToRoom(client.roomId, {
-            type: "participant-left",
-            userId: client.userId,
-          });
-        }
         return;
       }
       (ws as any).isAlive = false;
@@ -85,8 +88,6 @@ export class PlanningPokerWebSocketServer {
 
   private setupWebSocketServer() {
     this.wss.on("connection", (ws: WebSocket, req: IncomingMessage) => {
-      console.log("New WebSocket connection");
-
       // Extract room ID and user ID from query params
       const url = new URL(req.url || "", `http://${req.headers.host}`);
       const roomId = url.searchParams.get("roomId");
@@ -124,23 +125,7 @@ export class PlanningPokerWebSocketServer {
       ws.on("close", () => {
         const client = this.clients.get(ws);
         if (client) {
-          console.log(
-            `Client disconnected: userId=${client.userId}, roomId=${client.roomId}`
-          );
-          this.clients.delete(ws);
-          this.removeFromRoomIndex(client.roomId, ws);
-
-          // Only mark disconnected if no other connection exists for this user in this room
-          const hasOtherConnection = Array.from(this.clients.values()).some(
-            c => c.userId === client.userId && c.roomId === client.roomId
-          );
-          if (!hasOtherConnection) {
-            sessionStorage.markParticipantDisconnected(client.roomId, client.userId);
-            this.broadcastToRoom(client.roomId, {
-              type: "participant-left",
-              userId: client.userId,
-            });
-          }
+          this.handleClientDisconnect(ws, client);
         }
       });
 
@@ -181,11 +166,6 @@ export class PlanningPokerWebSocketServer {
       this.sendError(ws, "RATE_LIMITED", "Too many messages, slow down");
       return;
     }
-
-    console.log(
-      `Received message from ${client.userId} in room ${client.roomId}:`,
-      message.type
-    );
 
     // Route message based on type
     switch (message.type) {
@@ -239,7 +219,6 @@ export class PlanningPokerWebSocketServer {
     );
 
     if (!participants) {
-      console.log("SESSION_NOT_FOUND for room:", roomId, "known rooms:", sessionStorage.getAllSessionIds());
       this.sendError(ws, "SESSION_NOT_FOUND", "Session does not exist");
       return;
     }
@@ -484,9 +463,7 @@ export class PlanningPokerWebSocketServer {
         : undefined,
     };
 
-    const json = JSON.stringify(stateMessage);
-    console.log("Sending session-state:", json.substring(0, 200));
-    this.safeSend(ws, json);
+    this.safeSend(ws, JSON.stringify(stateMessage));
   }
 
   /**

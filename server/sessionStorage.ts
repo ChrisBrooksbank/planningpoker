@@ -10,6 +10,23 @@ import { CARD_VALUES } from "../lib/types.js";
 import { generateRoomCode } from "../lib/utils.js";
 
 /**
+ * Compare two vote values for deterministic tie-breaking.
+ * Numeric values sort before non-numeric; among numerics, lower wins;
+ * among non-numerics, alphabetical order.
+ */
+function compareVoteValues(a: string, b: string): number {
+  const aNum = Number(a);
+  const bNum = Number(b);
+  const aIsNumeric = !isNaN(aNum);
+  const bIsNumeric = !isNaN(bNum);
+
+  if (aIsNumeric && bIsNumeric) return aNum - bNum;
+  if (aIsNumeric) return -1;
+  if (bIsNumeric) return 1;
+  return a.localeCompare(b);
+}
+
+/**
  * In-memory session storage for Planning Poker sessions
  * This is the single source of truth for all session state
  */
@@ -266,6 +283,7 @@ export class SessionStorage {
     }
 
     // Calculate mode (most common vote)
+    // Ties are broken deterministically: numeric values first (lower wins), then non-numeric alphabetically
     let mode: Vote["value"] | null = null;
     if (votes.length > 0) {
       const counts = new Map<string, number>();
@@ -275,7 +293,7 @@ export class SessionStorage {
 
       let maxCount = 0;
       counts.forEach((count, value) => {
-        if (count > maxCount) {
+        if (count > maxCount || (count === maxCount && mode !== null && compareVoteValues(value, mode) < 0)) {
           maxCount = count;
           mode = value as Vote["value"];
         }

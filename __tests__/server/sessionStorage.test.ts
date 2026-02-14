@@ -334,6 +334,30 @@ describe("SessionStorage", () => {
 
       expect(result).toBeNull();
     });
+
+    it("should break mode tie between numeric values by picking the lower one", () => {
+      const state = storage.createSession("Tie Test", "user1", "Alice");
+      storage.addParticipant(state.session.id, "user2", "Bob");
+
+      storage.submitVote(state.session.id, "user1", "8");
+      storage.submitVote(state.session.id, "user2", "5");
+
+      const stats = storage.revealVotes(state.session.id);
+
+      expect(stats?.mode).toBe("5");
+    });
+
+    it("should break mode tie between numeric and non-numeric by picking the numeric one", () => {
+      const state = storage.createSession("Tie Test", "user1", "Alice");
+      storage.addParticipant(state.session.id, "user2", "Bob");
+
+      storage.submitVote(state.session.id, "user1", "?");
+      storage.submitVote(state.session.id, "user2", "5");
+
+      const stats = storage.revealVotes(state.session.id);
+
+      expect(stats?.mode).toBe("5");
+    });
   });
 
   describe("startNewRound", () => {
