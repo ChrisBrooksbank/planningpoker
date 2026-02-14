@@ -35,12 +35,12 @@ export function CardDeck({
             aria-label={`Select ${value}`}
             aria-pressed={selectedValue === value}
           >
-            {value === "coffee" ? "☕" : value}
+            {value === "coffee" ? <span aria-hidden="true">☕</span> : value}
           </button>
         ))}
       </div>
       {selectedValue && (
-        <p className="mt-4 text-sm text-muted-foreground">
+        <p className="mt-4 text-sm text-muted-foreground" aria-live="polite">
           Selected: <span className="font-semibold">{selectedValue}</span>
         </p>
       )}

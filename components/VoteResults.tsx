@@ -45,13 +45,11 @@ export function VoteResults({
       {/* Votes section */}
       <div>
         <h3 className="text-lg font-semibold mb-3">Votes</h3>
-        <ul className="space-y-2" aria-label="Individual votes">
-          {votesArray.length === 0 ? (
-            <li>
-              <p className="text-muted-foreground italic">No votes yet</p>
-            </li>
-          ) : (
-            votesArray.map(({ userId, participantName, vote }) => (
+        {votesArray.length === 0 ? (
+          <p className="text-muted-foreground italic">No votes yet</p>
+        ) : (
+          <ul className="space-y-2" aria-label="Individual votes">
+            {votesArray.map(({ userId, participantName, vote }) => (
               <li
                 key={userId}
                 className="flex items-center justify-between p-3 rounded-md bg-muted"
@@ -72,9 +70,9 @@ export function VoteResults({
                   <VoteValueDisplay value={vote.value} />
                 </span>
               </li>
-            ))
-          )}
-        </ul>
+            ))}
+          </ul>
+        )}
       </div>
 
       {/* Statistics section */}

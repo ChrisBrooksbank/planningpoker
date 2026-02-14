@@ -86,7 +86,7 @@ app.prepare().then(() => {
   console.log("WebSocket server initialized");
 
   // Clean up stale sessions with no connected participants after 24 hours
-  setInterval(() => {
+  const cleanupInterval = setInterval(() => {
     const now = Date.now();
     const TTL = 24 * 60 * 60 * 1000;
     for (const roomId of sessionStorage.getAllSessionIds()) {
@@ -100,6 +100,19 @@ app.prepare().then(() => {
       }
     }
   }, 60 * 60 * 1000);
+
+  // Graceful shutdown
+  const shutdown = () => {
+    console.log("Shutting down gracefully...");
+    clearInterval(cleanupInterval);
+    wsServer.close();
+    server.close(() => {
+      console.log("Server closed");
+      process.exit(0);
+    });
+  };
+  process.on("SIGTERM", shutdown);
+  process.on("SIGINT", shutdown);
 
   server.listen(port, () => {
     console.log(`> Ready on http://${hostname}:${port}`);

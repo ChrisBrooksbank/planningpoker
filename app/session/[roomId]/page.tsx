@@ -1,6 +1,6 @@
 "use client";
 
-import { useEffect, useState, useRef, FormEvent } from "react";
+import { useEffect, useState, useRef, useCallback, FormEvent } from "react";
 import { useParams } from "next/navigation";
 import { useWebSocket } from "@/lib/hooks/useWebSocket";
 import type { ServerMessage } from "@/lib/websocket-messages";
@@ -33,6 +33,7 @@ export default function SessionPage() {
   const [revealedVotes, setRevealedVotes] = useState<Record<string, Vote>>({});
   const [statistics, setStatistics] = useState<VoteStatistics | null>(null);
   const hasJoinedRef = useRef(false);
+  const resultsRef = useRef<HTMLDivElement>(null);
 
   // Initialize userId and participantName from localStorage
   useEffect(() => {
@@ -110,7 +111,7 @@ export default function SessionPage() {
   };
 
   // Handle WebSocket messages
-  const handleMessage = (message: ServerMessage) => {
+  const handleMessage = useCallback((message: ServerMessage) => {
     console.log("Received message:", message);
 
     switch (message.type) {
@@ -198,11 +199,22 @@ export default function SessionPage() {
         setVotedUserIds(new Set());
         break;
 
+      case "error":
+        // Revert optimistic card selection on vote-related errors
+        if (
+          message.code === "VOTES_REVEALED" ||
+          message.code === "INVALID_VOTE" ||
+          message.code === "VOTE_FAILED" ||
+          message.code === "NOT_A_PARTICIPANT"
+        ) {
+          setSelectedCard(null);
+        }
+        break;
+
       default:
-        // Other message types will be handled in future tasks
         break;
     }
-  };
+  }, [userId]);
 
   // Handle card selection and vote submission
   const handleSelectCard = (value: CardValue) => {
@@ -280,6 +292,13 @@ export default function SessionPage() {
     }
   }, [isConnected, participantName, sendMessage]);
 
+  // Focus the results section when votes are revealed
+  useEffect(() => {
+    if (isRevealed && resultsRef.current) {
+      resultsRef.current.focus();
+    }
+  }, [isRevealed]);
+
   // Show join form if user has no credentials for this room
   if (needsName) {
     return (
@@ -311,11 +330,13 @@ export default function SessionPage() {
                 maxLength={50}
                 disabled={isJoining}
                 autoFocus
+                aria-describedby={joinError ? "joinError" : undefined}
+                aria-invalid={!!joinError}
               />
             </div>
 
             {joinError && (
-              <div className="rounded-lg bg-red-50 dark:bg-red-900/20 border border-red-200 dark:border-red-800 px-4 py-3 text-sm text-red-800 dark:text-red-200">
+              <div id="joinError" role="alert" className="rounded-lg bg-red-50 dark:bg-red-900/20 border border-red-200 dark:border-red-800 px-4 py-3 text-sm text-red-800 dark:text-red-200">
                 {joinError}
               </div>
             )}
@@ -338,8 +359,8 @@ export default function SessionPage() {
     return (
       <main className="flex min-h-screen flex-col items-center justify-center p-8">
         <div className="text-center space-y-4">
-          <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-primary mx-auto"></div>
-          <p className="text-muted-foreground">Loading session...</p>
+          <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-primary mx-auto" aria-hidden="true"></div>
+          <p className="text-muted-foreground" role="status" aria-live="polite">Loading session...</p>
         </div>
       </main>
     );
@@ -364,6 +385,7 @@ export default function SessionPage() {
                       ? "bg-green-100 border-green-400 text-green-700 dark:bg-green-900/30 dark:border-green-600 dark:text-green-300"
                       : "border-border hover:bg-muted"
                   }`}
+                  aria-live="polite"
                 >
                   {linkCopied ? "Copied!" : "Copy Link"}
                 </button>
@@ -378,8 +400,9 @@ export default function SessionPage() {
                       ? "bg-yellow-500 animate-pulse"
                       : "bg-red-500"
                 }`}
+                aria-hidden="true"
               />
-              <span className="text-sm text-muted-foreground">
+              <span className="text-sm text-muted-foreground" role="status" aria-live="polite">
                 {isConnected
                   ? "Connected"
                   : isConnecting
@@ -389,7 +412,7 @@ export default function SessionPage() {
               {!isConnected && !isConnecting && (
                 <button
                   onClick={reconnect}
-                  className="ml-2 text-sm text-primary hover:underline"
+                  className="ml-2 text-sm text-primary hover:underline focus:outline-none focus:ring-2 focus:ring-ring focus:ring-offset-2"
                 >
                   Reconnect
                 </button>
@@ -399,9 +422,9 @@ export default function SessionPage() {
 
           {/* Error message banner */}
           {error && (
-            <div className="mt-4 p-4 rounded-lg border border-red-500 bg-red-50 dark:bg-red-950/20 flex items-start justify-between">
+            <div role="alert" className="mt-4 p-4 rounded-lg border border-red-500 bg-red-50 dark:bg-red-950/20 flex items-start justify-between">
               <div className="flex items-start gap-3">
-                <div className="text-red-600 dark:text-red-400 mt-0.5">⚠️</div>
+                <div className="text-red-600 dark:text-red-400 mt-0.5" aria-hidden="true">⚠️</div>
                 <div>
                   <p className="text-sm font-semibold text-red-900 dark:text-red-100">
                     Connection Error
@@ -448,6 +471,7 @@ export default function SessionPage() {
                     className="w-full px-3 py-2 border border-input rounded-md bg-background focus:outline-none focus:ring-2 focus:ring-ring"
                     maxLength={200}
                     disabled={!isConnected}
+                    aria-label="Topic for estimation"
                   />
                   <div className="flex gap-2">
                     <button
@@ -481,7 +505,7 @@ export default function SessionPage() {
 
             {/* Vote results (shown after reveal, above cards) */}
             {isRevealed && statistics && (
-              <div className="rounded-lg border border-border bg-card p-6">
+              <div ref={resultsRef} tabIndex={-1} className="rounded-lg border border-border bg-card p-6 focus:outline-none">
                 <h2 className="text-lg font-semibold mb-4">Results</h2>
                 <VoteResults
                   votes={revealedVotes}
@@ -496,7 +520,7 @@ export default function SessionPage() {
               <CardDeck
                 selectedValue={selectedCard}
                 onSelectCard={handleSelectCard}
-                disabled={!isConnected}
+                disabled={!isConnected || isRevealed}
               />
             </div>
           </div>

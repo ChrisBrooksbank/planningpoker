@@ -158,6 +158,7 @@ export default function Home() {
             }}
             className="text-sm text-muted-foreground hover:text-foreground transition-colors"
             disabled={isLoading}
+            aria-label="Back to home"
           >
             ← Back
           </button>
@@ -187,6 +188,8 @@ export default function Home() {
                 maxLength={100}
                 disabled={isLoading}
                 required
+                aria-describedby={error ? "formError" : undefined}
+                aria-invalid={!!error}
               />
             </div>
 
@@ -207,11 +210,13 @@ export default function Home() {
                 maxLength={50}
                 disabled={isLoading}
                 required
+                aria-describedby={error ? "formError" : undefined}
+                aria-invalid={!!error}
               />
             </div>
 
             {error && (
-              <div className="rounded-lg bg-red-50 dark:bg-red-900/20 border border-red-200 dark:border-red-800 px-4 py-3 text-sm text-red-800 dark:text-red-200">
+              <div id="formError" role="alert" className="rounded-lg bg-red-50 dark:bg-red-900/20 border border-red-200 dark:border-red-800 px-4 py-3 text-sm text-red-800 dark:text-red-200">
                 {error}
               </div>
             )}
@@ -242,6 +247,7 @@ export default function Home() {
           }}
           className="text-sm text-muted-foreground hover:text-foreground transition-colors"
           disabled={isLoading}
+          aria-label="Back to home"
         >
           ← Back
         </button>
@@ -271,6 +277,8 @@ export default function Home() {
               maxLength={6}
               disabled={isLoading}
               required
+              aria-describedby={error ? "formError" : undefined}
+              aria-invalid={!!error}
             />
           </div>
 
@@ -291,11 +299,13 @@ export default function Home() {
               maxLength={50}
               disabled={isLoading}
               required
+              aria-describedby={error ? "formError" : undefined}
+              aria-invalid={!!error}
             />
           </div>
 
           {error && (
-            <div className="rounded-lg bg-red-50 dark:bg-red-900/20 border border-red-200 dark:border-red-800 px-4 py-3 text-sm text-red-800 dark:text-red-200">
+            <div id="formError" role="alert" className="rounded-lg bg-red-50 dark:bg-red-900/20 border border-red-200 dark:border-red-800 px-4 py-3 text-sm text-red-800 dark:text-red-200">
               {error}
             </div>
           )}

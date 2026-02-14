@@ -120,7 +120,8 @@ export class PlanningPokerWebSocketServer {
       });
 
       // Send connection acknowledgment
-      ws.send(
+      this.safeSend(
+        ws,
         JSON.stringify({
           type: "connected",
           userId,
@@ -433,14 +434,29 @@ export class PlanningPokerWebSocketServer {
 
     const json = JSON.stringify(stateMessage);
     console.log("Sending session-state:", json.substring(0, 200));
-    ws.send(json);
+    this.safeSend(ws, json);
+  }
+
+  /**
+   * Safely send a message, checking readyState and catching errors
+   */
+  private safeSend(ws: WebSocket, data: string): boolean {
+    if (ws.readyState !== 1) return false; // 1 = OPEN
+    try {
+      ws.send(data);
+      return true;
+    } catch (err) {
+      console.error("Failed to send WebSocket message:", err);
+      return false;
+    }
   }
 
   /**
    * Send an error message to a client
    */
   private sendError(ws: WebSocket, code: string, message: string) {
-    ws.send(
+    this.safeSend(
+      ws,
       JSON.stringify({
         type: "error",
         code,
@@ -463,9 +479,8 @@ export class PlanningPokerWebSocketServer {
     const messageStr = JSON.stringify(message);
 
     this.clients.forEach((client, ws) => {
-      if (client.roomId === roomId && ws !== exclude && ws.readyState === 1) {
-        // 1 = OPEN
-        ws.send(messageStr);
+      if (client.roomId === roomId && ws !== exclude) {
+        this.safeSend(ws, messageStr);
       }
     });
   }
@@ -480,12 +495,8 @@ export class PlanningPokerWebSocketServer {
     const messageStr = JSON.stringify(message);
 
     this.clients.forEach((client, ws) => {
-      if (
-        client.userId === userId &&
-        client.roomId === roomId &&
-        ws.readyState === 1
-      ) {
-        ws.send(messageStr);
+      if (client.userId === userId && client.roomId === roomId) {
+        this.safeSend(ws, messageStr);
       }
     });
   }
