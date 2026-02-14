@@ -59,7 +59,7 @@ export function CardDeck({
       <div
         role="radiogroup"
         aria-label="Estimation cards"
-        className="grid grid-cols-5 gap-2 sm:gap-3"
+        className="grid grid-cols-4 sm:grid-cols-5 gap-2 sm:gap-3"
         onKeyDown={handleKeyDown}
       >
         {CARD_VALUES.map((value, index) => (
@@ -71,7 +71,7 @@ export function CardDeck({
             disabled={disabled}
             tabIndex={index === focusedIndex ? 0 : -1}
             className={`
-              aspect-[2/3] rounded-lg border-2 font-semibold text-base sm:text-lg
+              aspect-[2/3] rounded-lg border-2 font-semibold text-xl sm:text-lg
               transition-all duration-200
               hover:scale-105 active:scale-95
               disabled:opacity-50 disabled:cursor-not-allowed disabled:hover:scale-100
@@ -79,7 +79,7 @@ export function CardDeck({
               ${
                 selectedValue === value
                   ? "border-primary bg-primary text-primary-foreground shadow-lg scale-105"
-                  : "border-border bg-card hover:border-primary/50 hover:bg-muted"
+                  : "border-muted-foreground/25 sm:border-border bg-card hover:border-primary/50 hover:bg-muted"
               }
             `}
             role="radio"

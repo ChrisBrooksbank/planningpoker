@@ -372,7 +372,7 @@ export default function SessionPage() {
   }
 
   return (
-    <main id="main-content" className="flex min-h-screen flex-col p-4 sm:p-8">
+    <main id="main-content" className="flex lg:min-h-screen flex-col p-4 sm:p-8">
       <div className="w-full max-w-6xl mx-auto">
         <div className="mb-4 sm:mb-8">
           <div className="flex items-start justify-between gap-2">
