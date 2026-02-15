@@ -39,6 +39,7 @@ export function ParticipantList({
             participant.name,
             isYou ? "You" : null,
             participant.isModerator ? "Moderator" : null,
+            participant.isObserver ? "Observer" : null,
             hasVoted ? "Voted" : null,
             connectionStatus,
           ]
@@ -63,6 +64,11 @@ export function ParticipantList({
                 {participant.isModerator && (
                   <span className="inline-flex items-center rounded-full bg-primary px-2 py-0.5 text-xs font-medium text-primary-foreground">
                     Moderator
+                  </span>
+                )}
+                {participant.isObserver && (
+                  <span className="inline-flex items-center rounded-full bg-muted px-2 py-0.5 text-xs font-medium text-muted-foreground">
+                    Observer
                   </span>
                 )}
               </div>

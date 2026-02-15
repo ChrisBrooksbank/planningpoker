@@ -1,9 +1,10 @@
-import type { Vote, VoteStatistics, Participant } from "@/lib/types";
+import type { Vote, VoteStatistics, Participant, DeckType } from "@/lib/types";
 
 interface VoteResultsProps {
   votes: Record<string, Vote>;
   participants: Participant[];
   statistics: VoteStatistics;
+  deckType?: DeckType;
 }
 
 function VoteValueDisplay({ value }: { value: string }) {
@@ -22,7 +23,9 @@ export function VoteResults({
   votes,
   participants,
   statistics,
+  deckType = "fibonacci",
 }: VoteResultsProps) {
+  const showNumericStats = deckType !== "tshirt";
   // Create a map of userId to participant name for quick lookup
   const participantMap = new Map(participants.map((p) => [p.id, p.name]));
 
@@ -78,15 +81,17 @@ export function VoteResults({
       {/* Statistics section */}
       <div>
         <h3 className="text-lg font-semibold mb-3">Statistics</h3>
-        <div className="grid grid-cols-2 gap-2 sm:gap-4">
-          <div className="p-2.5 sm:p-4 rounded-md bg-muted" role="group" aria-label={`Average: ${statistics.average !== null ? statistics.average.toFixed(1) : "N/A"}`}>
-            <p className="text-sm text-muted-foreground mb-1">Average</p>
-            <p className="text-xl sm:text-2xl font-bold">
-              {statistics.average !== null
-                ? statistics.average.toFixed(1)
-                : "N/A"}
-            </p>
-          </div>
+        <div className={`grid gap-2 sm:gap-4 ${showNumericStats ? "grid-cols-2" : "grid-cols-1"}`}>
+          {showNumericStats && (
+            <div className="p-2.5 sm:p-4 rounded-md bg-muted" role="group" aria-label={`Average: ${statistics.average !== null ? statistics.average.toFixed(1) : "N/A"}`}>
+              <p className="text-sm text-muted-foreground mb-1">Average</p>
+              <p className="text-xl sm:text-2xl font-bold">
+                {statistics.average !== null
+                  ? statistics.average.toFixed(1)
+                  : "N/A"}
+              </p>
+            </div>
+          )}
           <div className="p-2.5 sm:p-4 rounded-md bg-muted" role="group" aria-label={`Most Common: ${statistics.mode !== null ? (statistics.mode === "coffee" ? "Coffee break" : statistics.mode) : "N/A"}`}>
             <p className="text-sm text-muted-foreground mb-1">Most Common</p>
             <p className="text-xl sm:text-2xl font-bold">
@@ -95,20 +100,24 @@ export function VoteResults({
                 : "N/A"}
             </p>
           </div>
-          <div className="p-2.5 sm:p-4 rounded-md bg-muted" role="group" aria-label={`Range: ${statistics.min !== null && statistics.max !== null ? `${statistics.min} - ${statistics.max}` : "N/A"}`}>
-            <p className="text-sm text-muted-foreground mb-1">Range</p>
-            <p className="text-xl sm:text-2xl font-bold">
-              {statistics.min !== null && statistics.max !== null
-                ? `${statistics.min} - ${statistics.max}`
-                : "N/A"}
-            </p>
-          </div>
-          <div className="p-2.5 sm:p-4 rounded-md bg-muted" role="group" aria-label={`Spread: ${statistics.range !== null ? statistics.range : "N/A"}`}>
-            <p className="text-sm text-muted-foreground mb-1">Spread</p>
-            <p className="text-xl sm:text-2xl font-bold">
-              {statistics.range !== null ? statistics.range : "N/A"}
-            </p>
-          </div>
+          {showNumericStats && (
+            <>
+              <div className="p-2.5 sm:p-4 rounded-md bg-muted" role="group" aria-label={`Range: ${statistics.min !== null && statistics.max !== null ? `${statistics.min} - ${statistics.max}` : "N/A"}`}>
+                <p className="text-sm text-muted-foreground mb-1">Range</p>
+                <p className="text-xl sm:text-2xl font-bold">
+                  {statistics.min !== null && statistics.max !== null
+                    ? `${statistics.min} - ${statistics.max}`
+                    : "N/A"}
+                </p>
+              </div>
+              <div className="p-2.5 sm:p-4 rounded-md bg-muted" role="group" aria-label={`Spread: ${statistics.range !== null ? statistics.range : "N/A"}`}>
+                <p className="text-sm text-muted-foreground mb-1">Spread</p>
+                <p className="text-xl sm:text-2xl font-bold">
+                  {statistics.range !== null ? statistics.range : "N/A"}
+                </p>
+              </div>
+            </>
+          )}
         </div>
       </div>
     </div>

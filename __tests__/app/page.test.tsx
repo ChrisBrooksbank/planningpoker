@@ -183,6 +183,7 @@ describe("Home Page", () => {
           body: JSON.stringify({
             sessionName: "Sprint 24",
             moderatorName: "John Doe",
+            deckType: "fibonacci",
           }),
         });
       });
@@ -283,6 +284,7 @@ describe("Home Page", () => {
           body: JSON.stringify({
             sessionName: "Sprint 24",
             moderatorName: "John Doe",
+            deckType: "fibonacci",
           }),
         });
       });

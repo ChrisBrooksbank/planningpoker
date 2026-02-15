@@ -15,6 +15,7 @@ export default function Home() {
   const [moderatorName, setModeratorName] = useState("");
   const [roomCode, setRoomCode] = useState("");
   const [participantName, setParticipantName] = useState("");
+  const [deckType, setDeckType] = useState<"fibonacci" | "tshirt">("fibonacci");
   const [error, setError] = useState("");
   const [isLoading, setIsLoading] = useState(false);
   const router = useRouter();
@@ -45,6 +46,7 @@ export default function Home() {
         body: JSON.stringify({
           sessionName: sessionName.trim(),
           moderatorName: moderatorName.trim(),
+          deckType,
         }),
       });
 
@@ -155,6 +157,7 @@ export default function Home() {
               setError("");
               setSessionName("");
               setModeratorName("");
+              setDeckType("fibonacci");
             }}
             className="text-sm text-muted-foreground hover:text-foreground transition-colors"
             disabled={isLoading}
@@ -214,6 +217,52 @@ export default function Home() {
                 aria-invalid={!!error}
               />
             </div>
+
+            <fieldset className="space-y-2" disabled={isLoading}>
+              <legend className="block text-sm font-medium mb-1">Card Deck</legend>
+              <div className="flex flex-col sm:flex-row gap-2">
+                <label
+                  className={`flex-1 flex items-center gap-2 rounded-lg border px-4 py-3 cursor-pointer transition-colors ${
+                    deckType === "fibonacci"
+                      ? "border-primary bg-primary/10"
+                      : "border-input hover:bg-muted"
+                  }`}
+                >
+                  <input
+                    type="radio"
+                    name="deckType"
+                    value="fibonacci"
+                    checked={deckType === "fibonacci"}
+                    onChange={() => setDeckType("fibonacci")}
+                    className="accent-primary"
+                  />
+                  <div>
+                    <span className="font-medium text-sm">Fibonacci</span>
+                    <span className="block text-xs text-muted-foreground">0, 1, 2, 3, 5, 8, 13, 21</span>
+                  </div>
+                </label>
+                <label
+                  className={`flex-1 flex items-center gap-2 rounded-lg border px-4 py-3 cursor-pointer transition-colors ${
+                    deckType === "tshirt"
+                      ? "border-primary bg-primary/10"
+                      : "border-input hover:bg-muted"
+                  }`}
+                >
+                  <input
+                    type="radio"
+                    name="deckType"
+                    value="tshirt"
+                    checked={deckType === "tshirt"}
+                    onChange={() => setDeckType("tshirt")}
+                    className="accent-primary"
+                  />
+                  <div>
+                    <span className="font-medium text-sm">T-Shirt</span>
+                    <span className="block text-xs text-muted-foreground">XS, S, M, L, XL, XXL</span>
+                  </div>
+                </label>
+              </div>
+            </fieldset>
 
             {error && (
               <div id="formError" role="alert" className="rounded-lg bg-red-50 dark:bg-red-900/20 border border-red-200 dark:border-red-800 px-4 py-3 text-sm text-red-800 dark:text-red-200">

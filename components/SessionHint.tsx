@@ -6,6 +6,7 @@ interface SessionHintProps {
   moderatorName: string;
   votedCount: number;
   totalParticipants: number;
+  isObserver?: boolean;
 }
 
 interface HintResult {
@@ -23,7 +24,20 @@ export function getSessionHint(props: SessionHintProps): HintResult {
     moderatorName,
     votedCount,
     totalParticipants,
+    isObserver = false,
   } = props;
+
+  // Observer hints take priority for non-moderator observers
+  if (isObserver && !isModerator) {
+    if (isVotingOpen) {
+      return {
+        primary: "You are observing. Votes are in progress.",
+      };
+    }
+    return {
+      primary: "You are observing this room.",
+    };
+  }
 
   // Revealed state
   if (isRevealed) {

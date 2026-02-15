@@ -7,7 +7,8 @@ import type { ServerMessage } from "@/lib/websocket-messages";
 import { ParticipantList } from "@/components/ParticipantList";
 import { CardDeck } from "@/components/CardDeck";
 import { VoteResults } from "@/components/VoteResults";
-import type { Participant, CardValue, Vote, VoteStatistics } from "@/lib/types";
+import { RoundHistory } from "@/components/RoundHistory";
+import type { Participant, CardValue, Vote, VoteStatistics, DeckType, RoundHistoryEntry } from "@/lib/types";
 import { isValidParticipantName } from "@/lib/utils";
 import { SessionHint } from "@/components/SessionHint";
 import { ModeratorWelcomeModal } from "@/components/ModeratorWelcomeModal";
@@ -35,6 +36,10 @@ export default function SessionPage() {
   const [isVotingOpen, setIsVotingOpen] = useState<boolean>(false);
   const [revealedVotes, setRevealedVotes] = useState<Record<string, Vote>>({});
   const [statistics, setStatistics] = useState<VoteStatistics | null>(null);
+  const [sessionName, setSessionName] = useState<string>("");
+  const [deckType, setDeckType] = useState<DeckType>("fibonacci");
+  const [isObserver, setIsObserver] = useState(false);
+  const [roundHistory, setRoundHistory] = useState<RoundHistoryEntry[]>([]);
   const [showModeratorModal, setShowModeratorModal] = useState(false);
   const hasJoinedRef = useRef(false);
   const resultsRef = useRef<HTMLDivElement>(null);
@@ -120,7 +125,9 @@ export default function SessionPage() {
       case "session-state":
         // Update participants from session state
         setParticipants(message.participants);
-        // Update moderator ID and current topic
+        // Update session name, deck type, moderator ID and current topic
+        setSessionName(message.sessionName || "");
+        setDeckType(message.deckType || "fibonacci");
         setModeratorId(message.moderatorId);
         // Show moderator welcome modal on first join
         if (
@@ -150,6 +157,12 @@ export default function SessionPage() {
           setRevealedVotes({});
         }
         setStatistics(message.statistics ?? null);
+        setRoundHistory(message.roundHistory || []);
+        // Sync observer state from participants
+        if (userId) {
+          const self = message.participants.find((p: Participant) => p.id === userId);
+          setIsObserver(self?.isObserver ?? false);
+        }
         // Sync selectedCard with server state (handles reconnect after round change)
         if (userId) {
           const myVote = message.votes[userId];
@@ -210,6 +223,28 @@ export default function SessionPage() {
         setStatistics(null);
         setSelectedCard(null);
         setVotedUserIds(new Set());
+        setRoundHistory(message.roundHistory || []);
+        break;
+
+      case "observer-toggled":
+        // Update participant's observer status
+        setParticipants((prev) =>
+          prev.map((p) =>
+            p.id === message.userId ? { ...p, isObserver: message.isObserver } : p
+          )
+        );
+        // Update own observer state
+        if (message.userId === userId) {
+          setIsObserver(message.isObserver);
+          if (message.isObserver) {
+            setSelectedCard(null);
+            setVotedUserIds((prev) => {
+              const next = new Set(prev);
+              next.delete(message.userId);
+              return next;
+            });
+          }
+        }
         break;
 
       case "error":
@@ -219,7 +254,8 @@ export default function SessionPage() {
           message.code === "VOTING_NOT_OPEN" ||
           message.code === "INVALID_VOTE" ||
           message.code === "VOTE_FAILED" ||
-          message.code === "NOT_A_PARTICIPANT"
+          message.code === "NOT_A_PARTICIPANT" ||
+          message.code === "OBSERVER_CANNOT_VOTE"
         ) {
           setSelectedCard(null);
         }
@@ -255,6 +291,8 @@ export default function SessionPage() {
   const isModerator = userId === moderatorId;
   const moderatorName = participants.find(p => p.id === moderatorId)?.name ?? "the moderator";
   const hasVoted = userId ? votedUserIds.has(userId) : false;
+  const voters = participants.filter((p) => !p.isObserver);
+  const voterCount = voters.length;
 
   // Handle moderator modal dismiss
   const handleDismissModeratorModal = useCallback(() => {
@@ -300,6 +338,11 @@ export default function SessionPage() {
       type: "submit-vote",
       value,
     });
+  }, [sendMessage]);
+
+  // Handle toggle observer
+  const handleToggleObserver = useCallback(() => {
+    sendMessage({ type: "toggle-observer" });
   }, [sendMessage]);
 
   // Send join-session message when connected
@@ -399,7 +442,7 @@ export default function SessionPage() {
         <div className="mb-4 sm:mb-8">
           <div className="flex items-start justify-between gap-2">
             <div>
-              <h1 className="text-xl sm:text-3xl font-bold mb-1 sm:mb-2">Planning Poker</h1>
+              <h1 className="text-xl sm:text-3xl font-bold mb-1 sm:mb-2">{sessionName || "Planning Poker"}</h1>
               <div className="flex items-center gap-2">
                 <p className="text-sm text-muted-foreground">
                   Room Code:{" "}
@@ -418,6 +461,17 @@ export default function SessionPage() {
                 <span role="status" aria-live="polite" className="sr-only">
                   {linkCopied ? "Link copied to clipboard" : ""}
                 </span>
+                <button
+                  onClick={handleToggleObserver}
+                  disabled={!isConnected}
+                  className={`text-xs px-2 py-1 rounded border transition-colors ${
+                    isObserver
+                      ? "bg-amber-100 border-amber-400 text-amber-700 dark:bg-amber-900/30 dark:border-amber-600 dark:text-amber-300"
+                      : "border-border hover:bg-muted"
+                  }`}
+                >
+                  {isObserver ? "Switch to Voter" : "Switch to Observer"}
+                </button>
               </div>
             </div>
             <div className="flex items-center gap-1.5 sm:gap-2 shrink-0">
@@ -507,7 +561,7 @@ export default function SessionPage() {
                       onClick={handleStartRound}
                       disabled={!isConnected}
                       className={`px-6 py-3 bg-primary text-primary-foreground rounded-md hover:bg-primary/90 disabled:opacity-50 disabled:cursor-not-allowed font-semibold ${
-                        participants.length > 1 && !isVotingOpen && !isRevealed
+                        voterCount > 1 && !isVotingOpen && !isRevealed
                           ? "animate-pulse ring-2 ring-primary/50"
                           : ""
                       }`}
@@ -519,7 +573,7 @@ export default function SessionPage() {
                         onClick={handleRevealVotes}
                         disabled={!isConnected}
                         className={`px-6 py-3 bg-primary text-primary-foreground rounded-md hover:bg-primary/90 disabled:opacity-50 disabled:cursor-not-allowed font-semibold ${
-                          isVotingOpen && votedUserIds.size > 0 && votedUserIds.size >= Math.ceil(participants.length / 2)
+                          isVotingOpen && votedUserIds.size > 0 && votedUserIds.size >= Math.ceil(voterCount / 2)
                             ? "animate-pulse ring-2 ring-primary/50"
                             : ""
                         }`}
@@ -531,17 +585,17 @@ export default function SessionPage() {
                   {isVotingOpen && (
                     <div className="space-y-1.5">
                       <div className="flex justify-between text-xs text-muted-foreground">
-                        <span>{votedUserIds.size} of {participants.length} voted</span>
-                        <span>{participants.length > 0 ? Math.round((votedUserIds.size / participants.length) * 100) : 0}%</span>
+                        <span>{votedUserIds.size} of {voterCount} voted</span>
+                        <span>{voterCount > 0 ? Math.round((votedUserIds.size / voterCount) * 100) : 0}%</span>
                       </div>
-                      <div className="w-full h-2 rounded-full bg-muted overflow-hidden" role="progressbar" aria-valuenow={votedUserIds.size} aria-valuemin={0} aria-valuemax={participants.length} aria-label="Voting progress">
+                      <div className="w-full h-2 rounded-full bg-muted overflow-hidden" role="progressbar" aria-valuenow={votedUserIds.size} aria-valuemin={0} aria-valuemax={voterCount} aria-label="Voting progress">
                         <div
                           className={`h-full rounded-full transition-all duration-300 ${
-                            votedUserIds.size === participants.length
+                            votedUserIds.size === voterCount
                               ? "bg-green-500"
                               : "bg-primary"
                           }`}
-                          style={{ width: `${participants.length > 0 ? (votedUserIds.size / participants.length) * 100 : 0}%` }}
+                          style={{ width: `${voterCount > 0 ? (votedUserIds.size / voterCount) * 100 : 0}%` }}
                         />
                       </div>
                     </div>
@@ -566,6 +620,7 @@ export default function SessionPage() {
                   votes={revealedVotes}
                   participants={participants}
                   statistics={statistics}
+                  deckType={deckType}
                 />
               </div>
             )}
@@ -578,21 +633,28 @@ export default function SessionPage() {
               hasVoted={hasVoted}
               moderatorName={moderatorName}
               votedCount={votedUserIds.size}
-              totalParticipants={participants.length}
+              totalParticipants={voterCount}
+              isObserver={isObserver}
             />
 
             {/* Card deck */}
             <div className={`rounded-lg border bg-card p-3 sm:p-6 ${
-              isVotingOpen && !hasVoted && !isModerator
+              isVotingOpen && !hasVoted && !isModerator && !isObserver
                 ? "border-amber-300 dark:border-amber-700 ring-2 ring-amber-300/50 dark:ring-amber-700/50"
                 : "border-border"
             }`}>
               <CardDeck
                 selectedValue={selectedCard}
                 onSelectCard={handleSelectCard}
-                disabled={!isConnected || !isVotingOpen}
+                disabled={!isConnected || !isVotingOpen || isObserver}
+                deckType={deckType}
               />
             </div>
+
+            {/* Round history */}
+            {roundHistory.length > 0 && (
+              <RoundHistory history={roundHistory} deckType={deckType} />
+            )}
           </div>
         </div>
       </div>

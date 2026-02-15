@@ -1,26 +1,9 @@
 // Shared types for Planning Poker application
 
-// Session Types
-export interface Session {
-  id: string;
-  name: string;
-  createdAt: number;
-  moderatorId: string;
-  currentTopic?: string;
-  isRevealed: boolean;
-  isVotingOpen: boolean;
-}
+// Deck Types
+export type DeckType = "fibonacci" | "tshirt";
 
-// User/Participant Types
-export interface Participant {
-  id: string;
-  name: string;
-  isModerator: boolean;
-  isConnected: boolean;
-}
-
-// Vote Types
-export const CARD_VALUES = [
+export const FIBONACCI_VALUES = [
   "0",
   "1",
   "2",
@@ -33,7 +16,46 @@ export const CARD_VALUES = [
   "coffee",
 ] as const;
 
-export type CardValue = (typeof CARD_VALUES)[number];
+export const TSHIRT_VALUES = [
+  "XS",
+  "S",
+  "M",
+  "L",
+  "XL",
+  "XXL",
+  "?",
+  "coffee",
+] as const;
+
+export function getDeckValues(deckType: DeckType): readonly string[] {
+  return deckType === "tshirt" ? TSHIRT_VALUES : FIBONACCI_VALUES;
+}
+
+// Session Types
+export interface Session {
+  id: string;
+  name: string;
+  createdAt: number;
+  moderatorId: string;
+  currentTopic?: string;
+  isRevealed: boolean;
+  isVotingOpen: boolean;
+  deckType: DeckType;
+}
+
+// User/Participant Types
+export interface Participant {
+  id: string;
+  name: string;
+  isModerator: boolean;
+  isConnected: boolean;
+  isObserver: boolean;
+}
+
+// Vote Types
+export const CARD_VALUES = FIBONACCI_VALUES;
+
+export type CardValue = (typeof FIBONACCI_VALUES)[number] | (typeof TSHIRT_VALUES)[number];
 
 export interface Vote {
   userId: string;
@@ -50,11 +72,20 @@ export interface VoteStatistics {
   range: number | null; // max - min
 }
 
+// Round History
+export interface RoundHistoryEntry {
+  topic: string;
+  votes: Record<string, { participantName: string; value: CardValue }>;
+  statistics: VoteStatistics;
+  completedAt: number;
+}
+
 // Session State (complete state of a poker session)
 export interface SessionState {
   session: Session;
   participants: Participant[];
   votes: Map<string, Vote>; // userId -> Vote
   statistics: VoteStatistics | null; // null until revealed
+  roundHistory: RoundHistoryEntry[];
   lastActivity: number; // timestamp of last message/join activity
 }

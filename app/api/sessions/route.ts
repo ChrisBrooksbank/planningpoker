@@ -10,7 +10,7 @@ import { nanoid } from "nanoid";
 export async function POST(request: NextRequest) {
   try {
     const body = await request.json();
-    const { sessionName, moderatorName } = body;
+    const { sessionName, moderatorName, deckType: rawDeckType } = body;
 
     // Validate inputs
     if (!sessionName || typeof sessionName !== "string") {
@@ -27,6 +27,9 @@ export async function POST(request: NextRequest) {
       );
     }
 
+    // Validate deck type
+    const deckType = rawDeckType === "tshirt" ? "tshirt" : "fibonacci";
+
     // Generate unique moderator ID
     const moderatorId = nanoid();
 
@@ -34,7 +37,8 @@ export async function POST(request: NextRequest) {
     const sessionState = sessionStorage.createSession(
       sessionName,
       moderatorId,
-      moderatorName
+      moderatorName,
+      deckType
     );
 
     return NextResponse.json({

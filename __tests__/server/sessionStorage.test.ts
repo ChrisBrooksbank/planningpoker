@@ -30,6 +30,7 @@ describe("SessionStorage", () => {
         name: "Alice",
         isModerator: true,
         isConnected: true,
+        isObserver: false,
       });
     });
 
@@ -90,6 +91,7 @@ describe("SessionStorage", () => {
         name: "Bob",
         isModerator: false,
         isConnected: true,
+        isObserver: false,
       });
     });
 

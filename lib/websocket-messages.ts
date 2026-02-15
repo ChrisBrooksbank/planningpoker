@@ -1,6 +1,6 @@
 // WebSocket message types for Planning Poker real-time sync
 
-import { CardValue, Participant, Vote, VoteStatistics } from "./types.js";
+import { CardValue, DeckType, Participant, RoundHistoryEntry, Vote, VoteStatistics } from "./types.js";
 
 // Base message interface - all messages must have a type field
 export interface BaseMessage {
@@ -50,13 +50,21 @@ export interface NewRoundMessage extends BaseMessage {
   type: "new-round";
 }
 
+/**
+ * Client toggles their observer status
+ */
+export interface ToggleObserverMessage extends BaseMessage {
+  type: "toggle-observer";
+}
+
 // Union type of all client->server messages
 export type ClientMessage =
   | JoinSessionMessage
   | SubmitVoteMessage
   | SetTopicMessage
   | RevealVotesMessage
-  | NewRoundMessage;
+  | NewRoundMessage
+  | ToggleObserverMessage;
 
 // ============================================================================
 // Server -> Client Messages
@@ -84,9 +92,11 @@ export interface SessionStateMessage extends BaseMessage {
   currentTopic?: string;
   isRevealed: boolean;
   isVotingOpen: boolean;
+  deckType: DeckType;
   participants: Participant[];
   votes: Record<string, { hasVoted: boolean; value?: CardValue }>; // value only if revealed
   statistics?: VoteStatistics; // only if revealed
+  roundHistory: RoundHistoryEntry[];
 }
 
 /**
@@ -138,6 +148,16 @@ export interface VotesRevealedMessage extends BaseMessage {
  */
 export interface RoundStartedMessage extends BaseMessage {
   type: "round-started";
+  roundHistory: RoundHistoryEntry[];
+}
+
+/**
+ * A participant toggled their observer status
+ */
+export interface ObserverToggledMessage extends BaseMessage {
+  type: "observer-toggled";
+  userId: string;
+  isObserver: boolean;
 }
 
 /**
@@ -159,6 +179,7 @@ export type ServerMessage =
   | TopicChangedMessage
   | VotesRevealedMessage
   | RoundStartedMessage
+  | ObserverToggledMessage
   | ErrorMessage;
 
 // Union type of all messages
@@ -177,6 +198,7 @@ export function isClientMessage(
     "set-topic",
     "reveal-votes",
     "new-round",
+    "toggle-observer",
   ].includes(message.type);
 }
 
@@ -192,6 +214,7 @@ export function isServerMessage(
     "topic-changed",
     "votes-revealed",
     "round-started",
+    "observer-toggled",
     "error",
   ].includes(message.type);
 }

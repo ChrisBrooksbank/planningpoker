@@ -1,18 +1,21 @@
 import { useState, useRef, useCallback, type KeyboardEvent } from "react";
-import type { CardValue } from "@/lib/types";
-import { CARD_VALUES } from "@/lib/types";
+import type { CardValue, DeckType } from "@/lib/types";
+import { getDeckValues } from "@/lib/types";
 
 interface CardDeckProps {
   selectedValue: CardValue | null;
   onSelectCard: (value: CardValue) => void;
   disabled?: boolean;
+  deckType?: DeckType;
 }
 
 export function CardDeck({
   selectedValue,
   onSelectCard,
   disabled = false,
+  deckType = "fibonacci",
 }: CardDeckProps) {
+  const cardValues = getDeckValues(deckType);
   const [focusedIndex, setFocusedIndex] = useState(0);
   const buttonRefs = useRef<(HTMLButtonElement | null)[]>([]);
 
@@ -30,12 +33,12 @@ export function CardDeck({
       case "ArrowRight":
       case "ArrowDown":
         e.preventDefault();
-        nextIndex = (focusedIndex + 1) % CARD_VALUES.length;
+        nextIndex = (focusedIndex + 1) % cardValues.length;
         break;
       case "ArrowLeft":
       case "ArrowUp":
         e.preventDefault();
-        nextIndex = (focusedIndex - 1 + CARD_VALUES.length) % CARD_VALUES.length;
+        nextIndex = (focusedIndex - 1 + cardValues.length) % cardValues.length;
         break;
       case "Home":
         e.preventDefault();
@@ -43,7 +46,7 @@ export function CardDeck({
         break;
       case "End":
         e.preventDefault();
-        nextIndex = CARD_VALUES.length - 1;
+        nextIndex = cardValues.length - 1;
         break;
     }
 
@@ -62,11 +65,11 @@ export function CardDeck({
         className="grid grid-cols-4 sm:grid-cols-5 gap-2 sm:gap-3"
         onKeyDown={handleKeyDown}
       >
-        {CARD_VALUES.map((value, index) => (
+        {cardValues.map((value, index) => (
           <button
             key={value}
             ref={setButtonRef(index)}
-            onClick={() => onSelectCard(value)}
+            onClick={() => onSelectCard(value as CardValue)}
             onFocus={() => setFocusedIndex(index)}
             disabled={disabled}
             tabIndex={index === focusedIndex ? 0 : -1}

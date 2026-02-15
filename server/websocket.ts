@@ -13,10 +13,11 @@ import type {
   SetTopicMessage,
   RevealVotesMessage,
   NewRoundMessage,
+  ToggleObserverMessage,
   SessionStateMessage,
 } from "../lib/websocket-messages.js";
-import { CARD_VALUES } from "../lib/types.js";
-import type { Participant, Vote, CardValue } from "../lib/types.js";
+import { getDeckValues } from "../lib/types.js";
+import type { Participant, Vote, CardValue, DeckType } from "../lib/types.js";
 
 export interface RoomClient {
   ws: WebSocket;
@@ -33,7 +34,7 @@ export class PlanningPokerWebSocketServer {
   private heartbeatInterval: NodeJS.Timeout;
 
   constructor(server: HTTPServer) {
-    this.wss = new WebSocketServer({ server, path: "/ws", maxPayload: 64 * 1024 });
+    this.wss = new WebSocketServer({ server, path: "/ws", maxPayload: 256 * 1024 });
     this.setupWebSocketServer();
     this.heartbeatInterval = setInterval(() => this.checkConnections(), 30000);
   }
@@ -194,6 +195,9 @@ export class PlanningPokerWebSocketServer {
       case "new-round":
         this.handleNewRound(ws, client, message);
         break;
+      case "toggle-observer":
+        this.handleToggleObserver(ws, client);
+        break;
       default:
         this.sendError(ws, "UNKNOWN_MESSAGE_TYPE", "Unknown message type");
     }
@@ -267,15 +271,16 @@ export class PlanningPokerWebSocketServer {
     const { roomId, userId } = client;
     const { value } = message;
 
-    // Validate vote value against allowed card values
-    if (!CARD_VALUES.includes(value as CardValue)) {
-      this.sendError(ws, "INVALID_VOTE", "Invalid vote value");
-      return;
-    }
-
     const session = sessionStorage.getSession(roomId);
     if (!session) {
       this.sendError(ws, "SESSION_NOT_FOUND", "Session does not exist");
+      return;
+    }
+
+    // Validate vote value against the session's deck values
+    const deckValues = getDeckValues(session.session.deckType || "fibonacci");
+    if (!deckValues.includes(value)) {
+      this.sendError(ws, "INVALID_VOTE", "Invalid vote value");
       return;
     }
 
@@ -292,13 +297,25 @@ export class PlanningPokerWebSocketServer {
     }
 
     // Verify user is a participant
-    if (!session.participants.some(p => p.id === userId)) {
+    const participant = session.participants.find(p => p.id === userId);
+    if (!participant) {
       this.sendError(ws, "NOT_A_PARTICIPANT", "You must join the session before voting");
+      return;
+    }
+
+    // Reject votes from observers
+    if (participant.isObserver) {
+      this.sendError(ws, "OBSERVER_CANNOT_VOTE", "Observers cannot vote");
       return;
     }
 
     // Submit vote to session storage
     const success = sessionStorage.submitVote(roomId, userId, value);
+
+    if (success === "OBSERVER") {
+      this.sendError(ws, "OBSERVER_CANNOT_VOTE", "Observers cannot vote");
+      return;
+    }
 
     if (!success) {
       this.sendError(ws, "VOTE_FAILED", "Failed to submit vote");
@@ -439,9 +456,33 @@ export class PlanningPokerWebSocketServer {
     // Start new round in session storage
     sessionStorage.startNewRound(roomId);
 
+    // Get updated session for round history
+    const updatedSession = sessionStorage.getSession(roomId);
+
     // Broadcast to all participants
     this.broadcastToRoom(roomId, {
       type: "round-started",
+      roundHistory: updatedSession?.roundHistory || [],
+    });
+  }
+
+  /**
+   * Handle toggle-observer message
+   */
+  private handleToggleObserver(ws: WebSocket, client: RoomClient) {
+    const { roomId, userId } = client;
+
+    const result = sessionStorage.toggleObserver(roomId, userId);
+    if (result === null) {
+      this.sendError(ws, "TOGGLE_FAILED", "Failed to toggle observer status");
+      return;
+    }
+
+    // Broadcast to all participants
+    this.broadcastToRoom(roomId, {
+      type: "observer-toggled",
+      userId,
+      isObserver: result,
     });
   }
 
@@ -472,11 +513,13 @@ export class PlanningPokerWebSocketServer {
       currentTopic: session.session.currentTopic,
       isRevealed: session.session.isRevealed,
       isVotingOpen: session.session.isVotingOpen,
+      deckType: session.session.deckType || "fibonacci",
       participants: session.participants,
       votes,
       statistics: session.session.isRevealed
         ? session.statistics || undefined
         : undefined,
+      roundHistory: session.roundHistory || [],
     };
 
     this.safeSend(ws, JSON.stringify(stateMessage));

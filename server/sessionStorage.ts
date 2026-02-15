@@ -5,8 +5,9 @@ import type {
   SessionState,
   VoteStatistics,
   CardValue,
+  DeckType,
 } from "../lib/types.js";
-import { CARD_VALUES } from "../lib/types.js";
+import { CARD_VALUES, getDeckValues } from "../lib/types.js";
 import { generateRoomCode } from "../lib/utils.js";
 
 /**
@@ -45,7 +46,8 @@ export class SessionStorage {
   createSession(
     sessionName: string,
     moderatorId: string,
-    moderatorName: string
+    moderatorName: string,
+    deckType: DeckType = "fibonacci"
   ): SessionState {
     // Generate unique 6-character URL-safe room code with collision checking
     const existingCodes = new Set(this.sessions.keys());
@@ -59,6 +61,7 @@ export class SessionStorage {
       currentTopic: undefined,
       isRevealed: false,
       isVotingOpen: false,
+      deckType,
     };
 
     const moderator: Participant = {
@@ -66,6 +69,7 @@ export class SessionStorage {
       name: moderatorName,
       isModerator: true,
       isConnected: true,
+      isObserver: false,
     };
 
     const sessionState: SessionState = {
@@ -73,6 +77,7 @@ export class SessionStorage {
       participants: [moderator],
       votes: new Map(),
       statistics: null,
+      roundHistory: [],
       lastActivity: Date.now(),
     };
 
@@ -138,6 +143,7 @@ export class SessionStorage {
         name: userName,
         isModerator: false,
         isConnected: true,
+        isObserver: false,
       };
       sessionState.participants.push(participant);
     }
@@ -191,6 +197,33 @@ export class SessionStorage {
   }
 
   /**
+   * Toggle observer status for a participant
+   * @param roomId - The room ID
+   * @param userId - The participant's user ID
+   * @returns The new isObserver value, or null if session/participant not found
+   */
+  toggleObserver(roomId: string, userId: string): boolean | null {
+    const sessionState = this.sessions.get(roomId);
+    if (!sessionState) {
+      return null;
+    }
+
+    const participant = sessionState.participants.find((p) => p.id === userId);
+    if (!participant) {
+      return null;
+    }
+
+    participant.isObserver = !participant.isObserver;
+
+    // If becoming observer, remove their vote
+    if (participant.isObserver) {
+      sessionState.votes.delete(userId);
+    }
+
+    return participant.isObserver;
+  }
+
+  /**
    * Get all participants in a session
    * @param roomId - The room ID
    * @returns Participant list or null if session not found
@@ -224,13 +257,20 @@ export class SessionStorage {
    * @param value - The vote value
    * @returns True if successful, false if session not found
    */
-  submitVote(roomId: string, userId: string, value: string): boolean {
+  submitVote(roomId: string, userId: string, value: string): boolean | "OBSERVER" {
     const sessionState = this.sessions.get(roomId);
     if (!sessionState) {
       return false;
     }
 
-    if (!CARD_VALUES.includes(value as CardValue)) {
+    // Check if participant is an observer
+    const participant = sessionState.participants.find((p) => p.id === userId);
+    if (participant?.isObserver) {
+      return "OBSERVER";
+    }
+
+    const deckValues = getDeckValues(sessionState.session.deckType || "fibonacci");
+    if (!deckValues.includes(value)) {
       return false;
     }
 
@@ -328,6 +368,30 @@ export class SessionStorage {
     const sessionState = this.sessions.get(roomId);
     if (!sessionState) {
       return false;
+    }
+
+    // Snapshot the completed round into history (if votes were revealed)
+    if (sessionState.session.isRevealed && sessionState.votes.size > 0 && sessionState.statistics) {
+      const historyVotes: Record<string, { participantName: string; value: CardValue }> = {};
+      sessionState.votes.forEach((vote, oddsUserId) => {
+        const participant = sessionState.participants.find((p) => p.id === oddsUserId);
+        historyVotes[oddsUserId] = {
+          participantName: participant?.name || "Unknown",
+          value: vote.value,
+        };
+      });
+
+      sessionState.roundHistory.push({
+        topic: sessionState.session.currentTopic || "",
+        votes: historyVotes,
+        statistics: { ...sessionState.statistics },
+        completedAt: Date.now(),
+      });
+
+      // Cap at 20 entries
+      if (sessionState.roundHistory.length > 20) {
+        sessionState.roundHistory = sessionState.roundHistory.slice(-20);
+      }
     }
 
     sessionState.votes.clear();
