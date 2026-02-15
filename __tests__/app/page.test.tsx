@@ -29,28 +29,28 @@ describe("Home Page", () => {
       ).toBeInTheDocument();
     });
 
-    it("displays Create Session button", () => {
+    it("displays Create Room button", () => {
       render(<Home />);
-      expect(screen.getByText("Create Session")).toBeInTheDocument();
+      expect(screen.getByText("Create Room")).toBeInTheDocument();
     });
 
-    it("displays Join Session button", () => {
+    it("displays Join Room button", () => {
       render(<Home />);
-      expect(screen.getByText("Join Session")).toBeInTheDocument();
+      expect(screen.getByText("Join Room")).toBeInTheDocument();
     });
 
-    it("navigates to create mode when Create Session is clicked", () => {
+    it("navigates to create mode when Create Room is clicked", () => {
       render(<Home />);
-      const createButton = screen.getByText("Create Session");
+      const createButton = screen.getByText("Create Room");
       fireEvent.click(createButton);
       expect(
-        screen.getByText("Start a new planning poker session")
+        screen.getByText("Start a new planning poker room")
       ).toBeInTheDocument();
     });
 
-    it("navigates to join mode when Join Session is clicked", () => {
+    it("navigates to join mode when Join Room is clicked", () => {
       render(<Home />);
-      const joinButton = screen.getByRole("button", { name: "Join Session" });
+      const joinButton = screen.getByRole("button", { name: "Join Room" });
       fireEvent.click(joinButton);
       expect(
         screen.getByText("Enter the room code to join")
@@ -61,24 +61,24 @@ describe("Home Page", () => {
   describe("Create Mode", () => {
     it("displays create session header", () => {
       render(<Home />);
-      fireEvent.click(screen.getByRole("button", { name: "Create Session" }));
+      fireEvent.click(screen.getByRole("button", { name: "Create Room" }));
       expect(
-        screen.getByRole("heading", { name: "Create Session" })
+        screen.getByRole("heading", { name: "Create Room" })
       ).toBeInTheDocument();
       expect(
-        screen.getByText("Start a new planning poker session")
+        screen.getByText("Start a new planning poker room")
       ).toBeInTheDocument();
     });
 
     it("displays back button", () => {
       render(<Home />);
-      fireEvent.click(screen.getByRole("button", { name: "Create Session" }));
+      fireEvent.click(screen.getByRole("button", { name: "Create Room" }));
       expect(screen.getByText("← Back")).toBeInTheDocument();
     });
 
     it("navigates back to landing when back button is clicked", () => {
       render(<Home />);
-      fireEvent.click(screen.getByRole("button", { name: "Create Session" }));
+      fireEvent.click(screen.getByRole("button", { name: "Create Room" }));
       fireEvent.click(screen.getByText("← Back"));
       expect(
         screen.getByText("Real-time collaborative story point estimation")
@@ -87,34 +87,34 @@ describe("Home Page", () => {
 
     it("displays session name input field", () => {
       render(<Home />);
-      fireEvent.click(screen.getByRole("button", { name: "Create Session" }));
-      expect(screen.getByLabelText("Session Name")).toBeInTheDocument();
+      fireEvent.click(screen.getByRole("button", { name: "Create Room" }));
+      expect(screen.getByLabelText("Room Name")).toBeInTheDocument();
     });
 
     it("displays moderator name input field", () => {
       render(<Home />);
-      fireEvent.click(screen.getByRole("button", { name: "Create Session" }));
+      fireEvent.click(screen.getByRole("button", { name: "Create Room" }));
       expect(screen.getByLabelText("Your Name")).toBeInTheDocument();
     });
 
     it("displays create session submit button", () => {
       render(<Home />);
-      fireEvent.click(screen.getByRole("button", { name: "Create Session" }));
+      fireEvent.click(screen.getByRole("button", { name: "Create Room" }));
       // Now we should find the submit button in the form
       const submitButtons = screen.getAllByRole("button", {
-        name: "Create Session",
+        name: "Create Room",
       });
       expect(submitButtons.length).toBeGreaterThan(0);
     });
 
     it("shows validation error for session name with only whitespace", async () => {
       render(<Home />);
-      fireEvent.click(screen.getByRole("button", { name: "Create Session" }));
+      fireEvent.click(screen.getByRole("button", { name: "Create Room" }));
 
-      const sessionNameInput = screen.getByLabelText("Session Name");
+      const sessionNameInput = screen.getByLabelText("Room Name");
       const moderatorNameInput = screen.getByLabelText("Your Name");
       const submitButton = screen.getByRole("button", {
-        name: "Create Session",
+        name: "Create Room",
       });
 
       fireEvent.change(sessionNameInput, { target: { value: "   " } });
@@ -123,19 +123,19 @@ describe("Home Page", () => {
 
       await waitFor(() => {
         expect(
-          screen.getByText("Session name must be between 1 and 100 characters")
+          screen.getByText("Room name must be between 1 and 100 characters")
         ).toBeInTheDocument();
       });
     });
 
     it("shows validation error for moderator name with only whitespace", async () => {
       render(<Home />);
-      fireEvent.click(screen.getByRole("button", { name: "Create Session" }));
+      fireEvent.click(screen.getByRole("button", { name: "Create Room" }));
 
-      const sessionNameInput = screen.getByLabelText("Session Name");
+      const sessionNameInput = screen.getByLabelText("Room Name");
       const moderatorNameInput = screen.getByLabelText("Your Name");
       const submitButton = screen.getByRole("button", {
-        name: "Create Session",
+        name: "Create Room",
       });
 
       fireEvent.change(sessionNameInput, { target: { value: "Sprint 24" } });
@@ -162,12 +162,12 @@ describe("Home Page", () => {
       });
 
       render(<Home />);
-      fireEvent.click(screen.getByRole("button", { name: "Create Session" }));
+      fireEvent.click(screen.getByRole("button", { name: "Create Room" }));
 
-      const sessionNameInput = screen.getByLabelText("Session Name");
+      const sessionNameInput = screen.getByLabelText("Room Name");
       const moderatorNameInput = screen.getByLabelText("Your Name");
       const submitButton = screen.getByRole("button", {
-        name: "Create Session",
+        name: "Create Room",
       });
 
       fireEvent.change(sessionNameInput, { target: { value: "Sprint 24" } });
@@ -203,12 +203,12 @@ describe("Home Page", () => {
       });
 
       render(<Home />);
-      fireEvent.click(screen.getByRole("button", { name: "Create Session" }));
+      fireEvent.click(screen.getByRole("button", { name: "Create Room" }));
 
-      const sessionNameInput = screen.getByLabelText("Session Name");
+      const sessionNameInput = screen.getByLabelText("Room Name");
       const moderatorNameInput = screen.getByLabelText("Your Name");
       const submitButton = screen.getByRole("button", {
-        name: "Create Session",
+        name: "Create Room",
       });
 
       fireEvent.change(sessionNameInput, { target: { value: "Sprint 24" } });
@@ -228,12 +228,12 @@ describe("Home Page", () => {
       );
 
       render(<Home />);
-      fireEvent.click(screen.getByRole("button", { name: "Create Session" }));
+      fireEvent.click(screen.getByRole("button", { name: "Create Room" }));
 
-      const sessionNameInput = screen.getByLabelText("Session Name");
+      const sessionNameInput = screen.getByLabelText("Room Name");
       const moderatorNameInput = screen.getByLabelText("Your Name");
       const submitButton = screen.getByRole("button", {
-        name: "Create Session",
+        name: "Create Room",
       });
 
       fireEvent.change(sessionNameInput, { target: { value: "Sprint 24" } });
@@ -258,12 +258,12 @@ describe("Home Page", () => {
       });
 
       render(<Home />);
-      fireEvent.click(screen.getByRole("button", { name: "Create Session" }));
+      fireEvent.click(screen.getByRole("button", { name: "Create Room" }));
 
-      const sessionNameInput = screen.getByLabelText("Session Name");
+      const sessionNameInput = screen.getByLabelText("Room Name");
       const moderatorNameInput = screen.getByLabelText("Your Name");
       const submitButton = screen.getByRole("button", {
-        name: "Create Session",
+        name: "Create Room",
       });
 
       fireEvent.change(sessionNameInput, {
@@ -292,9 +292,9 @@ describe("Home Page", () => {
   describe("Join Mode", () => {
     it("displays join session header", () => {
       render(<Home />);
-      fireEvent.click(screen.getByRole("button", { name: "Join Session" }));
+      fireEvent.click(screen.getByRole("button", { name: "Join Room" }));
       expect(
-        screen.getByRole("heading", { name: "Join Session" })
+        screen.getByRole("heading", { name: "Join Room" })
       ).toBeInTheDocument();
       expect(
         screen.getByText("Enter the room code to join")
@@ -303,13 +303,13 @@ describe("Home Page", () => {
 
     it("displays back button", () => {
       render(<Home />);
-      fireEvent.click(screen.getByRole("button", { name: "Join Session" }));
+      fireEvent.click(screen.getByRole("button", { name: "Join Room" }));
       expect(screen.getByText("← Back")).toBeInTheDocument();
     });
 
     it("navigates back to landing when back button is clicked", () => {
       render(<Home />);
-      fireEvent.click(screen.getByRole("button", { name: "Join Session" }));
+      fireEvent.click(screen.getByRole("button", { name: "Join Room" }));
       fireEvent.click(screen.getByText("← Back"));
       expect(
         screen.getByText("Real-time collaborative story point estimation")
@@ -318,27 +318,27 @@ describe("Home Page", () => {
 
     it("displays room code input field", () => {
       render(<Home />);
-      fireEvent.click(screen.getAllByText("Join Session")[0]);
+      fireEvent.click(screen.getAllByText("Join Room")[0]);
       expect(screen.getByLabelText("Room Code")).toBeInTheDocument();
     });
 
     it("displays participant name input field", () => {
       render(<Home />);
-      fireEvent.click(screen.getAllByText("Join Session")[0]);
+      fireEvent.click(screen.getAllByText("Join Room")[0]);
       expect(screen.getByLabelText("Your Name")).toBeInTheDocument();
     });
 
     it("displays join session submit button", () => {
       render(<Home />);
-      fireEvent.click(screen.getAllByText("Join Session")[0]);
+      fireEvent.click(screen.getAllByText("Join Room")[0]);
       expect(
-        screen.getByRole("button", { name: "Join Session" })
+        screen.getByRole("button", { name: "Join Room" })
       ).toBeInTheDocument();
     });
 
     it("converts room code to uppercase automatically", () => {
       render(<Home />);
-      fireEvent.click(screen.getAllByText("Join Session")[0]);
+      fireEvent.click(screen.getAllByText("Join Room")[0]);
 
       const roomCodeInput = screen.getByLabelText(
         "Room Code"
@@ -350,11 +350,11 @@ describe("Home Page", () => {
 
     it("shows validation error for invalid room code format", async () => {
       render(<Home />);
-      fireEvent.click(screen.getAllByText("Join Session")[0]);
+      fireEvent.click(screen.getAllByText("Join Room")[0]);
 
       const roomCodeInput = screen.getByLabelText("Room Code");
       const participantNameInput = screen.getByLabelText("Your Name");
-      const submitButton = screen.getByRole("button", { name: "Join Session" });
+      const submitButton = screen.getByRole("button", { name: "Join Room" });
 
       fireEvent.change(roomCodeInput, { target: { value: "12" } });
       fireEvent.change(participantNameInput, { target: { value: "Jane Doe" } });
@@ -369,11 +369,11 @@ describe("Home Page", () => {
 
     it("shows validation error for participant name with only whitespace", async () => {
       render(<Home />);
-      fireEvent.click(screen.getAllByText("Join Session")[0]);
+      fireEvent.click(screen.getAllByText("Join Room")[0]);
 
       const roomCodeInput = screen.getByLabelText("Room Code");
       const participantNameInput = screen.getByLabelText("Your Name");
-      const submitButton = screen.getByRole("button", { name: "Join Session" });
+      const submitButton = screen.getByRole("button", { name: "Join Room" });
 
       fireEvent.change(roomCodeInput, { target: { value: "ABC123" } });
       fireEvent.change(participantNameInput, { target: { value: "   " } });
@@ -394,11 +394,11 @@ describe("Home Page", () => {
       });
 
       render(<Home />);
-      fireEvent.click(screen.getAllByText("Join Session")[0]);
+      fireEvent.click(screen.getAllByText("Join Room")[0]);
 
       const roomCodeInput = screen.getByLabelText("Room Code");
       const participantNameInput = screen.getByLabelText("Your Name");
-      const submitButton = screen.getByRole("button", { name: "Join Session" });
+      const submitButton = screen.getByRole("button", { name: "Join Room" });
 
       fireEvent.change(roomCodeInput, { target: { value: "ABC123" } });
       fireEvent.change(participantNameInput, { target: { value: "Jane Doe" } });
@@ -418,11 +418,11 @@ describe("Home Page", () => {
       });
 
       render(<Home />);
-      fireEvent.click(screen.getAllByText("Join Session")[0]);
+      fireEvent.click(screen.getAllByText("Join Room")[0]);
 
       const roomCodeInput = screen.getByLabelText("Room Code");
       const participantNameInput = screen.getByLabelText("Your Name");
-      const submitButton = screen.getByRole("button", { name: "Join Session" });
+      const submitButton = screen.getByRole("button", { name: "Join Room" });
 
       fireEvent.change(roomCodeInput, { target: { value: "ABC123" } });
       fireEvent.change(participantNameInput, { target: { value: "Jane Doe" } });
@@ -449,11 +449,11 @@ describe("Home Page", () => {
       );
 
       render(<Home />);
-      fireEvent.click(screen.getAllByText("Join Session")[0]);
+      fireEvent.click(screen.getAllByText("Join Room")[0]);
 
       const roomCodeInput = screen.getByLabelText("Room Code");
       const participantNameInput = screen.getByLabelText("Your Name");
-      const submitButton = screen.getByRole("button", { name: "Join Session" });
+      const submitButton = screen.getByRole("button", { name: "Join Room" });
 
       fireEvent.change(roomCodeInput, { target: { value: "ABC123" } });
       fireEvent.change(participantNameInput, { target: { value: "Jane Doe" } });
@@ -471,11 +471,11 @@ describe("Home Page", () => {
       });
 
       render(<Home />);
-      fireEvent.click(screen.getAllByText("Join Session")[0]);
+      fireEvent.click(screen.getAllByText("Join Room")[0]);
 
       const roomCodeInput = screen.getByLabelText("Room Code");
       const participantNameInput = screen.getByLabelText("Your Name");
-      const submitButton = screen.getByRole("button", { name: "Join Session" });
+      const submitButton = screen.getByRole("button", { name: "Join Room" });
 
       fireEvent.change(roomCodeInput, { target: { value: "ABC123" } });
       fireEvent.change(participantNameInput, {
@@ -493,7 +493,7 @@ describe("Home Page", () => {
 
     it("resets form state when navigating back to landing", () => {
       render(<Home />);
-      fireEvent.click(screen.getAllByText("Join Session")[0]);
+      fireEvent.click(screen.getAllByText("Join Room")[0]);
 
       const roomCodeInput = screen.getByLabelText("Room Code");
       const participantNameInput = screen.getByLabelText("Your Name");
@@ -504,7 +504,7 @@ describe("Home Page", () => {
       fireEvent.click(screen.getByText("← Back"));
 
       // Navigate back to join mode
-      fireEvent.click(screen.getAllByText("Join Session")[0]);
+      fireEvent.click(screen.getAllByText("Join Room")[0]);
 
       const newRoomCodeInput = screen.getByLabelText(
         "Room Code"
@@ -525,11 +525,11 @@ describe("Home Page", () => {
       });
 
       render(<Home />);
-      fireEvent.click(screen.getAllByText("Join Session")[0]);
+      fireEvent.click(screen.getAllByText("Join Room")[0]);
 
       const roomCodeInput = screen.getByLabelText("Room Code");
       const participantNameInput = screen.getByLabelText("Your Name");
-      const submitButton = screen.getByRole("button", { name: "Join Session" });
+      const submitButton = screen.getByRole("button", { name: "Join Room" });
 
       fireEvent.change(roomCodeInput, { target: { value: "ABC123" } });
       fireEvent.change(participantNameInput, { target: { value: "Jane Doe" } });

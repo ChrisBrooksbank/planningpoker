@@ -55,7 +55,7 @@ describe("SessionPage", () => {
     await waitFor(() => {
       expect(screen.getByText("Join Planning Poker")).toBeInTheDocument();
       expect(screen.getByLabelText("Your Name")).toBeInTheDocument();
-      expect(screen.getByText("Join Session")).toBeInTheDocument();
+      expect(screen.getByText("Join Room")).toBeInTheDocument();
     });
   });
 
@@ -92,7 +92,7 @@ describe("SessionPage", () => {
 
     render(<SessionPage />);
 
-    const button = await screen.findByText("Join Session");
+    const button = await screen.findByText("Join Room");
     await user.click(button);
 
     await waitFor(() => {
@@ -117,7 +117,7 @@ describe("SessionPage", () => {
 
     const input = screen.getByLabelText("Your Name");
     await user.type(input, "Jane");
-    const button = screen.getByText("Join Session");
+    const button = screen.getByText("Join Room");
     await user.click(button);
 
     await waitFor(() => {
@@ -141,7 +141,7 @@ describe("SessionPage", () => {
 
     const input = screen.getByLabelText("Your Name");
     await user.type(input, "Jane");
-    const button = screen.getByText("Join Session");
+    const button = screen.getByText("Join Room");
     await user.click(button);
 
     await waitFor(() => {
