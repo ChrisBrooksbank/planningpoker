@@ -506,7 +506,11 @@ export default function SessionPage() {
                     <button
                       onClick={handleStartRound}
                       disabled={!isConnected}
-                      className="px-6 py-3 bg-primary text-primary-foreground rounded-md hover:bg-primary/90 disabled:opacity-50 disabled:cursor-not-allowed font-semibold"
+                      className={`px-6 py-3 bg-primary text-primary-foreground rounded-md hover:bg-primary/90 disabled:opacity-50 disabled:cursor-not-allowed font-semibold ${
+                        participants.length > 1 && !isVotingOpen && !isRevealed
+                          ? "animate-pulse ring-2 ring-primary/50"
+                          : ""
+                      }`}
                     >
                       Start Vote
                     </button>
@@ -514,12 +518,34 @@ export default function SessionPage() {
                       <button
                         onClick={handleRevealVotes}
                         disabled={!isConnected}
-                        className="px-6 py-3 bg-primary text-primary-foreground rounded-md hover:bg-primary/90 disabled:opacity-50 disabled:cursor-not-allowed font-semibold"
+                        className={`px-6 py-3 bg-primary text-primary-foreground rounded-md hover:bg-primary/90 disabled:opacity-50 disabled:cursor-not-allowed font-semibold ${
+                          isVotingOpen && votedUserIds.size > 0 && votedUserIds.size >= Math.ceil(participants.length / 2)
+                            ? "animate-pulse ring-2 ring-primary/50"
+                            : ""
+                        }`}
                       >
                         Reveal
                       </button>
                     )}
                   </div>
+                  {isVotingOpen && (
+                    <div className="space-y-1.5">
+                      <div className="flex justify-between text-xs text-muted-foreground">
+                        <span>{votedUserIds.size} of {participants.length} voted</span>
+                        <span>{participants.length > 0 ? Math.round((votedUserIds.size / participants.length) * 100) : 0}%</span>
+                      </div>
+                      <div className="w-full h-2 rounded-full bg-muted overflow-hidden" role="progressbar" aria-valuenow={votedUserIds.size} aria-valuemin={0} aria-valuemax={participants.length} aria-label="Voting progress">
+                        <div
+                          className={`h-full rounded-full transition-all duration-300 ${
+                            votedUserIds.size === participants.length
+                              ? "bg-green-500"
+                              : "bg-primary"
+                          }`}
+                          style={{ width: `${participants.length > 0 ? (votedUserIds.size / participants.length) * 100 : 0}%` }}
+                        />
+                      </div>
+                    </div>
+                  )}
                 </div>
               ) : (
                 <div className="text-foreground">
