@@ -313,8 +313,8 @@ export class SessionStorage {
     // Calculate statistics
     const votes = Array.from(sessionState.votes.values());
     const numericVotes = votes
-      .filter((v) => !["?", "coffee"].includes(v.value))
-      .map((v) => Number(v.value));
+      .map((v) => Number(v.value))
+      .filter((n) => !isNaN(n));
 
     let average: number | null = null;
     let min: number | null = null;

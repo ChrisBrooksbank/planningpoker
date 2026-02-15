@@ -85,15 +85,16 @@ app.prepare().then(() => {
       }
       try {
         const body = JSON.parse(await readBody(req));
-        const { sessionName, moderatorName } = body;
+        const { sessionName, moderatorName, deckType: rawDeckType } = body;
         if (!sessionName || typeof sessionName !== "string") {
           return sendJson(res, 400, { error: "Session name is required" });
         }
         if (!moderatorName || typeof moderatorName !== "string") {
           return sendJson(res, 400, { error: "Moderator name is required" });
         }
+        const deckType = rawDeckType === "tshirt" ? "tshirt" : "fibonacci";
         const moderatorId = nanoid();
-        const sessionState = sessionStorage.createSession(sessionName, moderatorId, moderatorName);
+        const sessionState = sessionStorage.createSession(sessionName, moderatorId, moderatorName, deckType);
         return sendJson(res, 200, {
           roomId: sessionState.session.id,
           sessionName: sessionState.session.name,
