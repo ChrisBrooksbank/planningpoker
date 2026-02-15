@@ -137,7 +137,7 @@ export default function Home() {
               onClick={() => setMode("join")}
               className="w-full rounded-lg border-2 border-border bg-card px-6 py-4 text-lg font-semibold text-card-foreground hover:bg-muted transition-colors"
             >
-              Join Room
+              Enter Room
             </button>
           </div>
         </div>
@@ -253,9 +253,9 @@ export default function Home() {
         </button>
 
         <div className="text-center">
-          <h1 className="text-2xl font-bold mb-2">Join Room</h1>
+          <h1 className="text-2xl font-bold mb-2">Enter Room</h1>
           <p className="text-sm text-muted-foreground">
-            Enter the room code to join
+            Enter the room code shared by your moderator
           </p>
         </div>
 
@@ -315,7 +315,7 @@ export default function Home() {
             disabled={isLoading}
             className="w-full rounded-lg bg-primary px-6 py-3 text-lg font-semibold text-primary-foreground hover:opacity-90 transition-opacity disabled:opacity-50 disabled:cursor-not-allowed"
           >
-            {isLoading ? "Joining..." : "Join Room"}
+            {isLoading ? "Entering..." : "Enter Room"}
           </button>
         </form>
       </div>

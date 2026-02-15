@@ -11,6 +11,7 @@ interface SessionHintProps {
 interface HintResult {
   primary: string;
   secondary?: string;
+  urgent?: boolean;
 }
 
 export function getSessionHint(props: SessionHintProps): HintResult {
@@ -55,8 +56,9 @@ export function getSessionHint(props: SessionHintProps): HintResult {
     }
 
     return {
-      primary: `Your vote is private — ${moderatorName} will reveal all votes together. Select a card to vote.`,
-      secondary: cardHint,
+      primary: "Select a card below to cast your vote!",
+      secondary: `Your vote is private — ${moderatorName} will reveal all votes together. ${cardHint}`,
+      urgent: true,
     };
   }
 
@@ -73,32 +75,56 @@ export function getSessionHint(props: SessionHintProps): HintResult {
 }
 
 export function SessionHint(props: SessionHintProps) {
-  const { primary, secondary } = getSessionHint(props);
+  const { primary, secondary, urgent } = getSessionHint(props);
 
   return (
     <div
       role="status"
       aria-live="polite"
-      className="rounded-lg border border-blue-200 dark:border-blue-800 bg-blue-50 dark:bg-blue-900/20 px-3 py-2.5 sm:px-4 sm:py-3 flex items-start gap-2 sm:gap-3"
+      className={`rounded-lg border px-3 py-2.5 sm:px-4 sm:py-3 flex items-start gap-2 sm:gap-3 ${
+        urgent
+          ? "border-amber-300 dark:border-amber-700 bg-amber-50 dark:bg-amber-900/20 animate-pulse"
+          : "border-blue-200 dark:border-blue-800 bg-blue-50 dark:bg-blue-900/20"
+      }`}
     >
       <svg
-        className="h-5 w-5 text-blue-500 dark:text-blue-400 mt-0.5 shrink-0"
+        className={`h-5 w-5 mt-0.5 shrink-0 ${
+          urgent
+            ? "text-amber-500 dark:text-amber-400"
+            : "text-blue-500 dark:text-blue-400"
+        }`}
         aria-hidden="true"
         fill="none"
         viewBox="0 0 24 24"
         strokeWidth={1.5}
         stroke="currentColor"
       >
-        <path
-          strokeLinecap="round"
-          strokeLinejoin="round"
-          d="M11.25 11.25l.041-.02a.75.75 0 011.063.852l-.708 2.836a.75.75 0 001.063.853l.041-.021M21 12a9 9 0 11-18 0 9 9 0 0118 0zm-9-3.75h.008v.008H12V8.25z"
-        />
+        {urgent ? (
+          <path
+            strokeLinecap="round"
+            strokeLinejoin="round"
+            d="M11.25 3.75L3.75 20.25h15L11.25 3.75zm.75 6v4.5m0 2.25h.008v.008H12v-.008z"
+          />
+        ) : (
+          <path
+            strokeLinecap="round"
+            strokeLinejoin="round"
+            d="M11.25 11.25l.041-.02a.75.75 0 011.063.852l-.708 2.836a.75.75 0 001.063.853l.041-.021M21 12a9 9 0 11-18 0 9 9 0 0118 0zm-9-3.75h.008v.008H12V8.25z"
+          />
+        )}
       </svg>
       <div>
-        <p className="text-sm text-blue-800 dark:text-blue-200">{primary}</p>
+        <p className={`text-sm font-medium ${
+          urgent
+            ? "text-amber-800 dark:text-amber-200"
+            : "text-blue-800 dark:text-blue-200"
+        }`}>{primary}</p>
         {secondary && (
-          <p className="text-xs text-blue-600 dark:text-blue-400 mt-1">
+          <p className={`text-xs mt-1 ${
+            urgent
+              ? "text-amber-600 dark:text-amber-400"
+              : "text-blue-600 dark:text-blue-400"
+          }`}>
             {secondary}
           </p>
         )}

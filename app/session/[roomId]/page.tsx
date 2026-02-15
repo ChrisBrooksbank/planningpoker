@@ -367,7 +367,7 @@ export default function SessionPage() {
               disabled={isJoining}
               className="w-full rounded-lg bg-primary px-6 py-3 text-lg font-semibold text-primary-foreground hover:opacity-90 transition-opacity disabled:opacity-50 disabled:cursor-not-allowed"
             >
-              {isJoining ? "Joining..." : "Join Room"}
+              {isJoining ? "Entering..." : "Enter Room"}
             </button>
           </form>
         </div>
@@ -582,7 +582,11 @@ export default function SessionPage() {
             />
 
             {/* Card deck */}
-            <div className="rounded-lg border border-border bg-card p-3 sm:p-6">
+            <div className={`rounded-lg border bg-card p-3 sm:p-6 ${
+              isVotingOpen && !hasVoted && !isModerator
+                ? "border-amber-300 dark:border-amber-700 ring-2 ring-amber-300/50 dark:ring-amber-700/50"
+                : "border-border"
+            }`}>
               <CardDeck
                 selectedValue={selectedCard}
                 onSelectCard={handleSelectCard}
