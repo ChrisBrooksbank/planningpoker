@@ -101,7 +101,7 @@ describe("getSessionHint", () => {
       isRevealed: true,
     });
     expect(result.primary).toBe(
-      "Review the results, then enter a new topic and click Start Vote for the next round."
+      "Review the results, then enter a new topic and click Next Vote for the next round."
     );
     expect(result.secondary).toBeUndefined();
   });

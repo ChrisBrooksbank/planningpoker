@@ -44,7 +44,7 @@ export function getSessionHint(props: SessionHintProps): HintResult {
     if (isModerator) {
       return {
         primary:
-          "Review the results, then enter a new topic and click Start Vote for the next round.",
+          "Review the results, then enter a new topic and click Next Vote for the next round.",
       };
     }
     return {

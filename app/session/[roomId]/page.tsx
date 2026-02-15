@@ -557,17 +557,19 @@ export default function SessionPage() {
                     aria-label="Topic for estimation"
                   />
                   <div className="flex gap-2">
-                    <button
-                      onClick={handleStartRound}
-                      disabled={!isConnected}
-                      className={`px-6 py-3 bg-primary text-primary-foreground rounded-md hover:bg-primary/90 disabled:opacity-50 disabled:cursor-not-allowed font-semibold ${
-                        voterCount > 1 && !isVotingOpen && !isRevealed
-                          ? "animate-pulse ring-2 ring-primary/50"
-                          : ""
-                      }`}
-                    >
-                      Start Vote
-                    </button>
+                    {!isVotingOpen && (
+                      <button
+                        onClick={handleStartRound}
+                        disabled={!isConnected}
+                        className={`px-6 py-3 bg-primary text-primary-foreground rounded-md hover:bg-primary/90 disabled:opacity-50 disabled:cursor-not-allowed font-semibold ${
+                          voterCount > 1 && !isRevealed
+                            ? "animate-pulse ring-2 ring-primary/50"
+                            : ""
+                        }`}
+                      >
+                        {isRevealed ? "Next Vote" : "Start Vote"}
+                      </button>
+                    )}
                     {!isRevealed && (
                       <button
                         onClick={handleRevealVotes}

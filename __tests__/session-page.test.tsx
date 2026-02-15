@@ -1121,7 +1121,7 @@ describe("SessionPage", () => {
           sessionName: "Test Session",
           moderatorId: "moderator123",
           isRevealed: false,
-          isVotingOpen: true,
+          isVotingOpen: false,
           participants: [],
           votes: {},
         });
@@ -1269,7 +1269,7 @@ describe("SessionPage", () => {
           sessionName: "Test Session",
           moderatorId: "moderator123",
           isRevealed: false,
-          isVotingOpen: true,
+          isVotingOpen: false,
           participants: [],
           votes: {},
         });
@@ -1391,7 +1391,7 @@ describe("SessionPage", () => {
           sessionName: "Test Session",
           moderatorId: "moderator123",
           isRevealed: false,
-          isVotingOpen: true,
+          isVotingOpen: false,
           participants: [],
           votes: {},
         });
@@ -1543,7 +1543,7 @@ describe("SessionPage", () => {
           sessionName: "Test Session",
           moderatorId: "moderator123",
           isRevealed: false,
-          isVotingOpen: true,
+          isVotingOpen: false,
           participants: [],
           votes: {},
         });
@@ -2186,13 +2186,15 @@ describe("SessionPage", () => {
         });
       });
 
-      // Moderator should see topic input and Update Topic button
+      // Moderator should see topic input and Reveal button during voting
       await waitFor(() => {
         expect(
           screen.getByPlaceholderText("What are we estimating?")
         ).toBeInTheDocument();
-        expect(screen.getByText("Start Vote")).toBeInTheDocument();
       });
+
+      // Start Vote button should be hidden during voting
+      expect(screen.queryByText("Start Vote")).not.toBeInTheDocument();
 
       // Moderator should see Reveal Votes button when not revealed
       expect(screen.getByText("Reveal")).toBeInTheDocument();
@@ -2212,9 +2214,9 @@ describe("SessionPage", () => {
         });
       });
 
-      // After reveal, moderator should still see Start Vote button
+      // After reveal, moderator should see Next Vote button
       await waitFor(() => {
-        expect(screen.getByText("Start Vote")).toBeInTheDocument();
+        expect(screen.getByText("Next Vote")).toBeInTheDocument();
       });
 
       // Reveal button should be hidden after reveal
@@ -2292,11 +2294,12 @@ describe("SessionPage", () => {
         });
       });
 
-      // After reveal, voter should NOT see Start Vote button
+      // After reveal, voter should NOT see Start Vote or Next Vote button
       await waitFor(() => {
         expect(screen.getByText("Results")).toBeInTheDocument();
       });
       expect(screen.queryByText("Start Vote")).not.toBeInTheDocument();
+      expect(screen.queryByText("Next Vote")).not.toBeInTheDocument();
     });
 
     it("should show voter UI (card deck) to all participants including moderator", async () => {
@@ -2558,7 +2561,7 @@ describe("SessionPage", () => {
   });
 
   describe("New Round", () => {
-    it("should show start vote button for moderator before and after reveal", async () => {
+    it("should hide button during voting and show Next Vote after reveal", async () => {
       (
         window.localStorage.getItem as ReturnType<typeof vi.fn>
       ).mockImplementation((key: string) => {
@@ -2585,7 +2588,7 @@ describe("SessionPage", () => {
         expect(useWebSocket).toHaveBeenCalled();
       });
 
-      // Send session-state with moderator ID
+      // Send session-state with voting open
       await act(async () => {
         onMessageCallback({
           type: "session-state",
@@ -2599,10 +2602,12 @@ describe("SessionPage", () => {
         });
       });
 
-      // Start Vote button should be visible before reveal
+      // Button should be hidden during voting
       await waitFor(() => {
-        expect(screen.getByText("Start Vote")).toBeInTheDocument();
+        expect(screen.getByText("Reveal")).toBeInTheDocument();
       });
+      expect(screen.queryByText("Start Vote")).not.toBeInTheDocument();
+      expect(screen.queryByText("Next Vote")).not.toBeInTheDocument();
 
       // Send votes-revealed message
       await act(async () => {
@@ -2619,9 +2624,9 @@ describe("SessionPage", () => {
         });
       });
 
-      // Start Vote button should still be visible after reveal
+      // After reveal, button should appear as "Next Vote"
       await waitFor(() => {
-        expect(screen.getByText("Start Vote")).toBeInTheDocument();
+        expect(screen.getByText("Next Vote")).toBeInTheDocument();
       });
     });
 
@@ -2686,8 +2691,9 @@ describe("SessionPage", () => {
         expect(screen.getByText("Results")).toBeInTheDocument();
       });
 
-      // Start Vote button should not be visible for non-moderator
+      // Start Vote / Next Vote button should not be visible for non-moderator
       expect(screen.queryByText("Start Vote")).not.toBeInTheDocument();
+      expect(screen.queryByText("Next Vote")).not.toBeInTheDocument();
     });
 
     it("should show start vote button for moderator when votes are not revealed", async () => {
@@ -2717,7 +2723,7 @@ describe("SessionPage", () => {
         expect(useWebSocket).toHaveBeenCalled();
       });
 
-      // Send session-state with moderator ID and not revealed
+      // Send session-state with moderator ID and not revealed, not voting
       await act(async () => {
         onMessageCallback({
           type: "session-state",
@@ -2725,7 +2731,7 @@ describe("SessionPage", () => {
           sessionName: "Test Session",
           moderatorId: "moderator123",
           isRevealed: false,
-          isVotingOpen: true,
+          isVotingOpen: false,
           participants: [],
           votes: {},
         });
@@ -2768,7 +2774,7 @@ describe("SessionPage", () => {
         expect(useWebSocket).toHaveBeenCalled();
       });
 
-      // Send session-state with moderator ID
+      // Send session-state with moderator ID, not voting
       await act(async () => {
         onMessageCallback({
           type: "session-state",
@@ -2776,7 +2782,7 @@ describe("SessionPage", () => {
           sessionName: "Test Session",
           moderatorId: "moderator123",
           isRevealed: false,
-          isVotingOpen: true,
+          isVotingOpen: false,
           participants: [],
           votes: {},
         });
@@ -2822,7 +2828,7 @@ describe("SessionPage", () => {
         expect(useWebSocket).toHaveBeenCalled();
       });
 
-      // Send session-state with moderator ID
+      // Send session-state with moderator ID, not voting
       await act(async () => {
         onMessageCallback({
           type: "session-state",
@@ -2830,7 +2836,7 @@ describe("SessionPage", () => {
           sessionName: "Test Session",
           moderatorId: "moderator123",
           isRevealed: false,
-          isVotingOpen: true,
+          isVotingOpen: false,
           participants: [],
           votes: {},
         });
