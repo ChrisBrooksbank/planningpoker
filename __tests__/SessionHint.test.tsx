@@ -31,13 +31,16 @@ describe("getSessionHint", () => {
   });
 
   // Voting open state — participant hasn't voted
-  it("shows privacy hint and card selection prompt for participant who hasn't voted", () => {
+  it("shows urgent call-to-action for participant who hasn't voted", () => {
     const result = getSessionHint({ ...baseProps, isVotingOpen: true });
     expect(result.primary).toBe(
-      "Your vote is private — Alice will reveal all votes together. Select a card to vote."
+      "Select a card below to cast your vote!"
     );
+    expect(result.secondary).toContain("Your vote is private");
+    expect(result.secondary).toContain("Alice");
     expect(result.secondary).toContain("? card");
     expect(result.secondary).toContain("coffee card");
+    expect(result.urgent).toBe(true);
   });
 
   // Voting open state — participant has voted
@@ -131,6 +134,24 @@ describe("getSessionHint", () => {
       hasVoted: true,
     });
     expect(result.secondary).toBeUndefined();
+  });
+
+  it("urgent flag is only set for participant who has not voted", () => {
+    // Not voted — should be urgent
+    const notVoted = getSessionHint({ ...baseProps, isVotingOpen: true });
+    expect(notVoted.urgent).toBe(true);
+
+    // Voted — should not be urgent
+    const voted = getSessionHint({ ...baseProps, isVotingOpen: true, hasVoted: true });
+    expect(voted.urgent).toBeFalsy();
+
+    // Moderator — should not be urgent
+    const moderator = getSessionHint({ ...baseProps, isModerator: true, isVotingOpen: true });
+    expect(moderator.urgent).toBeFalsy();
+
+    // Pre-voting — should not be urgent
+    const preVoting = getSessionHint(baseProps);
+    expect(preVoting.urgent).toBeFalsy();
   });
 
   it("no secondary hint for moderator during voting", () => {

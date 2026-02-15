@@ -10,6 +10,7 @@ import { VoteResults } from "@/components/VoteResults";
 import type { Participant, CardValue, Vote, VoteStatistics } from "@/lib/types";
 import { isValidParticipantName } from "@/lib/utils";
 import { SessionHint } from "@/components/SessionHint";
+import { ModeratorWelcomeModal } from "@/components/ModeratorWelcomeModal";
 import { nanoid } from "nanoid";
 
 export default function SessionPage() {
@@ -34,6 +35,7 @@ export default function SessionPage() {
   const [isVotingOpen, setIsVotingOpen] = useState<boolean>(false);
   const [revealedVotes, setRevealedVotes] = useState<Record<string, Vote>>({});
   const [statistics, setStatistics] = useState<VoteStatistics | null>(null);
+  const [showModeratorModal, setShowModeratorModal] = useState(false);
   const hasJoinedRef = useRef(false);
   const resultsRef = useRef<HTMLDivElement>(null);
 
@@ -120,6 +122,14 @@ export default function SessionPage() {
         setParticipants(message.participants);
         // Update moderator ID and current topic
         setModeratorId(message.moderatorId);
+        // Show moderator welcome modal on first join
+        if (
+          userId &&
+          message.moderatorId === userId &&
+          !localStorage.getItem(`session_${roomId}_moderatorWelcomeDismissed`)
+        ) {
+          setShowModeratorModal(true);
+        }
         setCurrentTopic(message.currentTopic || "");
         setTopicInput(message.currentTopic || "");
         // Update reveal state and voting open state
@@ -246,6 +256,12 @@ export default function SessionPage() {
   const moderatorName = participants.find(p => p.id === moderatorId)?.name ?? "the moderator";
   const hasVoted = userId ? votedUserIds.has(userId) : false;
 
+  // Handle moderator modal dismiss
+  const handleDismissModeratorModal = useCallback(() => {
+    setShowModeratorModal(false);
+    localStorage.setItem(`session_${roomId}_moderatorWelcomeDismissed`, "true");
+  }, [roomId]);
+
   // Handle connection events
   const handleConnect = () => {
     // Reset join flag so we send join-session message on reconnection
@@ -351,7 +367,7 @@ export default function SessionPage() {
               disabled={isJoining}
               className="w-full rounded-lg bg-primary px-6 py-3 text-lg font-semibold text-primary-foreground hover:opacity-90 transition-opacity disabled:opacity-50 disabled:cursor-not-allowed"
             >
-              {isJoining ? "Joining..." : "Join Session"}
+              {isJoining ? "Entering..." : "Enter Room"}
             </button>
           </form>
         </div>
@@ -365,7 +381,7 @@ export default function SessionPage() {
       <main id="main-content" className="flex min-h-screen flex-col items-center justify-center p-4 sm:p-8">
         <div className="text-center space-y-4">
           <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-primary mx-auto" aria-hidden="true"></div>
-          <p className="text-muted-foreground" role="status" aria-live="polite">Loading session...</p>
+          <p className="text-muted-foreground" role="status" aria-live="polite">Loading room...</p>
         </div>
       </main>
     );
@@ -373,6 +389,12 @@ export default function SessionPage() {
 
   return (
     <main id="main-content" className="flex lg:min-h-screen flex-col p-4 sm:p-8">
+      {showModeratorModal && (
+        <ModeratorWelcomeModal
+          roomId={roomId}
+          onClose={handleDismissModeratorModal}
+        />
+      )}
       <div className="w-full max-w-6xl mx-auto">
         <div className="mb-4 sm:mb-8">
           <div className="flex items-start justify-between gap-2">
@@ -484,7 +506,11 @@ export default function SessionPage() {
                     <button
                       onClick={handleStartRound}
                       disabled={!isConnected}
-                      className="px-6 py-3 bg-primary text-primary-foreground rounded-md hover:bg-primary/90 disabled:opacity-50 disabled:cursor-not-allowed font-semibold"
+                      className={`px-6 py-3 bg-primary text-primary-foreground rounded-md hover:bg-primary/90 disabled:opacity-50 disabled:cursor-not-allowed font-semibold ${
+                        participants.length > 1 && !isVotingOpen && !isRevealed
+                          ? "animate-pulse ring-2 ring-primary/50"
+                          : ""
+                      }`}
                     >
                       Start Vote
                     </button>
@@ -492,12 +518,34 @@ export default function SessionPage() {
                       <button
                         onClick={handleRevealVotes}
                         disabled={!isConnected}
-                        className="px-6 py-3 bg-primary text-primary-foreground rounded-md hover:bg-primary/90 disabled:opacity-50 disabled:cursor-not-allowed font-semibold"
+                        className={`px-6 py-3 bg-primary text-primary-foreground rounded-md hover:bg-primary/90 disabled:opacity-50 disabled:cursor-not-allowed font-semibold ${
+                          isVotingOpen && votedUserIds.size > 0 && votedUserIds.size >= Math.ceil(participants.length / 2)
+                            ? "animate-pulse ring-2 ring-primary/50"
+                            : ""
+                        }`}
                       >
                         Reveal
                       </button>
                     )}
                   </div>
+                  {isVotingOpen && (
+                    <div className="space-y-1.5">
+                      <div className="flex justify-between text-xs text-muted-foreground">
+                        <span>{votedUserIds.size} of {participants.length} voted</span>
+                        <span>{participants.length > 0 ? Math.round((votedUserIds.size / participants.length) * 100) : 0}%</span>
+                      </div>
+                      <div className="w-full h-2 rounded-full bg-muted overflow-hidden" role="progressbar" aria-valuenow={votedUserIds.size} aria-valuemin={0} aria-valuemax={participants.length} aria-label="Voting progress">
+                        <div
+                          className={`h-full rounded-full transition-all duration-300 ${
+                            votedUserIds.size === participants.length
+                              ? "bg-green-500"
+                              : "bg-primary"
+                          }`}
+                          style={{ width: `${participants.length > 0 ? (votedUserIds.size / participants.length) * 100 : 0}%` }}
+                        />
+                      </div>
+                    </div>
+                  )}
                 </div>
               ) : (
                 <div className="text-foreground">
@@ -534,7 +582,11 @@ export default function SessionPage() {
             />
 
             {/* Card deck */}
-            <div className="rounded-lg border border-border bg-card p-3 sm:p-6">
+            <div className={`rounded-lg border bg-card p-3 sm:p-6 ${
+              isVotingOpen && !hasVoted && !isModerator
+                ? "border-amber-300 dark:border-amber-700 ring-2 ring-amber-300/50 dark:ring-amber-700/50"
+                : "border-border"
+            }`}>
               <CardDeck
                 selectedValue={selectedCard}
                 onSelectCard={handleSelectCard}

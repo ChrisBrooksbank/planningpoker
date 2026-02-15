@@ -25,7 +25,7 @@ export default function Home() {
 
     // Validate inputs
     if (!isValidSessionName(sessionName)) {
-      setError("Session name must be between 1 and 100 characters");
+      setError("Room name must be between 1 and 100 characters");
       return;
     }
 
@@ -130,14 +130,14 @@ export default function Home() {
               onClick={() => setMode("create")}
               className="w-full rounded-lg bg-primary px-6 py-4 text-lg font-semibold text-primary-foreground hover:opacity-90 transition-opacity"
             >
-              Create Session
+              Create Room
             </button>
 
             <button
               onClick={() => setMode("join")}
               className="w-full rounded-lg border-2 border-border bg-card px-6 py-4 text-lg font-semibold text-card-foreground hover:bg-muted transition-colors"
             >
-              Join Session
+              Enter Room
             </button>
           </div>
         </div>
@@ -164,9 +164,9 @@ export default function Home() {
           </button>
 
           <div className="text-center">
-            <h1 className="text-2xl font-bold mb-2">Create Session</h1>
+            <h1 className="text-2xl font-bold mb-2">Create Room</h1>
             <p className="text-sm text-muted-foreground">
-              Start a new planning poker session
+              Start a new planning poker room
             </p>
           </div>
 
@@ -176,7 +176,7 @@ export default function Home() {
                 htmlFor="sessionName"
                 className="block text-sm font-medium mb-2"
               >
-                Session Name
+                Room Name
               </label>
               <input
                 id="sessionName"
@@ -226,7 +226,7 @@ export default function Home() {
               disabled={isLoading}
               className="w-full rounded-lg bg-primary px-6 py-3 text-lg font-semibold text-primary-foreground hover:opacity-90 transition-opacity disabled:opacity-50 disabled:cursor-not-allowed"
             >
-              {isLoading ? "Creating..." : "Create Session"}
+              {isLoading ? "Creating..." : "Create Room"}
             </button>
           </form>
         </div>
@@ -253,9 +253,9 @@ export default function Home() {
         </button>
 
         <div className="text-center">
-          <h1 className="text-2xl font-bold mb-2">Join Session</h1>
+          <h1 className="text-2xl font-bold mb-2">Enter Room</h1>
           <p className="text-sm text-muted-foreground">
-            Enter the room code to join
+            Enter the room code shared by your moderator
           </p>
         </div>
 
@@ -315,7 +315,7 @@ export default function Home() {
             disabled={isLoading}
             className="w-full rounded-lg bg-primary px-6 py-3 text-lg font-semibold text-primary-foreground hover:opacity-90 transition-opacity disabled:opacity-50 disabled:cursor-not-allowed"
           >
-            {isLoading ? "Joining..." : "Join Session"}
+            {isLoading ? "Entering..." : "Enter Room"}
           </button>
         </form>
       </div>

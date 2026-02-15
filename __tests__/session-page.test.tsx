@@ -55,7 +55,7 @@ describe("SessionPage", () => {
     await waitFor(() => {
       expect(screen.getByText("Join Planning Poker")).toBeInTheDocument();
       expect(screen.getByLabelText("Your Name")).toBeInTheDocument();
-      expect(screen.getByText("Join Session")).toBeInTheDocument();
+      expect(screen.getByText("Enter Room")).toBeInTheDocument();
     });
   });
 
@@ -92,7 +92,7 @@ describe("SessionPage", () => {
 
     render(<SessionPage />);
 
-    const button = await screen.findByText("Join Session");
+    const button = await screen.findByText("Enter Room");
     await user.click(button);
 
     await waitFor(() => {
@@ -117,7 +117,7 @@ describe("SessionPage", () => {
 
     const input = screen.getByLabelText("Your Name");
     await user.type(input, "Jane");
-    const button = screen.getByText("Join Session");
+    const button = screen.getByText("Enter Room");
     await user.click(button);
 
     await waitFor(() => {
@@ -141,7 +141,7 @@ describe("SessionPage", () => {
 
     const input = screen.getByLabelText("Your Name");
     await user.type(input, "Jane");
-    const button = screen.getByText("Join Session");
+    const button = screen.getByText("Enter Room");
     await user.click(button);
 
     await waitFor(() => {
@@ -3110,6 +3110,146 @@ describe("SessionPage", () => {
       });
 
       expect(screen.queryByText("Reconnect")).not.toBeInTheDocument();
+    });
+  });
+
+  describe("Voting Progress Bar", () => {
+    it("should show voting progress bar when voting is open for moderator", async () => {
+      (
+        window.localStorage.getItem as ReturnType<typeof vi.fn>
+      ).mockImplementation((key: string) => {
+        if (key === "session_TEST123_userId") return "moderator123";
+        if (key === "session_TEST123_name") return "Moderator";
+        return null;
+      });
+
+      let onMessageCallback: (message: unknown) => void = () => {};
+      (useWebSocket as ReturnType<typeof vi.fn>).mockImplementation(
+        (config) => {
+          onMessageCallback = config.onMessage;
+          return {
+            isConnected: true,
+            sendMessage: mockSendMessage,
+            reconnect: mockReconnect,
+          };
+        }
+      );
+
+      render(<SessionPage />);
+
+      await act(async () => {
+        onMessageCallback({
+          type: "session-state",
+          sessionId: "TEST123",
+          sessionName: "Test Session",
+          moderatorId: "moderator123",
+          isRevealed: false,
+          isVotingOpen: true,
+          participants: [
+            { id: "moderator123", name: "Moderator", isModerator: true, isConnected: true },
+            { id: "user2", name: "Alice", isModerator: false, isConnected: true },
+            { id: "user3", name: "Bob", isModerator: false, isConnected: true },
+          ],
+          votes: { user2: { userId: "user2", value: 5, submittedAt: Date.now() } },
+        });
+      });
+
+      await waitFor(() => {
+        expect(screen.getByText("1 of 3 voted")).toBeInTheDocument();
+        expect(screen.getByText("33%")).toBeInTheDocument();
+        expect(screen.getByRole("progressbar")).toBeInTheDocument();
+      });
+    });
+
+    it("should not show progress bar when voting is not open", async () => {
+      (
+        window.localStorage.getItem as ReturnType<typeof vi.fn>
+      ).mockImplementation((key: string) => {
+        if (key === "session_TEST123_userId") return "moderator123";
+        if (key === "session_TEST123_name") return "Moderator";
+        return null;
+      });
+
+      let onMessageCallback: (message: unknown) => void = () => {};
+      (useWebSocket as ReturnType<typeof vi.fn>).mockImplementation(
+        (config) => {
+          onMessageCallback = config.onMessage;
+          return {
+            isConnected: true,
+            sendMessage: mockSendMessage,
+            reconnect: mockReconnect,
+          };
+        }
+      );
+
+      render(<SessionPage />);
+
+      await act(async () => {
+        onMessageCallback({
+          type: "session-state",
+          sessionId: "TEST123",
+          sessionName: "Test Session",
+          moderatorId: "moderator123",
+          isRevealed: false,
+          isVotingOpen: false,
+          participants: [
+            { id: "moderator123", name: "Moderator", isModerator: true, isConnected: true },
+          ],
+          votes: {},
+        });
+      });
+
+      await waitFor(() => {
+        expect(screen.queryByRole("progressbar")).not.toBeInTheDocument();
+      });
+    });
+
+    it("should show 100% and green bar when all have voted", async () => {
+      (
+        window.localStorage.getItem as ReturnType<typeof vi.fn>
+      ).mockImplementation((key: string) => {
+        if (key === "session_TEST123_userId") return "moderator123";
+        if (key === "session_TEST123_name") return "Moderator";
+        return null;
+      });
+
+      let onMessageCallback: (message: unknown) => void = () => {};
+      (useWebSocket as ReturnType<typeof vi.fn>).mockImplementation(
+        (config) => {
+          onMessageCallback = config.onMessage;
+          return {
+            isConnected: true,
+            sendMessage: mockSendMessage,
+            reconnect: mockReconnect,
+          };
+        }
+      );
+
+      render(<SessionPage />);
+
+      await act(async () => {
+        onMessageCallback({
+          type: "session-state",
+          sessionId: "TEST123",
+          sessionName: "Test Session",
+          moderatorId: "moderator123",
+          isRevealed: false,
+          isVotingOpen: true,
+          participants: [
+            { id: "moderator123", name: "Moderator", isModerator: true, isConnected: true },
+            { id: "user2", name: "Alice", isModerator: false, isConnected: true },
+          ],
+          votes: {
+            moderator123: { userId: "moderator123", value: 3, submittedAt: Date.now() },
+            user2: { userId: "user2", value: 5, submittedAt: Date.now() },
+          },
+        });
+      });
+
+      await waitFor(() => {
+        expect(screen.getByText("2 of 2 voted")).toBeInTheDocument();
+        expect(screen.getByText("100%")).toBeInTheDocument();
+      });
     });
   });
 });
