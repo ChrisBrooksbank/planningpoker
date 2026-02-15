@@ -142,7 +142,7 @@ describe("WebSocket Message Protocol", () => {
     it("should return error for non-existent session", () => {
       return new Promise<void>((resolve) => {
         const ws = new WebSocket(
-          `ws://localhost:${port}/ws?roomId=invalid-room&userId=user-1`
+          `ws://localhost:${port}/ws?roomId=ZZZZZZ&userId=user-1`
         );
 
         ws.on("message", (data) => {

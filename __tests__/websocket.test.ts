@@ -32,7 +32,7 @@ describe("PlanningPokerWebSocketServer", () => {
   it("should accept WebSocket connections with valid roomId and userId", () => {
     return new Promise<void>((resolve) => {
       const ws = new WebSocket(
-        `ws://localhost:${port}/ws?roomId=room1&userId=user1`
+        `ws://localhost:${port}/ws?roomId=ROOM01&userId=user1`
       );
 
       ws.on("open", () => {
@@ -44,7 +44,7 @@ describe("PlanningPokerWebSocketServer", () => {
         const message = JSON.parse(data.toString());
         if (message.type === "connected") {
           expect(message.userId).toBe("user1");
-          expect(message.roomId).toBe("room1");
+          expect(message.roomId).toBe("ROOM01");
           resolve();
         }
       });
@@ -65,7 +65,7 @@ describe("PlanningPokerWebSocketServer", () => {
 
   it("should reject connections without userId", () => {
     return new Promise<void>((resolve) => {
-      const ws = new WebSocket(`ws://localhost:${port}/ws?roomId=room1`);
+      const ws = new WebSocket(`ws://localhost:${port}/ws?roomId=ROOM01`);
 
       ws.on("close", (code, reason) => {
         expect(code).toBe(1008);
@@ -75,13 +75,42 @@ describe("PlanningPokerWebSocketServer", () => {
     });
   });
 
+  it("should reject connections with invalid roomId format", () => {
+    return new Promise<void>((resolve) => {
+      const ws = new WebSocket(
+        `ws://localhost:${port}/ws?roomId=invalid-room&userId=user1`
+      );
+
+      ws.on("close", (code, reason) => {
+        expect(code).toBe(1008);
+        expect(reason.toString()).toContain("Invalid roomId format");
+        resolve();
+      });
+    });
+  });
+
+  it("should reject connections with userId longer than 50 chars", () => {
+    return new Promise<void>((resolve) => {
+      const longUserId = "a".repeat(51);
+      const ws = new WebSocket(
+        `ws://localhost:${port}/ws?roomId=ROOM01&userId=${longUserId}`
+      );
+
+      ws.on("close", (code, reason) => {
+        expect(code).toBe(1008);
+        expect(reason.toString()).toContain("userId too long");
+        resolve();
+      });
+    });
+  });
+
   it("should broadcast messages to all clients in the same room", () => {
     return new Promise<void>((resolve) => {
       const ws1 = new WebSocket(
-        `ws://localhost:${port}/ws?roomId=room1&userId=user1`
+        `ws://localhost:${port}/ws?roomId=ROOM01&userId=user1`
       );
       const ws2 = new WebSocket(
-        `ws://localhost:${port}/ws?roomId=room1&userId=user2`
+        `ws://localhost:${port}/ws?roomId=ROOM01&userId=user2`
       );
 
       let ws1Connected = false;
@@ -90,7 +119,7 @@ describe("PlanningPokerWebSocketServer", () => {
       const checkReady = () => {
         if (ws1Connected && ws2Connected) {
           // Use broadcastToRoom directly to test broadcast functionality
-          wsServer.broadcastToRoom("room1", {
+          wsServer.broadcastToRoom("ROOM01", {
             type: "round-started",
           });
         }
@@ -124,10 +153,10 @@ describe("PlanningPokerWebSocketServer", () => {
   it("should not broadcast messages to clients in different rooms", () => {
     return new Promise<void>((resolve) => {
       const ws1 = new WebSocket(
-        `ws://localhost:${port}/ws?roomId=room1&userId=user1`
+        `ws://localhost:${port}/ws?roomId=ROOM01&userId=user1`
       );
       const ws2 = new WebSocket(
-        `ws://localhost:${port}/ws?roomId=room2&userId=user2`
+        `ws://localhost:${port}/ws?roomId=ROOM02&userId=user2`
       );
 
       let ws1Connected = false;
@@ -137,7 +166,7 @@ describe("PlanningPokerWebSocketServer", () => {
       const checkReady = () => {
         if (ws1Connected && ws2Connected) {
           // Use broadcastToRoom to test room isolation
-          wsServer.broadcastToRoom("room1", {
+          wsServer.broadcastToRoom("ROOM01", {
             type: "round-started",
           });
 
@@ -175,10 +204,10 @@ describe("PlanningPokerWebSocketServer", () => {
   it("should notify room when a client disconnects", () => {
     return new Promise<void>((resolve) => {
       const ws1 = new WebSocket(
-        `ws://localhost:${port}/ws?roomId=room1&userId=user1`
+        `ws://localhost:${port}/ws?roomId=ROOM01&userId=user1`
       );
       const ws2 = new WebSocket(
-        `ws://localhost:${port}/ws?roomId=room1&userId=user2`
+        `ws://localhost:${port}/ws?roomId=ROOM01&userId=user2`
       );
 
       let ws1Connected = false;
@@ -215,10 +244,10 @@ describe("PlanningPokerWebSocketServer", () => {
   it("should get list of users in a room", () => {
     return new Promise<void>((resolve) => {
       const ws1 = new WebSocket(
-        `ws://localhost:${port}/ws?roomId=room1&userId=user1`
+        `ws://localhost:${port}/ws?roomId=ROOM01&userId=user1`
       );
       const ws2 = new WebSocket(
-        `ws://localhost:${port}/ws?roomId=room1&userId=user2`
+        `ws://localhost:${port}/ws?roomId=ROOM01&userId=user2`
       );
 
       let connected = 0;
@@ -226,7 +255,7 @@ describe("PlanningPokerWebSocketServer", () => {
       const checkReady = () => {
         connected++;
         if (connected === 2) {
-          const users = wsServer.getRoomUsers("room1");
+          const users = wsServer.getRoomUsers("ROOM01");
           expect(users).toHaveLength(2);
           expect(users).toContain("user1");
           expect(users).toContain("user2");
@@ -255,15 +284,15 @@ describe("PlanningPokerWebSocketServer", () => {
   it("should check if a user is connected", () => {
     return new Promise<void>((resolve) => {
       const ws = new WebSocket(
-        `ws://localhost:${port}/ws?roomId=room1&userId=user1`
+        `ws://localhost:${port}/ws?roomId=ROOM01&userId=user1`
       );
 
       ws.on("message", (data) => {
         const message = JSON.parse(data.toString());
         if (message.type === "connected") {
-          expect(wsServer.isUserConnected("user1", "room1")).toBe(true);
-          expect(wsServer.isUserConnected("user2", "room1")).toBe(false);
-          expect(wsServer.isUserConnected("user1", "room2")).toBe(false);
+          expect(wsServer.isUserConnected("user1", "ROOM01")).toBe(true);
+          expect(wsServer.isUserConnected("user2", "ROOM01")).toBe(false);
+          expect(wsServer.isUserConnected("user1", "ROOM02")).toBe(false);
           ws.close();
           resolve();
         }
@@ -274,10 +303,10 @@ describe("PlanningPokerWebSocketServer", () => {
   it("should send message to specific user", () => {
     return new Promise<void>((resolve) => {
       const ws1 = new WebSocket(
-        `ws://localhost:${port}/ws?roomId=room1&userId=user1`
+        `ws://localhost:${port}/ws?roomId=ROOM01&userId=user1`
       );
       const ws2 = new WebSocket(
-        `ws://localhost:${port}/ws?roomId=room1&userId=user2`
+        `ws://localhost:${port}/ws?roomId=ROOM01&userId=user2`
       );
 
       let connected = 0;
@@ -285,7 +314,7 @@ describe("PlanningPokerWebSocketServer", () => {
       const checkReady = () => {
         connected++;
         if (connected === 2) {
-          wsServer.sendToUser("user2", "room1", {
+          wsServer.sendToUser("user2", "ROOM01", {
             type: "error",
             code: "TEST_ERROR",
             message: "hello user2",
@@ -319,19 +348,19 @@ describe("PlanningPokerWebSocketServer", () => {
   it("should disconnect a specific user", () => {
     return new Promise<void>((resolve) => {
       const ws1 = new WebSocket(
-        `ws://localhost:${port}/ws?roomId=room1&userId=user1`
+        `ws://localhost:${port}/ws?roomId=ROOM01&userId=user1`
       );
 
       ws1.on("message", (data) => {
         const message = JSON.parse(data.toString());
         if (message.type === "connected") {
-          expect(wsServer.isUserConnected("user1", "room1")).toBe(true);
-          wsServer.disconnectUser("user1", "room1");
+          expect(wsServer.isUserConnected("user1", "ROOM01")).toBe(true);
+          wsServer.disconnectUser("user1", "ROOM01");
         }
       });
 
       ws1.on("close", () => {
-        expect(wsServer.isUserConnected("user1", "room1")).toBe(false);
+        expect(wsServer.isUserConnected("user1", "ROOM01")).toBe(false);
         resolve();
       });
     });

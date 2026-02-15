@@ -98,6 +98,16 @@ export class PlanningPokerWebSocketServer {
         return;
       }
 
+      if (!/^[A-Z0-9]{6}$/.test(roomId)) {
+        ws.close(1008, "Invalid roomId format");
+        return;
+      }
+
+      if (userId.length > 50) {
+        ws.close(1008, "userId too long");
+        return;
+      }
+
       // Register client and mark as alive for heartbeat
       (ws as any).isAlive = true;
       this.clients.set(ws, { ws, roomId, userId, messageCount: 0, messageWindowStart: Date.now() });
@@ -217,6 +227,12 @@ export class PlanningPokerWebSocketServer {
       userId,
       trimmedName
     );
+
+    if (participants === "SESSION_FULL") {
+      this.sendError(ws, "SESSION_FULL", "Session is full (max 50 participants)");
+      ws.close(1008, "Session full");
+      return;
+    }
 
     if (!participants) {
       this.sendError(ws, "SESSION_NOT_FOUND", "Session does not exist");

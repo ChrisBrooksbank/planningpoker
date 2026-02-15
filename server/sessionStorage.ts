@@ -30,6 +30,8 @@ function compareVoteValues(a: string, b: string): number {
  * In-memory session storage for Planning Poker sessions
  * This is the single source of truth for all session state
  */
+const MAX_PARTICIPANTS_PER_SESSION = 50;
+
 export class SessionStorage {
   private sessions: Map<string, SessionState> = new Map();
 
@@ -107,7 +109,7 @@ export class SessionStorage {
     roomId: string,
     userId: string,
     userName: string
-  ): Participant[] | null {
+  ): Participant[] | null | "SESSION_FULL" {
     const sessionState = this.sessions.get(roomId);
     if (!sessionState) {
       return null;
@@ -117,6 +119,11 @@ export class SessionStorage {
     const existingParticipant = sessionState.participants.find(
       (p) => p.id === userId
     );
+
+    // Reject new participants if session is at capacity
+    if (!existingParticipant && sessionState.participants.length >= MAX_PARTICIPANTS_PER_SESSION) {
+      return "SESSION_FULL" as const;
+    }
 
     sessionState.lastActivity = Date.now();
 

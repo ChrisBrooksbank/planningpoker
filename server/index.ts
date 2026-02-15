@@ -152,6 +152,11 @@ app.prepare().then(() => {
       console.log("Server closed");
       process.exit(0);
     });
+    // Backstop: force exit if server.close() hangs
+    setTimeout(() => {
+      console.error("Shutdown timed out, forcing exit");
+      process.exit(1);
+    }, 10_000).unref();
   };
   process.on("SIGTERM", shutdown);
   process.on("SIGINT", shutdown);

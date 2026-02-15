@@ -117,6 +117,34 @@ describe("SessionStorage", () => {
 
       expect(result).toBeNull();
     });
+
+    it("should reject new participants when session is at capacity (50)", () => {
+      const state = storage.createSession("Full Session", "mod", "Moderator");
+      // Moderator is participant #1, add 49 more to reach 50
+      for (let i = 1; i < 50; i++) {
+        storage.addParticipant(state.session.id, `user${i}`, `User ${i}`);
+      }
+
+      expect(state.participants).toHaveLength(50);
+
+      const result = storage.addParticipant(state.session.id, "user50", "User 50");
+      expect(result).toBe("SESSION_FULL");
+      expect(state.participants).toHaveLength(50);
+    });
+
+    it("should allow reconnecting participant even when session is at capacity", () => {
+      const state = storage.createSession("Full Session", "mod", "Moderator");
+      for (let i = 1; i < 50; i++) {
+        storage.addParticipant(state.session.id, `user${i}`, `User ${i}`);
+      }
+      storage.markParticipantDisconnected(state.session.id, "user1");
+
+      // Reconnecting existing participant should succeed even at capacity
+      const result = storage.addParticipant(state.session.id, "user1", "User 1");
+      expect(result).not.toBeNull();
+      expect(result).not.toBe("SESSION_FULL");
+      expect(state.participants).toHaveLength(50);
+    });
   });
 
   describe("markParticipantDisconnected", () => {
