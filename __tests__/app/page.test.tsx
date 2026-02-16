@@ -44,7 +44,7 @@ describe("Home Page", () => {
       const createButton = screen.getByText("Create Room");
       fireEvent.click(createButton);
       expect(
-        screen.getByText("Start a new planning poker room")
+        screen.getByText("Create a new planning poker room")
       ).toBeInTheDocument();
     });
 
@@ -66,7 +66,7 @@ describe("Home Page", () => {
         screen.getByRole("heading", { name: "Create Room" })
       ).toBeInTheDocument();
       expect(
-        screen.getByText("Start a new planning poker room")
+        screen.getByText("Create a new planning poker room")
       ).toBeInTheDocument();
     });
 

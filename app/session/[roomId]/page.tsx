@@ -282,6 +282,12 @@ export default function SessionPage() {
 
   // Handle reveal votes (moderator only)
   const handleRevealVotes = () => {
+    const notVotedCount = voterCount - votedUserIds.size;
+    if (notVotedCount > 0) {
+      if (!window.confirm(`${notVotedCount} of ${voterCount} voters haven't voted yet. Reveal anyway?`)) {
+        return;
+      }
+    }
     sendMessage({
       type: "reveal-votes",
     });
@@ -463,12 +469,13 @@ export default function SessionPage() {
                 </span>
                 <button
                   onClick={handleToggleObserver}
-                  disabled={!isConnected}
+                  disabled={!isConnected || isModerator}
+                  title={isModerator ? "Moderators cannot switch to observer" : undefined}
                   className={`text-xs px-2 py-1 rounded border transition-colors ${
                     isObserver
                       ? "bg-amber-100 border-amber-400 text-amber-700 dark:bg-amber-900/30 dark:border-amber-600 dark:text-amber-300"
                       : "border-border hover:bg-muted"
-                  }`}
+                  } ${isModerator ? "opacity-50 cursor-not-allowed" : ""}`}
                 >
                   {isObserver ? "Switch to Voter" : "Switch to Observer"}
                 </button>

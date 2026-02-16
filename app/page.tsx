@@ -169,7 +169,7 @@ export default function Home() {
           <div className="text-center">
             <h1 className="text-2xl font-bold mb-2">Create Room</h1>
             <p className="text-sm text-muted-foreground">
-              Start a new planning poker room
+              Create a new planning poker room
             </p>
           </div>
 
