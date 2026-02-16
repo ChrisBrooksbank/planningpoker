@@ -10,6 +10,7 @@ The server runs alongside Next.js using a custom HTTP server. This allows WebSoc
 
 - `index.ts` - Custom server that integrates Next.js with WebSocket server
 - `websocket.ts` - WebSocket server implementation with room-based broadcasting
+- `sessionStorage.ts` - In-memory session, participant, and vote storage
 - `types.d.ts` - TypeScript type declarations for global WebSocket server
 
 ## WebSocket Protocol
@@ -59,6 +60,13 @@ The server is automatically started with `npm run dev` and uses `tsx watch` for 
 
 ## Testing
 
-Tests are in `__tests__/websocket.test.ts` and use the `ws` library to create test clients.
+Tests are in `__tests__/` and cover multiple aspects of the server:
+
+- `websocket.test.ts` - Core WebSocket server functionality
+- `websocket-protocol.test.ts` - Message protocol compliance
+- `websocket-performance.test.ts` - Performance benchmarks
+- `multiple-rooms.test.ts` - Multi-room isolation
+- `join-leave-during-voting.test.ts` - Edge cases during active voting
+- `server/sessionStorage.test.ts` - Session storage unit tests
 
 Run tests: `npm test`

@@ -7,7 +7,7 @@ Shared utilities, types, and constants for the Planning Poker application.
 - **types.ts** - TypeScript interfaces and types for sessions, participants, votes, and statistics
 - **constants.ts** - Application-wide constants (WebSocket config, validation limits, performance requirements)
 - **utils.ts** - Utility functions for validation, class name merging, and data processing
-- **websocket-client.ts** - (To be created) Client-side WebSocket connection management
+- **websocket-messages.ts** - WebSocket message type definitions and factories
 
 ## Usage
 

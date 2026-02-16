@@ -12,26 +12,29 @@ All session state is synchronized across participants in real-time via WebSocket
 
 ## Requirements
 
-- [ ] WebSocket server running alongside the Next.js app
-- [ ] Client establishes WebSocket connection on joining a session
-- [ ] Server broadcasts state changes to all participants in a room
-- [ ] Handle connection drops with automatic reconnection (with backoff)
-- [ ] Sync the following state in real-time:
+- [x] WebSocket server running alongside the Next.js app
+- [x] Client establishes WebSocket connection on joining a session
+- [x] Server broadcasts state changes to all participants in a room
+- [x] Handle connection drops with automatic reconnection (with backoff)
+- [x] Sync the following state in real-time:
   - Participant list (join/leave)
   - Vote submissions (hidden values, just "has voted" status)
   - Vote reveals (all values visible)
   - New round starts (clear votes)
   - Topic changes
-- [ ] Server is the source of truth for all session state
-- [ ] Message protocol uses JSON with a `type` field for routing
+  - Observer mode toggle
+- [x] Server is the source of truth for all session state
+- [x] Message protocol uses JSON with a `type` field for routing
+- [x] Heartbeat mechanism: 30-second ping/pong to detect stale connections
+- [x] WebSocket rate limiting: max 20 messages per 1000ms per client
 
 ## Acceptance Criteria
 
-- [ ] Actions appear on other clients within 500ms
-- [ ] Disconnected clients reconnect automatically
-- [ ] Reconnected clients receive current session state
-- [ ] No data races when multiple participants act simultaneously
-- [ ] WebSocket server handles multiple rooms independently
+- [x] Actions appear on other clients within 500ms
+- [x] Disconnected clients reconnect automatically
+- [x] Reconnected clients receive current session state
+- [x] No data races when multiple participants act simultaneously
+- [x] WebSocket server handles multiple rooms independently
 
 ## Out of Scope
 

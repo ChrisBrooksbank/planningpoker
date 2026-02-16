@@ -8,11 +8,12 @@ Next.js App Router pages and layouts.
 - **page.tsx** - Home page (landing page)
 - **globals.css** - Global styles with Tailwind and theme CSS variables
 
-## Planned Routes
+## Routes
 
 - **/** - Landing page with Create/Join session options
-- **/session/[id]** - Active poker session room
-- **/api/** - API routes for session management
+- **/session/[roomId]** - Active poker session room
+
+API routes for session management are handled by the custom server (`server/index.ts`), not Next.js API routes.
 
 ## Conventions
 

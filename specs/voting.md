@@ -14,27 +14,32 @@ Participants submit story point estimates that remain hidden until the moderator
 
 ## Requirements
 
-- [ ] Display a card deck with standard Fibonacci-like values: 0, 1, 2, 3, 5, 8, 13, 21, ?, coffee
-- [ ] Allow participants to select one card as their estimate
-- [ ] Allow participants to change their selection before reveal
-- [ ] Show which participants have voted (without revealing values) before reveal
-- [ ] Moderator can set/update the current topic being estimated
-- [ ] Moderator can reveal all votes simultaneously
-- [ ] After reveal, display all votes with participant names
-- [ ] Show basic statistics after reveal: average, most common, range
-- [ ] Moderator can start a new voting round (clears all votes)
+- [x] Display a card deck with values depending on deck type:
+  - Fibonacci: 1, 2, 3, 5, 8, 13, 21
+  - T-shirt: XS, S, M, L, XL, XXL
+- [x] Allow participants to select one card as their estimate
+- [x] Allow participants to change their selection before reveal
+- [x] Show which participants have voted (without revealing values) before reveal
+- [x] Moderator can set/update the current topic being estimated
+- [x] Moderator can reveal all votes simultaneously
+- [x] Moderator is prompted with a confirmation dialog before revealing votes
+- [x] After reveal, display all votes with participant names
+- [x] Show basic statistics after reveal: average, most common, range
+- [x] Moderator can start a new voting round (clears all votes)
+- [x] Round history is maintained showing previous rounds with topic and results
+- [x] Observers cannot vote and do not appear in the voting tally
 
 ## Acceptance Criteria
 
-- [ ] Clicking a card selects it and shows visual feedback
-- [ ] Other participants see a "voted" indicator but not the value
-- [ ] Reveal shows all votes at the same time for all participants
-- [ ] Statistics are calculated correctly
-- [ ] New round clears all votes and statistics
-- [ ] Topic text is visible to all participants
+- [x] Clicking a card selects it and shows visual feedback
+- [x] Other participants see a "voted" indicator but not the value
+- [x] Reveal shows all votes at the same time for all participants
+- [x] Statistics are calculated correctly
+- [x] New round clears all votes and statistics
+- [x] Topic text is visible to all participants
 
 ## Out of Scope
 
-- Custom card decks (configurable values)
+- Custom card decks (configurable values beyond Fibonacci and T-shirt)
 - Timer/countdown for voting
 - Automatic consensus detection

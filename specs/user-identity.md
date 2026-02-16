@@ -12,22 +12,25 @@ Participants identify themselves with a display name and are assigned a role wit
 
 ## Requirements
 
-- [ ] Prompt for display name when creating or joining a session
-- [ ] Validate display name (non-empty, reasonable length, trimmed)
-- [ ] Two roles: moderator and voter
-- [ ] Session creator is automatically the moderator
-- [ ] All other joiners are voters by default
-- [ ] Display role indicator (badge/icon) next to participant names
-- [ ] Moderator sees additional controls (reveal, new round, set topic)
-- [ ] Voters see only the card deck and results
+- [x] Prompt for display name when creating or joining a session
+- [x] Validate display name (non-empty, reasonable length, trimmed)
+- [x] Three roles: moderator, voter, and observer
+- [x] Session creator is automatically the moderator
+- [x] All other joiners are voters by default
+- [x] Participants can toggle between voter and observer roles (moderator cannot toggle to observer)
+- [x] Display role indicator (badge/icon) next to participant names
+- [x] Moderator sees additional controls (reveal, new round, set topic)
+- [x] Voters see only the card deck and results
+- [x] Observers see votes and results but cannot submit votes
 
 ## Acceptance Criteria
 
-- [ ] Cannot join a session without entering a name
-- [ ] Display names appear in the participant list
-- [ ] Moderator has a visual badge distinguishing them
-- [ ] Moderator controls are only visible to the moderator
-- [ ] Voter UI does not show moderator-only controls
+- [x] Cannot join a session without entering a name
+- [x] Display names appear in the participant list
+- [x] Moderator has a visual badge distinguishing them
+- [x] Moderator controls are only visible to the moderator
+- [x] Voter UI does not show moderator-only controls
+- [x] Observer badge is displayed for observers
 
 ## Out of Scope
 

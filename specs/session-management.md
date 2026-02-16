@@ -13,21 +13,25 @@ Users can create and join planning poker rooms to collaboratively estimate work 
 
 ## Requirements
 
-- [ ] Create a new session with a unique room ID (short, shareable code)
-- [ ] Join an existing session by entering its room code or following a link
-- [ ] Display session name prominently in the room
-- [ ] Show a participant list with all current members
-- [ ] Handle participants leaving (browser close, disconnect)
-- [ ] Persist session state in memory on the server (no database required for MVP)
-- [ ] Landing page with "Create Session" and "Join Session" options
+- [x] Create a new session with a unique room ID (short, shareable code)
+- [x] Join an existing session by entering its room code or following a link
+- [x] Display session name prominently in the room
+- [x] Show a participant list with all current members
+- [x] Handle participants leaving (browser close, disconnect)
+- [x] Persist session state in memory on the server (no database required for MVP)
+- [x] Landing page with "Create Session" and "Join Session" options
+- [x] Observer mode toggle allowing participants to switch between voter and observer roles
+- [x] Rate limiting: max 10 session creations per IP per minute
+- [x] Session capacity: max 1000 sessions, 50 participants per session
+- [x] 24-hour session TTL with hourly cleanup of stale sessions
 
 ## Acceptance Criteria
 
-- [ ] Creating a session generates a unique, URL-safe room code
-- [ ] Joining with a valid code connects the user to the correct room
-- [ ] Joining with an invalid code shows a clear error message
-- [ ] Participant list updates in real-time as people join/leave
-- [ ] Session creator is automatically assigned the moderator role
+- [x] Creating a session generates a unique, URL-safe room code
+- [x] Joining with a valid code connects the user to the correct room
+- [x] Joining with an invalid code shows a clear error message
+- [x] Participant list updates in real-time as people join/leave
+- [x] Session creator is automatically assigned the moderator role
 
 ## Out of Scope
 

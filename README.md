@@ -56,8 +56,13 @@ Before committing, always run `npm run check` to ensure all validation passes.
 - Create and join planning poker sessions with unique room codes
 - Real-time voting synchronization via WebSockets
 - Moderator controls (reveal votes, start new rounds, set topics)
+- Reveal confirmation dialog to prevent accidental reveals
+- Multiple deck types: Fibonacci (1, 2, 3, 5, 8, 13, 21) and T-shirt (XS, S, M, L, XL, XXL)
+- Observer mode (non-voting participants)
+- Round history with expandable past results
 - Vote statistics (average, mode, range)
 - Dark mode support
+- Accessibility (adjustable font size, keyboard navigation)
 - Mobile-friendly responsive design
 
 ## Development Workflow
