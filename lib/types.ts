@@ -53,8 +53,6 @@ export interface Participant {
 }
 
 // Vote Types
-export const CARD_VALUES = FIBONACCI_VALUES;
-
 export type CardValue = (typeof FIBONACCI_VALUES)[number] | (typeof TSHIRT_VALUES)[number];
 
 export interface Vote {

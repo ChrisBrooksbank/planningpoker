@@ -2,7 +2,7 @@ import { describe, it, expect, vi } from "vitest";
 import { render, screen } from "@testing-library/react";
 import userEvent from "@testing-library/user-event";
 import { CardDeck } from "@/components/CardDeck";
-import { CARD_VALUES } from "@/lib/types";
+import { FIBONACCI_VALUES } from "@/lib/types";
 
 describe("CardDeck", () => {
   it("renders all card values", () => {
@@ -115,7 +115,7 @@ describe("CardDeck", () => {
       <CardDeck selectedValue={null} onSelectCard={onSelectCard} disabled />
     );
 
-    CARD_VALUES.forEach((value) => {
+    FIBONACCI_VALUES.forEach((value) => {
       const card = screen.getByLabelText(`Select ${value}`);
       expect(card).toBeDisabled();
     });
@@ -139,7 +139,7 @@ describe("CardDeck", () => {
     render(<CardDeck selectedValue={null} onSelectCard={onSelectCard} />);
 
     const radios = screen.getAllByRole("radio");
-    expect(radios).toHaveLength(CARD_VALUES.length);
+    expect(radios).toHaveLength(FIBONACCI_VALUES.length);
   });
 
   it("applies hover styles to unselected cards", () => {
@@ -242,6 +242,6 @@ describe("CardDeck", () => {
     await user.keyboard("{ArrowRight}");
     await user.keyboard("{Enter}");
 
-    expect(onSelectCard).toHaveBeenCalledWith(CARD_VALUES[1]);
+    expect(onSelectCard).toHaveBeenCalledWith(FIBONACCI_VALUES[1]);
   });
 });

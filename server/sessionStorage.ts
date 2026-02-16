@@ -7,7 +7,7 @@ import type {
   CardValue,
   DeckType,
 } from "../lib/types.js";
-import { CARD_VALUES, getDeckValues } from "../lib/types.js";
+import { getDeckValues } from "../lib/types.js";
 import { generateRoomCode } from "../lib/utils.js";
 
 /**

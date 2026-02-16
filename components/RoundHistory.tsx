@@ -2,22 +2,11 @@
 
 import { useState } from "react";
 import type { RoundHistoryEntry, DeckType } from "@/lib/types";
+import { VoteValueDisplay } from "./VoteValueDisplay";
 
 interface RoundHistoryProps {
   history: RoundHistoryEntry[];
   deckType?: DeckType;
-}
-
-function VoteValueDisplay({ value }: { value: string }) {
-  if (value === "coffee") {
-    return (
-      <>
-        <span aria-hidden="true">☕</span>
-        <span className="sr-only">Coffee break</span>
-      </>
-    );
-  }
-  return <>{value}</>;
 }
 
 export function RoundHistory({ history, deckType = "fibonacci" }: RoundHistoryProps) {

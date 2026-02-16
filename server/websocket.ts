@@ -17,7 +17,7 @@ import type {
   SessionStateMessage,
 } from "../lib/websocket-messages.js";
 import { getDeckValues } from "../lib/types.js";
-import type { Participant, Vote, CardValue, DeckType } from "../lib/types.js";
+import type { Participant, Vote, CardValue } from "../lib/types.js";
 
 export interface RoomClient {
   ws: WebSocket;
@@ -25,6 +25,7 @@ export interface RoomClient {
   userId: string;
   messageCount: number;
   messageWindowStart: number;
+  isAlive: boolean;
 }
 
 export class PlanningPokerWebSocketServer {
@@ -77,12 +78,12 @@ export class PlanningPokerWebSocketServer {
 
   private checkConnections() {
     this.clients.forEach((client, ws) => {
-      if (!(ws as any).isAlive) {
+      if (!client.isAlive) {
         this.handleClientDisconnect(ws, client);
         ws.terminate();
         return;
       }
-      (ws as any).isAlive = false;
+      client.isAlive = false;
       ws.ping();
     });
   }
@@ -110,12 +111,12 @@ export class PlanningPokerWebSocketServer {
       }
 
       // Register client and mark as alive for heartbeat
-      (ws as any).isAlive = true;
-      this.clients.set(ws, { ws, roomId, userId, messageCount: 0, messageWindowStart: Date.now() });
+      const client: RoomClient = { ws, roomId, userId, messageCount: 0, messageWindowStart: Date.now(), isAlive: true };
+      this.clients.set(ws, client);
       this.addToRoomIndex(roomId, ws);
 
       // Track pong responses for heartbeat
-      ws.on("pong", () => { (ws as any).isAlive = true; });
+      ws.on("pong", () => { client.isAlive = true; });
 
       // Handle messages
       ws.on("message", (data: Buffer) => {

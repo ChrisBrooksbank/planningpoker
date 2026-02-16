@@ -1,3 +1,5 @@
+// NOTE: In production, this route is intercepted by the custom server (server/index.ts).
+// This handler only runs during local development via `next dev`.
 import { NextRequest, NextResponse } from "next/server";
 import { sessionStorage } from "../../../server/sessionStorage";
 import { nanoid } from "nanoid";

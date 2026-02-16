@@ -202,19 +202,3 @@ export function isClientMessage(
   ].includes(message.type);
 }
 
-export function isServerMessage(
-  message: BaseMessage
-): message is ServerMessage {
-  return [
-    "connected",
-    "session-state",
-    "participant-joined",
-    "participant-left",
-    "vote-submitted",
-    "topic-changed",
-    "votes-revealed",
-    "round-started",
-    "observer-toggled",
-    "error",
-  ].includes(message.type);
-}

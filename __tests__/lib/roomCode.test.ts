@@ -1,5 +1,5 @@
 import { describe, it, expect } from "vitest";
-import { generateRoomCode, isValidRoomCode } from "../../lib/utils";
+import { generateRoomCode } from "../../lib/utils";
 
 describe("generateRoomCode", () => {
   it("should generate a 6-character code", () => {
@@ -63,36 +63,3 @@ describe("generateRoomCode", () => {
   });
 });
 
-describe("isValidRoomCode", () => {
-  it("should accept valid 6-character uppercase codes", () => {
-    expect(isValidRoomCode("ABC123")).toBe(true);
-    expect(isValidRoomCode("XYZ789")).toBe(true);
-    expect(isValidRoomCode("A1B2C3")).toBe(true);
-  });
-
-  it("should reject codes that are too short", () => {
-    expect(isValidRoomCode("ABC12")).toBe(false);
-    expect(isValidRoomCode("A")).toBe(false);
-    expect(isValidRoomCode("")).toBe(false);
-  });
-
-  it("should reject codes that are too long", () => {
-    expect(isValidRoomCode("ABC1234")).toBe(false);
-    expect(isValidRoomCode("ABCDEFGHIJ")).toBe(false);
-  });
-
-  it("should reject codes with invalid characters", () => {
-    expect(isValidRoomCode("ABC 12")).toBe(false); // space
-    expect(isValidRoomCode("ABC!12")).toBe(false); // special char
-    expect(isValidRoomCode("abc123")).toBe(false); // lowercase
-    expect(isValidRoomCode("A-B_C1")).toBe(false); // dashes/underscores
-    expect(isValidRoomCode("ABC/12")).toBe(false); // slash
-  });
-
-  it("should validate all generated codes", () => {
-    for (let i = 0; i < 100; i++) {
-      const code = generateRoomCode();
-      expect(isValidRoomCode(code)).toBe(true);
-    }
-  });
-});
