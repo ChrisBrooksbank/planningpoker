@@ -238,7 +238,7 @@ export default function Home() {
                   />
                   <div>
                     <span className="font-medium text-sm">Fibonacci</span>
-                    <span className="block text-xs text-muted-foreground">0, 1, 2, 3, 5, 8, 13, 21</span>
+                    <span className="block text-xs text-muted-foreground">1, 2, 3, 5, 8, 13, 21</span>
                   </div>
                 </label>
                 <label
