@@ -577,7 +577,7 @@ export default function SessionPage() {
                         {isRevealed ? "Next Vote" : "Start Vote"}
                       </button>
                     )}
-                    {!isRevealed && (
+                    {isVotingOpen && !isRevealed && (
                       <button
                         onClick={handleRevealVotes}
                         disabled={!isConnected}
