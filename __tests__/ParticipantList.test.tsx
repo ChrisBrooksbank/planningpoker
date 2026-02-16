@@ -94,7 +94,7 @@ describe("ParticipantList", () => {
     );
 
     // Charlie is disconnected (gray dot)
-    const grayDots = container.querySelectorAll(".bg-gray-400");
+    const grayDots = container.querySelectorAll(".bg-muted-foreground");
     expect(grayDots.length).toBe(1);
   });
 
@@ -202,7 +202,7 @@ describe("ParticipantList", () => {
       />
     );
 
-    const grayDots = container.querySelectorAll(".bg-gray-400");
+    const grayDots = container.querySelectorAll(".bg-muted-foreground");
     expect(grayDots.length).toBe(2);
   });
 

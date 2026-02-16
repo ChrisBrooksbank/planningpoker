@@ -130,7 +130,7 @@ export default function Home() {
           <div className="space-y-4">
             <button
               onClick={() => setMode("create")}
-              className="w-full rounded-lg bg-primary px-6 py-4 text-lg font-semibold text-primary-foreground hover:opacity-90 transition-opacity"
+              className="w-full rounded-lg bg-primary px-6 py-4 text-lg font-semibold text-primary-foreground hover:bg-primary/90 transition-colors"
             >
               Create Room
             </button>
@@ -273,7 +273,7 @@ export default function Home() {
             <button
               type="submit"
               disabled={isLoading}
-              className="w-full rounded-lg bg-primary px-6 py-3 text-lg font-semibold text-primary-foreground hover:opacity-90 transition-opacity disabled:opacity-50 disabled:cursor-not-allowed"
+              className="w-full rounded-lg bg-primary px-6 py-3 text-lg font-semibold text-primary-foreground hover:bg-primary/90 transition-colors disabled:opacity-50 disabled:cursor-not-allowed"
             >
               {isLoading ? "Creating..." : "Create Room"}
             </button>
@@ -362,7 +362,7 @@ export default function Home() {
           <button
             type="submit"
             disabled={isLoading}
-            className="w-full rounded-lg bg-primary px-6 py-3 text-lg font-semibold text-primary-foreground hover:opacity-90 transition-opacity disabled:opacity-50 disabled:cursor-not-allowed"
+            className="w-full rounded-lg bg-primary px-6 py-3 text-lg font-semibold text-primary-foreground hover:bg-primary/90 transition-colors disabled:opacity-50 disabled:cursor-not-allowed"
           >
             {isLoading ? "Entering..." : "Enter Room"}
           </button>

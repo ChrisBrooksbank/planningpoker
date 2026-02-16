@@ -13,7 +13,7 @@ export function ParticipantList({
 }: ParticipantListProps) {
   if (participants.length === 0) {
     return (
-      <div className="rounded-lg border border-border bg-card p-3 sm:p-4">
+      <div className="rounded-lg border border-border bg-card p-3 sm:p-6">
         <h2 className="text-base sm:text-lg font-semibold mb-2 sm:mb-4">Participants</h2>
         <p className="text-sm text-muted-foreground">No participants yet</p>
       </div>
@@ -23,7 +23,7 @@ export function ParticipantList({
   const votedCount = participants.filter(p => votedUserIds.has(p.id)).length;
 
   return (
-    <div className="rounded-lg border border-border bg-card p-3 sm:p-4">
+    <div className="rounded-lg border border-border bg-card p-3 sm:p-6">
       <h2 className="text-base sm:text-lg font-semibold mb-2 sm:mb-4">
         Participants ({participants.length})
       </h2>
@@ -78,7 +78,7 @@ export function ParticipantList({
                 )}
                 <div
                   className={`h-2 w-2 rounded-full ${
-                    participant.isConnected ? "bg-green-500" : "bg-gray-400"
+                    participant.isConnected ? "bg-green-500" : "bg-muted-foreground"
                   }`}
                   aria-hidden="true"
                 />

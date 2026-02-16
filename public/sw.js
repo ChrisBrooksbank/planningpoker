@@ -1,4 +1,4 @@
-const CACHE_NAME = "planning-poker-v2";
+const CACHE_NAME = "planning-poker-v3";
 
 // Pre-cache the app shell on install
 self.addEventListener("install", (event) => {

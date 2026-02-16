@@ -75,7 +75,15 @@ export function RoundHistory({ history, deckType = "fibonacci" }: RoundHistoryPr
                         <span className="truncate max-w-[140px] sm:max-w-[200px]" title={participantName}>
                           {participantName}
                         </span>
-                        <span className="font-semibold text-primary">
+                        <span
+                          className={`font-semibold ${
+                            value === "?"
+                              ? "text-yellow-700 dark:text-yellow-400"
+                              : value === "coffee"
+                                ? "text-orange-700 dark:text-orange-400"
+                                : "text-primary"
+                          }`}
+                        >
                           <VoteValueDisplay value={value} />
                         </span>
                       </li>
@@ -85,19 +93,19 @@ export function RoundHistory({ history, deckType = "fibonacci" }: RoundHistoryPr
                   {/* Statistics summary */}
                   <div className={`grid gap-2 text-center ${showNumericStats ? "grid-cols-3" : "grid-cols-1"}`}>
                     {showNumericStats && entry.statistics.average !== null && (
-                      <div className="p-2 rounded bg-muted text-xs">
+                      <div className="p-2 rounded-md bg-muted text-xs">
                         <span className="text-muted-foreground">Avg</span>
                         <p className="font-bold text-sm">{entry.statistics.average.toFixed(1)}</p>
                       </div>
                     )}
                     {entry.statistics.mode !== null && (
-                      <div className="p-2 rounded bg-muted text-xs">
+                      <div className="p-2 rounded-md bg-muted text-xs">
                         <span className="text-muted-foreground">Mode</span>
                         <p className="font-bold text-sm"><VoteValueDisplay value={entry.statistics.mode} /></p>
                       </div>
                     )}
                     {showNumericStats && entry.statistics.range !== null && (
-                      <div className="p-2 rounded bg-muted text-xs">
+                      <div className="p-2 rounded-md bg-muted text-xs">
                         <span className="text-muted-foreground">Spread</span>
                         <p className="font-bold text-sm">{entry.statistics.range}</p>
                       </div>

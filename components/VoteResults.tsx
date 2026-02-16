@@ -36,7 +36,7 @@ export function VoteResults({
     <div className="space-y-6">
       {/* Votes section */}
       <div>
-        <h3 className="text-lg font-semibold mb-3">Votes</h3>
+        <h3 className="text-base sm:text-lg font-semibold mb-2 sm:mb-4">Votes</h3>
         {votesArray.length === 0 ? (
           <p className="text-muted-foreground italic">No votes yet</p>
         ) : (
@@ -44,7 +44,7 @@ export function VoteResults({
             {votesArray.map(({ userId, participantName, vote }) => (
               <li
                 key={userId}
-                className="flex items-center justify-between p-3 rounded-md bg-muted"
+                className="flex items-center justify-between p-3 rounded-md bg-muted/50"
                 aria-label={`${participantName} voted ${getVoteLabel(vote.value)}`}
               >
                 <span className="font-medium truncate max-w-[140px] sm:max-w-[200px]" title={participantName}>
@@ -69,7 +69,7 @@ export function VoteResults({
 
       {/* Statistics section */}
       <div>
-        <h3 className="text-lg font-semibold mb-3">Statistics</h3>
+        <h3 className="text-base sm:text-lg font-semibold mb-2 sm:mb-4">Statistics</h3>
         <div className={`grid gap-2 sm:gap-4 ${showNumericStats ? "grid-cols-2" : "grid-cols-1"}`}>
           {showNumericStats && (
             <div className="p-2.5 sm:p-4 rounded-md bg-muted" role="group" aria-label={`Average: ${statistics.average !== null ? statistics.average.toFixed(1) : "N/A"}`}>

@@ -754,7 +754,7 @@ describe("SessionPage", () => {
       expect(screen.getByText("Leaving User")).toBeInTheDocument();
       // Check participant list has one gray dot (participant is offline)
       const participantList = container.querySelector(".lg\\:col-span-1");
-      const grayDots = participantList?.querySelectorAll(".bg-gray-400");
+      const grayDots = participantList?.querySelectorAll(".bg-muted-foreground");
       expect(grayDots?.length).toBe(1);
       // Should have no green dots in participant list anymore
       const greenDots = participantList?.querySelectorAll(".bg-green-500");
