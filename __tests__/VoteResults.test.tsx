@@ -178,57 +178,6 @@ describe("VoteResults", () => {
     expect(naElements.length).toBe(3); // Average, Range, Spread should be N/A
   });
 
-  it("should display coffee emoji for coffee votes", () => {
-    const votes: Record<string, Vote> = {
-      user1: { userId: "user1", value: "coffee", submittedAt: Date.now() },
-    };
-
-    const statistics: VoteStatistics = {
-      average: null,
-      mode: "coffee",
-      min: null,
-      max: null,
-      range: null,
-    };
-
-    render(
-      <VoteResults
-        votes={votes}
-        participants={mockParticipants}
-        statistics={statistics}
-      />
-    );
-
-    // Coffee emoji should appear twice: once in votes, once in mode
-    const coffeeElements = screen.getAllByText("☕");
-    expect(coffeeElements.length).toBe(2);
-  });
-
-  it("should display ? for question mark votes", () => {
-    const votes: Record<string, Vote> = {
-      user1: { userId: "user1", value: "?", submittedAt: Date.now() },
-    };
-
-    const statistics: VoteStatistics = {
-      average: null,
-      mode: "?",
-      min: null,
-      max: null,
-      range: null,
-    };
-
-    render(
-      <VoteResults
-        votes={votes}
-        participants={mockParticipants}
-        statistics={statistics}
-      />
-    );
-
-    // ? should appear twice: once in votes, once in mode
-    const questionElements = screen.getAllByText("?");
-    expect(questionElements.length).toBe(2);
-  });
 
   it("should show empty state when no votes", () => {
     const votes: Record<string, Vote> = {};

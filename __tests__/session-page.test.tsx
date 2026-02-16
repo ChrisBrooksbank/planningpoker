@@ -2319,7 +2319,6 @@ describe("SessionPage", () => {
       });
 
       // Verify all cards are present
-      expect(screen.getByLabelText("Select 0")).toBeInTheDocument();
       expect(screen.getByLabelText("Select 1")).toBeInTheDocument();
       expect(screen.getByLabelText("Select 2")).toBeInTheDocument();
       expect(screen.getByLabelText("Select 3")).toBeInTheDocument();
@@ -2327,8 +2326,6 @@ describe("SessionPage", () => {
       expect(screen.getByLabelText("Select 8")).toBeInTheDocument();
       expect(screen.getByLabelText("Select 13")).toBeInTheDocument();
       expect(screen.getByLabelText("Select 21")).toBeInTheDocument();
-      expect(screen.getByLabelText("Select ?")).toBeInTheDocument();
-      expect(screen.getByLabelText("Select coffee")).toBeInTheDocument();
     });
 
     it("should show voter UI (card deck) to moderator as well", async () => {

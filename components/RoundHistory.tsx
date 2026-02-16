@@ -76,13 +76,7 @@ export function RoundHistory({ history, deckType = "fibonacci" }: RoundHistoryPr
                           {participantName}
                         </span>
                         <span
-                          className={`font-semibold ${
-                            value === "?"
-                              ? "text-yellow-700 dark:text-yellow-400"
-                              : value === "coffee"
-                                ? "text-orange-700 dark:text-orange-400"
-                                : "text-primary"
-                          }`}
+                          className="font-semibold text-primary"
                         >
                           <VoteValueDisplay value={value} />
                         </span>

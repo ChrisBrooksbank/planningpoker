@@ -28,7 +28,6 @@ export function VoteResults({
     .sort((a, b) => a.participantName.localeCompare(b.participantName));
 
   function getVoteLabel(value: string): string {
-    if (value === "coffee") return "coffee break";
     return value;
   }
 
@@ -51,13 +50,7 @@ export function VoteResults({
                   {participantName}
                 </span>
                 <span
-                  className={`px-3 py-1 rounded-md font-semibold ${
-                    vote.value === "?"
-                      ? "bg-yellow-500/20 text-yellow-700 dark:text-yellow-400"
-                      : vote.value === "coffee"
-                        ? "bg-orange-500/20 text-orange-700 dark:text-orange-400"
-                        : "bg-primary/20 text-primary"
-                  }`}
+                  className="px-3 py-1 rounded-md font-semibold bg-primary/20 text-primary"
                 >
                   <VoteValueDisplay value={vote.value} />
                 </span>
@@ -81,7 +74,7 @@ export function VoteResults({
               </p>
             </div>
           )}
-          <div className="p-2.5 sm:p-4 rounded-md bg-muted" role="group" aria-label={`Most Common: ${statistics.mode !== null ? (statistics.mode === "coffee" ? "Coffee break" : statistics.mode) : "N/A"}`}>
+          <div className="p-2.5 sm:p-4 rounded-md bg-muted" role="group" aria-label={`Most Common: ${statistics.mode !== null ? statistics.mode : "N/A"}`}>
             <p className="text-sm text-muted-foreground mb-1">Most Common</p>
             <p className="text-xl sm:text-2xl font-bold">
               {statistics.mode !== null

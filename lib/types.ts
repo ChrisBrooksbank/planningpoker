@@ -4,7 +4,6 @@
 export type DeckType = "fibonacci" | "tshirt";
 
 export const FIBONACCI_VALUES = [
-  "0",
   "1",
   "2",
   "3",
@@ -12,8 +11,6 @@ export const FIBONACCI_VALUES = [
   "8",
   "13",
   "21",
-  "?",
-  "coffee",
 ] as const;
 
 export const TSHIRT_VALUES = [
@@ -23,8 +20,6 @@ export const TSHIRT_VALUES = [
   "L",
   "XL",
   "XXL",
-  "?",
-  "coffee",
 ] as const;
 
 export function getDeckValues(deckType: DeckType): readonly string[] {

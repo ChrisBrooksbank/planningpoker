@@ -90,7 +90,7 @@ export function CardDeck({
             aria-checked={selectedValue === value}
             aria-label={`Select ${value}`}
           >
-            {value === "coffee" ? <span aria-hidden="true">☕</span> : value}
+            {value}
           </button>
         ))}
       </div>

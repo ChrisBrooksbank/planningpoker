@@ -44,7 +44,7 @@ export function isValidTopic(topic: string): boolean {
  * Checks if a card value is numeric
  */
 export function isNumericCard(value: string): boolean {
-  return !["?", "coffee"].includes(value) && !isNaN(Number(value));
+  return !isNaN(Number(value));
 }
 
 /**

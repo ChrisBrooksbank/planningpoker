@@ -10,7 +10,6 @@ describe("CardDeck", () => {
     render(<CardDeck selectedValue={null} onSelectCard={onSelectCard} />);
 
     // Verify all cards are rendered
-    expect(screen.getByLabelText("Select 0")).toBeInTheDocument();
     expect(screen.getByLabelText("Select 1")).toBeInTheDocument();
     expect(screen.getByLabelText("Select 2")).toBeInTheDocument();
     expect(screen.getByLabelText("Select 3")).toBeInTheDocument();
@@ -18,16 +17,6 @@ describe("CardDeck", () => {
     expect(screen.getByLabelText("Select 8")).toBeInTheDocument();
     expect(screen.getByLabelText("Select 13")).toBeInTheDocument();
     expect(screen.getByLabelText("Select 21")).toBeInTheDocument();
-    expect(screen.getByLabelText("Select ?")).toBeInTheDocument();
-    expect(screen.getByLabelText("Select coffee")).toBeInTheDocument();
-  });
-
-  it("displays coffee card with coffee emoji", () => {
-    const onSelectCard = vi.fn();
-    render(<CardDeck selectedValue={null} onSelectCard={onSelectCard} />);
-
-    const coffeeButton = screen.getByLabelText("Select coffee");
-    expect(coffeeButton).toHaveTextContent("☕");
   });
 
   it("calls onSelectCard when a card is clicked", async () => {
