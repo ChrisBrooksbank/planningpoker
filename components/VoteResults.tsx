@@ -27,17 +27,39 @@ const CONFETTI_COLORS = [
   "#ec4899",
   "#06b6d4",
   "#f97316",
+  "#fbbf24",
+  "#ffffff",
 ];
 
-const CONFETTI_POSITIONS = [
-  { left: "10%", delay: "0s" },
-  { left: "20%", delay: "0.1s" },
-  { left: "35%", delay: "0.2s" },
-  { left: "45%", delay: "0.05s" },
-  { left: "55%", delay: "0.15s" },
-  { left: "65%", delay: "0.25s" },
-  { left: "78%", delay: "0.08s" },
-  { left: "88%", delay: "0.18s" },
+const CONFETTI_PIECES = [
+  { left: "5%", delay: "0s", w: "w-2", h: "h-3" },
+  { left: "10%", delay: "0.15s", w: "w-3", h: "h-2" },
+  { left: "15%", delay: "0.4s", w: "w-2", h: "h-2" },
+  { left: "22%", delay: "0.1s", w: "w-2", h: "h-3" },
+  { left: "28%", delay: "0.55s", w: "w-3", h: "h-2" },
+  { left: "33%", delay: "0.25s", w: "w-2", h: "h-2" },
+  { left: "40%", delay: "0.7s", w: "w-2", h: "h-3" },
+  { left: "45%", delay: "0.05s", w: "w-3", h: "h-2" },
+  { left: "50%", delay: "0.35s", w: "w-2", h: "h-2" },
+  { left: "55%", delay: "0.6s", w: "w-2", h: "h-3" },
+  { left: "60%", delay: "0.2s", w: "w-3", h: "h-2" },
+  { left: "65%", delay: "0.45s", w: "w-2", h: "h-2" },
+  { left: "70%", delay: "0.8s", w: "w-2", h: "h-3" },
+  { left: "75%", delay: "0.3s", w: "w-3", h: "h-2" },
+  { left: "80%", delay: "0.1s", w: "w-2", h: "h-2" },
+  { left: "85%", delay: "0.5s", w: "w-2", h: "h-3" },
+  { left: "90%", delay: "0.65s", w: "w-3", h: "h-2" },
+  { left: "95%", delay: "0.15s", w: "w-2", h: "h-2" },
+];
+
+const SPARKLE_POSITIONS = [
+  { left: "12%", top: "20%", delay: "0.3s" },
+  { left: "30%", top: "60%", delay: "0.8s" },
+  { left: "50%", top: "15%", delay: "1.2s" },
+  { left: "68%", top: "55%", delay: "0.5s" },
+  { left: "85%", top: "25%", delay: "1.0s" },
+  { left: "20%", top: "40%", delay: "1.5s" },
+  { left: "75%", top: "70%", delay: "0.7s" },
 ];
 
 export function VoteResults({
@@ -60,8 +82,7 @@ export function VoteResults({
   const { entries: distribution, max: maxCount } = getVoteDistribution(votes);
   const totalVotes = Object.keys(votes).length;
 
-  const isConsensus =
-    totalVotes > 1 && distribution.length === 1;
+  const isConsensus = totalVotes > 1 && distribution.length === 1;
   const consensusValue = isConsensus ? distribution[0][0] : null;
 
   function getVoteLabel(value: string): string {
@@ -70,27 +91,81 @@ export function VoteResults({
 
   return (
     <div className="space-y-6">
-      {/* Consensus celebration */}
+      {/* Consensus celebration with fireworks */}
       {isConsensus && (
-        <div className="relative overflow-hidden rounded-lg consensus-banner">
-          <div className="bg-gradient-to-r from-green-500 to-emerald-500 px-4 py-3 text-center text-white font-bold text-lg">
-            Consensus! Everyone voted{" "}
-            <VoteValueDisplay value={consensusValue!} />
+        <div className="relative overflow-hidden rounded-xl consensus-banner consensus-glow">
+          {/* Main banner */}
+          <div className="relative bg-gradient-to-r from-amber-500 via-green-500 to-emerald-500 px-4 py-5 text-center text-white font-bold text-xl sm:text-2xl">
+            {/* Shimmer sweep overlay */}
+            <div
+              className="absolute inset-0 pointer-events-none consensus-shimmer"
+              aria-hidden="true"
+              style={{
+                background:
+                  "linear-gradient(90deg, transparent, rgba(255,255,255,0.3), transparent)",
+                width: "50%",
+              }}
+            />
+            <span className="relative z-10">
+              🏆 Consensus! Everyone voted{" "}
+              <VoteValueDisplay value={consensusValue!} /> 🎉
+            </span>
           </div>
+
+          {/* Firework bursts */}
+          <div
+            className="absolute inset-0 pointer-events-none overflow-visible"
+            aria-hidden="true"
+          >
+            <div
+              className="firework firework-1"
+              style={{ left: "20%", bottom: "10px" }}
+            />
+            <div
+              className="firework firework-2"
+              style={{ left: "50%", bottom: "10px" }}
+            />
+            <div
+              className="firework firework-3"
+              style={{ left: "78%", bottom: "10px" }}
+            />
+          </div>
+
+          {/* Confetti rain */}
           <div
             className="absolute inset-0 pointer-events-none"
             aria-hidden="true"
           >
-            {CONFETTI_POSITIONS.map((pos, i) => (
+            {CONFETTI_PIECES.map((piece, i) => (
               <div
-                key={i}
-                className="absolute top-0 w-2 h-2 rounded-sm confetti-piece"
+                key={`confetti-${i}`}
+                className={`absolute top-0 ${piece.w} ${piece.h} rounded-sm confetti-piece`}
                 style={{
-                  left: pos.left,
-                  animationDelay: pos.delay,
+                  left: piece.left,
+                  animationDelay: piece.delay,
                   backgroundColor: CONFETTI_COLORS[i % CONFETTI_COLORS.length],
                 }}
               />
+            ))}
+          </div>
+
+          {/* Sparkle overlay */}
+          <div
+            className="absolute inset-0 pointer-events-none"
+            aria-hidden="true"
+          >
+            {SPARKLE_POSITIONS.map((pos, i) => (
+              <div
+                key={`sparkle-${i}`}
+                className="absolute text-yellow-200 text-sm sparkle"
+                style={{
+                  left: pos.left,
+                  top: pos.top,
+                  animationDelay: pos.delay,
+                }}
+              >
+                ✦
+              </div>
             ))}
           </div>
         </div>
