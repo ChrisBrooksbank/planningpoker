@@ -54,9 +54,6 @@ export function getSessionHint(props: SessionHintProps): HintResult {
 
   // Voting open
   if (isVotingOpen) {
-    const cardHint =
-      "The ? card means 'unsure' or 'need more info'. The coffee card means 'I need a break'.";
-
     if (isModerator) {
       return {
         primary: `Click Reveal when the team is ready, or wait for more votes. (${votedCount} of ${totalParticipants} voted)`,
@@ -71,7 +68,7 @@ export function getSessionHint(props: SessionHintProps): HintResult {
 
     return {
       primary: "Select a card below to cast your vote!",
-      secondary: `Your vote is private — ${moderatorName} will reveal all votes together. ${cardHint}`,
+      secondary: `Your vote is private — ${moderatorName} will reveal all votes together.`,
       urgent: true,
     };
   }
@@ -128,17 +125,23 @@ export function SessionHint(props: SessionHintProps) {
         )}
       </svg>
       <div>
-        <p className={`text-sm font-medium ${
-          urgent
-            ? "text-amber-800 dark:text-amber-200"
-            : "text-blue-800 dark:text-blue-200"
-        }`}>{primary}</p>
-        {secondary && (
-          <p className={`text-xs mt-1 ${
+        <p
+          className={`text-sm font-medium ${
             urgent
-              ? "text-amber-600 dark:text-amber-400"
-              : "text-blue-600 dark:text-blue-400"
-          }`}>
+              ? "text-amber-800 dark:text-amber-200"
+              : "text-blue-800 dark:text-blue-200"
+          }`}
+        >
+          {primary}
+        </p>
+        {secondary && (
+          <p
+            className={`text-xs mt-1 ${
+              urgent
+                ? "text-amber-600 dark:text-amber-400"
+                : "text-blue-600 dark:text-blue-400"
+            }`}
+          >
             {secondary}
           </p>
         )}

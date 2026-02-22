@@ -16,9 +16,7 @@ describe("getSessionHint", () => {
   // Pre-voting state
   it("shows waiting message with moderator name for participant pre-voting", () => {
     const result = getSessionHint(baseProps);
-    expect(result.primary).toBe(
-      "Waiting for Alice to start a voting round..."
-    );
+    expect(result.primary).toBe("Waiting for Alice to start a voting round...");
     expect(result.secondary).toBeUndefined();
   });
 
@@ -33,13 +31,10 @@ describe("getSessionHint", () => {
   // Voting open state — participant hasn't voted
   it("shows urgent call-to-action for participant who hasn't voted", () => {
     const result = getSessionHint({ ...baseProps, isVotingOpen: true });
-    expect(result.primary).toBe(
-      "Select a card below to cast your vote!"
+    expect(result.primary).toBe("Select a card below to cast your vote!");
+    expect(result.secondary).toBe(
+      "Your vote is private — Alice will reveal all votes together."
     );
-    expect(result.secondary).toContain("Your vote is private");
-    expect(result.secondary).toContain("Alice");
-    expect(result.secondary).toContain("? card");
-    expect(result.secondary).toContain("coffee card");
     expect(result.urgent).toBe(true);
   });
 
@@ -88,9 +83,7 @@ describe("getSessionHint", () => {
       ...baseProps,
       isRevealed: true,
     });
-    expect(result.primary).toBe(
-      "Alice will start the next round when ready."
-    );
+    expect(result.primary).toBe("Alice will start the next round when ready.");
     expect(result.secondary).toBeUndefined();
   });
 
@@ -122,9 +115,7 @@ describe("getSessionHint", () => {
       isRevealed: true,
     });
     // Should show revealed hint, not voting hint
-    expect(result.primary).toBe(
-      "Alice will start the next round when ready."
-    );
+    expect(result.primary).toBe("Alice will start the next round when ready.");
   });
 
   it("no secondary hint for voted participant", () => {
@@ -142,11 +133,19 @@ describe("getSessionHint", () => {
     expect(notVoted.urgent).toBe(true);
 
     // Voted — should not be urgent
-    const voted = getSessionHint({ ...baseProps, isVotingOpen: true, hasVoted: true });
+    const voted = getSessionHint({
+      ...baseProps,
+      isVotingOpen: true,
+      hasVoted: true,
+    });
     expect(voted.urgent).toBeFalsy();
 
     // Moderator — should not be urgent
-    const moderator = getSessionHint({ ...baseProps, isModerator: true, isVotingOpen: true });
+    const moderator = getSessionHint({
+      ...baseProps,
+      isModerator: true,
+      isVotingOpen: true,
+    });
     expect(moderator.urgent).toBeFalsy();
 
     // Pre-voting — should not be urgent
@@ -174,12 +173,16 @@ describe("SessionHint component", () => {
 
   it("renders secondary hint when present", () => {
     render(<SessionHint {...baseProps} isVotingOpen={true} />);
-    expect(screen.getByText(/\? card means/)).toBeInTheDocument();
+    expect(
+      screen.getByText(/Your vote is private/)
+    ).toBeInTheDocument();
   });
 
   it("does not render secondary hint when absent", () => {
     render(<SessionHint {...baseProps} />);
-    expect(screen.queryByText(/\? card means/)).not.toBeInTheDocument();
+    expect(
+      screen.queryByText(/Your vote is private/)
+    ).not.toBeInTheDocument();
   });
 
   it("has role=status for accessibility", () => {
@@ -189,10 +192,7 @@ describe("SessionHint component", () => {
 
   it("has aria-live=polite", () => {
     render(<SessionHint {...baseProps} />);
-    expect(screen.getByRole("status")).toHaveAttribute(
-      "aria-live",
-      "polite"
-    );
+    expect(screen.getByRole("status")).toHaveAttribute("aria-live", "polite");
   });
 
   it("renders info icon with aria-hidden", () => {
