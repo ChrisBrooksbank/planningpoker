@@ -22,5 +22,5 @@ Import components using the `@/components` path alias:
 
 ```typescript
 import { ThemeProvider } from "@/components/theme-provider";
-import { Button } from "@/components/ui/button";
+import { CardDeck } from "@/components/CardDeck";
 ```

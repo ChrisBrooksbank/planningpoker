@@ -65,10 +65,6 @@ Before committing, always run `npm run check` to ensure all validation passes.
 - Accessibility (adjustable font size, keyboard navigation)
 - Mobile-friendly responsive design
 
-## Development Workflow
-
-See `AGENTS.md` for detailed operational commands and project notes.
-
 ## Architecture
 
 - **Server-side state management**: All session state lives in server memory

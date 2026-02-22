@@ -8,6 +8,7 @@ Shared utilities, types, and constants for the Planning Poker application.
 - **constants.ts** - Application-wide constants (WebSocket config, validation limits, performance requirements)
 - **utils.ts** - Utility functions for validation, class name merging, and data processing
 - **websocket-messages.ts** - WebSocket message type definitions and factories
+- **hooks/useWebSocket.ts** - React hook for WebSocket connection with exponential backoff reconnection
 
 ## Usage
 
