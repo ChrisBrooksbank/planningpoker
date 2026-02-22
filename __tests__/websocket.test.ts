@@ -121,6 +121,7 @@ describe("PlanningPokerWebSocketServer", () => {
           // Use broadcastToRoom directly to test broadcast functionality
           wsServer.broadcastToRoom("ROOM01", {
             type: "round-started",
+            roundHistory: [],
           });
         }
       };
@@ -168,6 +169,7 @@ describe("PlanningPokerWebSocketServer", () => {
           // Use broadcastToRoom to test room isolation
           wsServer.broadcastToRoom("ROOM01", {
             type: "round-started",
+            roundHistory: [],
           });
 
           setTimeout(() => {

@@ -1,5 +1,6 @@
 import { describe, it, expect, beforeEach } from "vitest";
 import { SessionStorage } from "../../server/sessionStorage";
+import type { Participant } from "../../lib/types";
 
 describe("SessionStorage", () => {
   let storage: SessionStorage;
@@ -110,8 +111,10 @@ describe("SessionStorage", () => {
       );
 
       expect(participants).toHaveLength(2);
-      expect(participants?.[1].isConnected).toBe(true);
-      expect(participants?.[1].name).toBe("Bob Updated");
+      expect(participants).not.toBe("SESSION_FULL");
+      const list = participants as Participant[];
+      expect(list[1].isConnected).toBe(true);
+      expect(list[1].name).toBe("Bob Updated");
     });
 
     it("should return null for non-existent session", () => {
@@ -129,7 +132,11 @@ describe("SessionStorage", () => {
 
       expect(state.participants).toHaveLength(50);
 
-      const result = storage.addParticipant(state.session.id, "user50", "User 50");
+      const result = storage.addParticipant(
+        state.session.id,
+        "user50",
+        "User 50"
+      );
       expect(result).toBe("SESSION_FULL");
       expect(state.participants).toHaveLength(50);
     });
@@ -142,7 +149,11 @@ describe("SessionStorage", () => {
       storage.markParticipantDisconnected(state.session.id, "user1");
 
       // Reconnecting existing participant should succeed even at capacity
-      const result = storage.addParticipant(state.session.id, "user1", "User 1");
+      const result = storage.addParticipant(
+        state.session.id,
+        "user1",
+        "User 1"
+      );
       expect(result).not.toBeNull();
       expect(result).not.toBe("SESSION_FULL");
       expect(state.participants).toHaveLength(50);

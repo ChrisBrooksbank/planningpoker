@@ -10,18 +10,21 @@ describe("ParticipantList", () => {
       name: "Alice",
       isModerator: true,
       isConnected: true,
+      isObserver: false,
     },
     {
       id: "user-2",
       name: "Bob",
       isModerator: false,
       isConnected: true,
+      isObserver: false,
     },
     {
       id: "user-3",
       name: "Charlie",
       isModerator: false,
       isConnected: false,
+      isObserver: false,
     },
   ];
 
@@ -51,12 +54,14 @@ describe("ParticipantList", () => {
         name: "Alice",
         isModerator: false,
         isConnected: true,
+        isObserver: false,
       },
       {
         id: "user-2",
         name: "Bob",
         isModerator: false,
         isConnected: true,
+        isObserver: false,
       },
     ];
 
@@ -120,6 +125,7 @@ describe("ParticipantList", () => {
         name: "Alice",
         isModerator: true,
         isConnected: true,
+        isObserver: false,
       },
     ];
 
@@ -153,18 +159,21 @@ describe("ParticipantList", () => {
         name: "Alice",
         isModerator: true,
         isConnected: true,
+        isObserver: false,
       },
       {
         id: "user-2",
         name: "Bob",
         isModerator: false,
         isConnected: true,
+        isObserver: false,
       },
       {
         id: "user-3",
         name: "Charlie",
         isModerator: false,
         isConnected: true,
+        isObserver: false,
       },
     ];
 
@@ -186,12 +195,14 @@ describe("ParticipantList", () => {
         name: "Alice",
         isModerator: true,
         isConnected: false,
+        isObserver: false,
       },
       {
         id: "user-2",
         name: "Bob",
         isModerator: false,
         isConnected: false,
+        isObserver: false,
       },
     ];
 

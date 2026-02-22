@@ -5,9 +5,27 @@ import type { Vote, VoteStatistics, Participant } from "@/lib/types";
 
 describe("VoteResults", () => {
   const mockParticipants: Participant[] = [
-    { id: "user1", name: "Alice", isModerator: true, isConnected: true },
-    { id: "user2", name: "Bob", isModerator: false, isConnected: true },
-    { id: "user3", name: "Charlie", isModerator: false, isConnected: true },
+    {
+      id: "user1",
+      name: "Alice",
+      isModerator: true,
+      isConnected: true,
+      isObserver: false,
+    },
+    {
+      id: "user2",
+      name: "Bob",
+      isModerator: false,
+      isConnected: true,
+      isObserver: false,
+    },
+    {
+      id: "user3",
+      name: "Charlie",
+      isModerator: false,
+      isConnected: true,
+      isObserver: false,
+    },
   ];
 
   it("should render votes with participant names", () => {
@@ -151,15 +169,15 @@ describe("VoteResults", () => {
     expect(screen.getByText("5")).toBeInTheDocument();
   });
 
-  it("should display N/A for statistics when no numeric votes", () => {
+  it("should display N/A for statistics when all null", () => {
     const votes: Record<string, Vote> = {
-      user1: { userId: "user1", value: "?", submittedAt: Date.now() },
-      user2: { userId: "user2", value: "coffee", submittedAt: Date.now() },
+      user1: { userId: "user1", value: "XS", submittedAt: Date.now() },
+      user2: { userId: "user2", value: "XL", submittedAt: Date.now() },
     };
 
     const statistics: VoteStatistics = {
       average: null,
-      mode: "?",
+      mode: "XS",
       min: null,
       max: null,
       range: null,
@@ -177,7 +195,6 @@ describe("VoteResults", () => {
     const naElements = screen.getAllByText("N/A");
     expect(naElements.length).toBe(3); // Average, Range, Spread should be N/A
   });
-
 
   it("should show empty state when no votes", () => {
     const votes: Record<string, Vote> = {};
