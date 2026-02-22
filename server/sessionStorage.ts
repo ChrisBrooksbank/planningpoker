@@ -126,7 +126,10 @@ export class SessionStorage {
     );
 
     // Reject new participants if session is at capacity
-    if (!existingParticipant && sessionState.participants.length >= MAX_PARTICIPANTS_PER_SESSION) {
+    if (
+      !existingParticipant &&
+      sessionState.participants.length >= MAX_PARTICIPANTS_PER_SESSION
+    ) {
       return "SESSION_FULL" as const;
     }
 
@@ -257,7 +260,11 @@ export class SessionStorage {
    * @param value - The vote value
    * @returns True if successful, false if session not found
    */
-  submitVote(roomId: string, userId: string, value: string): boolean | "OBSERVER" {
+  submitVote(
+    roomId: string,
+    userId: string,
+    value: string
+  ): boolean | "OBSERVER" {
     const sessionState = this.sessions.get(roomId);
     if (!sessionState) {
       return false;
@@ -269,7 +276,9 @@ export class SessionStorage {
       return "OBSERVER";
     }
 
-    const deckValues = getDeckValues(sessionState.session.deckType || "fibonacci");
+    const deckValues = getDeckValues(
+      sessionState.session.deckType || "fibonacci"
+    );
     if (!deckValues.includes(value)) {
       return false;
     }
@@ -340,7 +349,12 @@ export class SessionStorage {
 
       let maxCount = 0;
       counts.forEach((count, value) => {
-        if (count > maxCount || (count === maxCount && mode !== null && compareVoteValues(value, mode) < 0)) {
+        if (
+          count > maxCount ||
+          (count === maxCount &&
+            mode !== null &&
+            compareVoteValues(value, mode) < 0)
+        ) {
           maxCount = count;
           mode = value as Vote["value"];
         }
@@ -371,11 +385,20 @@ export class SessionStorage {
     }
 
     // Snapshot the completed round into history (if votes were revealed)
-    if (sessionState.session.isRevealed && sessionState.votes.size > 0 && sessionState.statistics) {
-      const historyVotes: Record<string, { participantName: string; value: CardValue }> = {};
-      sessionState.votes.forEach((vote, oddsUserId) => {
-        const participant = sessionState.participants.find((p) => p.id === oddsUserId);
-        historyVotes[oddsUserId] = {
+    if (
+      sessionState.session.isRevealed &&
+      sessionState.votes.size > 0 &&
+      sessionState.statistics
+    ) {
+      const historyVotes: Record<
+        string,
+        { participantName: string; value: CardValue }
+      > = {};
+      sessionState.votes.forEach((vote, userId) => {
+        const participant = sessionState.participants.find(
+          (p) => p.id === userId
+        );
+        historyVotes[userId] = {
           participantName: participant?.name || "Unknown",
           value: vote.value,
         };
@@ -433,5 +456,5 @@ export class SessionStorage {
 // which run in separate module scopes due to webpack bundling.
 const GLOBAL_KEY = "__planningPokerSessionStorage";
 export const sessionStorage: SessionStorage =
-  (globalThis as Record<string, unknown>)[GLOBAL_KEY] as SessionStorage ??
+  ((globalThis as Record<string, unknown>)[GLOBAL_KEY] as SessionStorage) ??
   ((globalThis as Record<string, unknown>)[GLOBAL_KEY] = new SessionStorage());

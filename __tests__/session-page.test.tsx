@@ -1055,9 +1055,7 @@ describe("SessionPage", () => {
     });
 
     // Initially no voted indicators (no checkmark badges)
-    expect(
-      document.querySelectorAll('li[aria-label*="Voted"]').length
-    ).toBe(0);
+    expect(document.querySelectorAll('li[aria-label*="Voted"]').length).toBe(0);
 
     // Simulate vote-submitted message
     await act(async () => {
@@ -1069,9 +1067,9 @@ describe("SessionPage", () => {
 
     // Should now show voted indicator for user456 (checkmark badge)
     await waitFor(() => {
-      expect(
-        document.querySelectorAll('li[aria-label*="Voted"]').length
-      ).toBe(1);
+      expect(document.querySelectorAll('li[aria-label*="Voted"]').length).toBe(
+        1
+      );
     });
   });
 
@@ -1237,7 +1235,7 @@ describe("SessionPage", () => {
       });
     });
 
-    it("should send set-topic message when moderator clicks Start Vote", async () => {
+    it("should send new-round with newTopic when moderator clicks Start Vote", async () => {
       const user = userEvent.setup();
       (
         window.localStorage.getItem as ReturnType<typeof vi.fn>
@@ -1291,11 +1289,11 @@ describe("SessionPage", () => {
       // Click Start Vote button
       await user.click(button);
 
-      // Verify set-topic message was sent
+      // Verify new-round message was sent with newTopic
       await waitFor(() => {
         expect(mockSendMessage).toHaveBeenCalledWith({
-          type: "set-topic",
-          topic: "New user story",
+          type: "new-round",
+          newTopic: "New user story",
         });
       });
     });
@@ -1565,11 +1563,11 @@ describe("SessionPage", () => {
       // Click Start Vote button
       await user.click(button);
 
-      // Verify set-topic message was sent with trimmed topic
+      // Verify new-round message was sent with trimmed newTopic
       await waitFor(() => {
         expect(mockSendMessage).toHaveBeenCalledWith({
-          type: "set-topic",
-          topic: "Topic with spaces",
+          type: "new-round",
+          newTopic: "Topic with spaces",
         });
       });
     });

@@ -342,14 +342,10 @@ export default function SessionPage() {
   // Handle starting a round with the current topic (moderator only)
   const handleStartRound = () => {
     const trimmed = topicInput.trim();
-    if (trimmed && trimmed !== currentTopic) {
-      sendMessage({
-        type: "set-topic",
-        topic: trimmed,
-      });
-    }
+    const topicChanged = trimmed && trimmed !== currentTopic;
     sendMessage({
       type: "new-round",
+      ...(topicChanged ? { newTopic: trimmed } : {}),
     });
   };
 

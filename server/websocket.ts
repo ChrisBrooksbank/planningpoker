@@ -2,9 +2,7 @@ import { WebSocketServer, WebSocket } from "ws";
 import { IncomingMessage } from "http";
 import { Server as HTTPServer } from "http";
 import { sessionStorage } from "./sessionStorage.js";
-import {
-  isClientMessage,
-} from "../lib/websocket-messages.js";
+import { isClientMessage } from "../lib/websocket-messages.js";
 import type {
   ClientMessage,
   ServerMessage,
@@ -35,7 +33,11 @@ export class PlanningPokerWebSocketServer {
   private heartbeatInterval: NodeJS.Timeout;
 
   constructor(server: HTTPServer) {
-    this.wss = new WebSocketServer({ server, path: "/ws", maxPayload: 256 * 1024 });
+    this.wss = new WebSocketServer({
+      server,
+      path: "/ws",
+      maxPayload: 256 * 1024,
+    });
     this.setupWebSocketServer();
     this.heartbeatInterval = setInterval(() => this.checkConnections(), 30000);
   }
@@ -65,7 +67,7 @@ export class PlanningPokerWebSocketServer {
 
     // Only mark disconnected if no other connection exists for this user in this room
     const hasOtherConnection = Array.from(this.clients.values()).some(
-      c => c.userId === client.userId && c.roomId === client.roomId
+      (c) => c.userId === client.userId && c.roomId === client.roomId
     );
     if (!hasOtherConnection) {
       sessionStorage.markParticipantDisconnected(client.roomId, client.userId);
@@ -111,19 +113,32 @@ export class PlanningPokerWebSocketServer {
       }
 
       // Register client and mark as alive for heartbeat
-      const client: RoomClient = { ws, roomId, userId, messageCount: 0, messageWindowStart: Date.now(), isAlive: true };
+      const client: RoomClient = {
+        ws,
+        roomId,
+        userId,
+        messageCount: 0,
+        messageWindowStart: Date.now(),
+        isAlive: true,
+      };
       this.clients.set(ws, client);
       this.addToRoomIndex(roomId, ws);
 
       // Track pong responses for heartbeat
-      ws.on("pong", () => { client.isAlive = true; });
+      ws.on("pong", () => {
+        client.isAlive = true;
+      });
 
       // Handle messages
       ws.on("message", (data: Buffer) => {
         try {
           const message = JSON.parse(data.toString());
           if (!isClientMessage(message)) {
-            this.sendError(ws, "INVALID_MESSAGE", "Unknown or invalid message type");
+            this.sendError(
+              ws,
+              "INVALID_MESSAGE",
+              "Unknown or invalid message type"
+            );
             return;
           }
           this.handleMessage(ws, message);
@@ -143,7 +158,10 @@ export class PlanningPokerWebSocketServer {
 
       // Handle errors
       ws.on("error", (err) => {
-        console.error(`WebSocket error for userId=${userId}, roomId=${roomId}:`, err);
+        console.error(
+          `WebSocket error for userId=${userId}, roomId=${roomId}:`,
+          err
+        );
       });
 
       // Send connection acknowledgment
@@ -169,12 +187,17 @@ export class PlanningPokerWebSocketServer {
 
     // Rate limiting
     const now = Date.now();
-    if (now - client.messageWindowStart > PlanningPokerWebSocketServer.RATE_LIMIT_WINDOW_MS) {
+    if (
+      now - client.messageWindowStart >
+      PlanningPokerWebSocketServer.RATE_LIMIT_WINDOW_MS
+    ) {
       client.messageCount = 0;
       client.messageWindowStart = now;
     }
     client.messageCount++;
-    if (client.messageCount > PlanningPokerWebSocketServer.RATE_LIMIT_MAX_MESSAGES) {
+    if (
+      client.messageCount > PlanningPokerWebSocketServer.RATE_LIMIT_MAX_MESSAGES
+    ) {
       this.sendError(ws, "RATE_LIMITED", "Too many messages, slow down");
       return;
     }
@@ -216,15 +239,21 @@ export class PlanningPokerWebSocketServer {
     const { participantName } = message;
 
     // Validate participant name
-    const trimmedName = typeof participantName === "string" ? participantName.trim() : "";
+    const trimmedName =
+      typeof participantName === "string" ? participantName.trim() : "";
     if (trimmedName.length < 1 || trimmedName.length > 50) {
-      this.sendError(ws, "INVALID_NAME", "Name must be between 1 and 50 characters");
+      this.sendError(
+        ws,
+        "INVALID_NAME",
+        "Name must be between 1 and 50 characters"
+      );
       return;
     }
 
     // Check if this is a reconnecting participant
     const existingSession = sessionStorage.getSession(roomId);
-    const wasExisting = existingSession?.participants.some(p => p.id === userId) ?? false;
+    const wasExisting =
+      existingSession?.participants.some((p) => p.id === userId) ?? false;
 
     // Add participant to session storage
     const participants = sessionStorage.addParticipant(
@@ -234,7 +263,11 @@ export class PlanningPokerWebSocketServer {
     );
 
     if (participants === "SESSION_FULL") {
-      this.sendError(ws, "SESSION_FULL", "Session is full (max 50 participants)");
+      this.sendError(
+        ws,
+        "SESSION_FULL",
+        "Session is full (max 50 participants)"
+      );
       ws.close(1008, "Session full");
       return;
     }
@@ -293,14 +326,22 @@ export class PlanningPokerWebSocketServer {
 
     // Reject votes after reveal
     if (session.session.isRevealed) {
-      this.sendError(ws, "VOTES_REVEALED", "Cannot vote after votes are revealed");
+      this.sendError(
+        ws,
+        "VOTES_REVEALED",
+        "Cannot vote after votes are revealed"
+      );
       return;
     }
 
     // Verify user is a participant
-    const participant = session.participants.find(p => p.id === userId);
+    const participant = session.participants.find((p) => p.id === userId);
     if (!participant) {
-      this.sendError(ws, "NOT_A_PARTICIPANT", "You must join the session before voting");
+      this.sendError(
+        ws,
+        "NOT_A_PARTICIPANT",
+        "You must join the session before voting"
+      );
       return;
     }
 
@@ -351,7 +392,11 @@ export class PlanningPokerWebSocketServer {
     const trimmedTopic = topic.trim();
 
     if (trimmedTopic.length > 200) {
-      this.sendError(ws, "INVALID_TOPIC", "Topic must be 200 characters or fewer");
+      this.sendError(
+        ws,
+        "INVALID_TOPIC",
+        "Topic must be 200 characters or fewer"
+      );
       return;
     }
 
@@ -454,8 +499,17 @@ export class PlanningPokerWebSocketServer {
       return;
     }
 
-    // Start new round in session storage
+    // Start new round in session storage (snapshots current topic into history first)
     sessionStorage.startNewRound(roomId);
+
+    // Apply new topic after history snapshot so history keeps the old topic
+    if (message.newTopic) {
+      sessionStorage.setTopic(roomId, message.newTopic);
+      this.broadcastToRoom(roomId, {
+        type: "topic-changed",
+        topic: message.newTopic,
+      });
+    }
 
     // Get updated session for round history
     const updatedSession = sessionStorage.getSession(roomId);
