@@ -58,7 +58,9 @@ export function CardDeck({
 
   return (
     <div className="w-full">
-      <h2 className="text-base sm:text-lg font-semibold mb-2 sm:mb-4">Select Your Estimate</h2>
+      <h2 className="text-base sm:text-lg font-semibold mb-2 sm:mb-4">
+        Select Your Estimate
+      </h2>
       <div
         role="radiogroup"
         aria-label="Estimation cards"
@@ -74,6 +76,7 @@ export function CardDeck({
             disabled={disabled}
             tabIndex={index === focusedIndex ? 0 : -1}
             className={`
+              card-entrance
               aspect-[3/4] sm:aspect-[2/3] rounded-lg border-2 font-bold sm:font-semibold text-2xl sm:text-lg
               shadow-sm sm:shadow-none
               transition-all duration-200
@@ -86,6 +89,7 @@ export function CardDeck({
                   : "border-foreground/20 sm:border-border bg-card hover:border-primary/50 hover:bg-muted"
               }
             `}
+            style={{ animationDelay: `${index * 50}ms` }}
             role="radio"
             aria-checked={selectedValue === value}
             aria-label={`Select ${value}`}
@@ -95,7 +99,10 @@ export function CardDeck({
         ))}
       </div>
       {selectedValue && (
-        <p className="mt-2 sm:mt-4 text-sm text-muted-foreground" aria-live="polite">
+        <p
+          className="mt-2 sm:mt-4 text-sm text-muted-foreground"
+          aria-live="polite"
+        >
           Selected: <span className="font-semibold">{selectedValue}</span>
         </p>
       )}

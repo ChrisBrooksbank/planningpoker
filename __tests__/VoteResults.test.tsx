@@ -52,9 +52,9 @@ describe("VoteResults", () => {
 
     expect(screen.getByText("Alice")).toBeInTheDocument();
     expect(screen.getByText("Bob")).toBeInTheDocument();
-    // "5" appears in both votes and statistics (mode), so use getAllByText
+    // Values appear in votes, distribution chart, and statistics
     expect(screen.getAllByText("5").length).toBeGreaterThan(0);
-    expect(screen.getByText("8")).toBeInTheDocument();
+    expect(screen.getAllByText("8").length).toBeGreaterThan(0);
   });
 
   it("should sort votes by participant name alphabetically", () => {

@@ -754,7 +754,9 @@ describe("SessionPage", () => {
       expect(screen.getByText("Leaving User")).toBeInTheDocument();
       // Check participant list has one gray dot (participant is offline)
       const participantList = container.querySelector(".lg\\:col-span-1");
-      const grayDots = participantList?.querySelectorAll(".bg-muted-foreground");
+      const grayDots = participantList?.querySelectorAll(
+        ".bg-muted-foreground"
+      );
       expect(grayDots?.length).toBe(1);
       // Should have no green dots in participant list anymore
       const greenDots = participantList?.querySelectorAll(".bg-green-500");
@@ -1052,8 +1054,10 @@ describe("SessionPage", () => {
       });
     });
 
-    // Initially no voted indicators
-    expect(screen.queryByText("Voted")).not.toBeInTheDocument();
+    // Initially no voted indicators (no checkmark badges)
+    expect(
+      document.querySelectorAll('li[aria-label*="Voted"]').length
+    ).toBe(0);
 
     // Simulate vote-submitted message
     await act(async () => {
@@ -1063,9 +1067,11 @@ describe("SessionPage", () => {
       });
     });
 
-    // Should now show voted indicator for user456
+    // Should now show voted indicator for user456 (checkmark badge)
     await waitFor(() => {
-      expect(screen.getByText("Voted")).toBeInTheDocument();
+      expect(
+        document.querySelectorAll('li[aria-label*="Voted"]').length
+      ).toBe(1);
     });
   });
 
@@ -1180,9 +1186,7 @@ describe("SessionPage", () => {
       await waitFor(() => {
         expect(screen.getByText("Build login page")).toBeInTheDocument();
         expect(
-          screen.queryByPlaceholderText(
-            "What are we estimating?"
-          )
+          screen.queryByPlaceholderText("What are we estimating?")
         ).not.toBeInTheDocument();
       });
     });
@@ -3149,17 +3153,28 @@ describe("SessionPage", () => {
           isRevealed: false,
           isVotingOpen: true,
           participants: [
-            { id: "moderator123", name: "Moderator", isModerator: true, isConnected: true },
-            { id: "user2", name: "Alice", isModerator: false, isConnected: true },
+            {
+              id: "moderator123",
+              name: "Moderator",
+              isModerator: true,
+              isConnected: true,
+            },
+            {
+              id: "user2",
+              name: "Alice",
+              isModerator: false,
+              isConnected: true,
+            },
             { id: "user3", name: "Bob", isModerator: false, isConnected: true },
           ],
-          votes: { user2: { userId: "user2", value: 5, submittedAt: Date.now() } },
+          votes: {
+            user2: { userId: "user2", value: 5, submittedAt: Date.now() },
+          },
         });
       });
 
       await waitFor(() => {
         expect(screen.getByText("1 of 3 voted")).toBeInTheDocument();
-        expect(screen.getByText("33%")).toBeInTheDocument();
         expect(screen.getByRole("progressbar")).toBeInTheDocument();
       });
     });
@@ -3196,7 +3211,12 @@ describe("SessionPage", () => {
           isRevealed: false,
           isVotingOpen: false,
           participants: [
-            { id: "moderator123", name: "Moderator", isModerator: true, isConnected: true },
+            {
+              id: "moderator123",
+              name: "Moderator",
+              isModerator: true,
+              isConnected: true,
+            },
           ],
           votes: {},
         });
@@ -3207,7 +3227,7 @@ describe("SessionPage", () => {
       });
     });
 
-    it("should show 100% and green bar when all have voted", async () => {
+    it("should show green ring when all have voted", async () => {
       (
         window.localStorage.getItem as ReturnType<typeof vi.fn>
       ).mockImplementation((key: string) => {
@@ -3239,11 +3259,25 @@ describe("SessionPage", () => {
           isRevealed: false,
           isVotingOpen: true,
           participants: [
-            { id: "moderator123", name: "Moderator", isModerator: true, isConnected: true },
-            { id: "user2", name: "Alice", isModerator: false, isConnected: true },
+            {
+              id: "moderator123",
+              name: "Moderator",
+              isModerator: true,
+              isConnected: true,
+            },
+            {
+              id: "user2",
+              name: "Alice",
+              isModerator: false,
+              isConnected: true,
+            },
           ],
           votes: {
-            moderator123: { userId: "moderator123", value: 3, submittedAt: Date.now() },
+            moderator123: {
+              userId: "moderator123",
+              value: 3,
+              submittedAt: Date.now(),
+            },
             user2: { userId: "user2", value: 5, submittedAt: Date.now() },
           },
         });
@@ -3251,7 +3285,7 @@ describe("SessionPage", () => {
 
       await waitFor(() => {
         expect(screen.getByText("2 of 2 voted")).toBeInTheDocument();
-        expect(screen.getByText("100%")).toBeInTheDocument();
+        expect(screen.getByRole("progressbar")).toBeInTheDocument();
       });
     });
   });

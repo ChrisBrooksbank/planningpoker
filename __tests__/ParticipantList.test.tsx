@@ -220,7 +220,7 @@ describe("ParticipantList", () => {
   it("shows voted status for participants who have voted", () => {
     const votedUserIds = new Set(["user-1", "user-3"]);
 
-    render(
+    const { container } = render(
       <ParticipantList
         participants={mockParticipants}
         currentUserId="user-2"
@@ -228,15 +228,18 @@ describe("ParticipantList", () => {
       />
     );
 
-    // Should show "Voted" for user-1 (Alice) and user-3 (Charlie)
-    const votedIndicators = screen.getAllByText("Voted");
-    expect(votedIndicators.length).toBe(2);
+    // Should show checkmark indicators for user-1 (Alice) and user-3 (Charlie)
+    // Voted participants have aria-label containing "Voted"
+    const votedItems = container.querySelectorAll(
+      'li[aria-label*="Voted"]'
+    );
+    expect(votedItems.length).toBe(2);
   });
 
   it("does not show voted status for participants who have not voted", () => {
     const votedUserIds = new Set(["user-1"]);
 
-    render(
+    const { container } = render(
       <ParticipantList
         participants={mockParticipants}
         currentUserId="user-2"
@@ -244,15 +247,17 @@ describe("ParticipantList", () => {
       />
     );
 
-    // Only one "Voted" indicator should appear
-    const votedIndicators = screen.getAllByText("Voted");
-    expect(votedIndicators.length).toBe(1);
+    // Only one voted indicator should appear
+    const votedItems = container.querySelectorAll(
+      'li[aria-label*="Voted"]'
+    );
+    expect(votedItems.length).toBe(1);
   });
 
   it("shows no voted status when votedUserIds is empty", () => {
     const votedUserIds = new Set<string>();
 
-    render(
+    const { container } = render(
       <ParticipantList
         participants={mockParticipants}
         currentUserId="user-2"
@@ -260,15 +265,21 @@ describe("ParticipantList", () => {
       />
     );
 
-    expect(screen.queryByText("Voted")).not.toBeInTheDocument();
+    const votedItems = container.querySelectorAll(
+      'li[aria-label*="Voted"]'
+    );
+    expect(votedItems.length).toBe(0);
   });
 
   it("handles votedUserIds prop being omitted", () => {
-    render(
+    const { container } = render(
       <ParticipantList participants={mockParticipants} currentUserId="user-2" />
     );
 
     // No voted indicators should appear
-    expect(screen.queryByText("Voted")).not.toBeInTheDocument();
+    const votedItems = container.querySelectorAll(
+      'li[aria-label*="Voted"]'
+    );
+    expect(votedItems.length).toBe(0);
   });
 });

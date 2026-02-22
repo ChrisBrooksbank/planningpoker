@@ -8,11 +8,74 @@ import { ParticipantList } from "@/components/ParticipantList";
 import { CardDeck } from "@/components/CardDeck";
 import { VoteResults } from "@/components/VoteResults";
 import { RoundHistory } from "@/components/RoundHistory";
-import type { Participant, CardValue, Vote, VoteStatistics, DeckType, RoundHistoryEntry } from "@/lib/types";
+import type {
+  Participant,
+  CardValue,
+  Vote,
+  VoteStatistics,
+  DeckType,
+  RoundHistoryEntry,
+} from "@/lib/types";
 import { isValidParticipantName } from "@/lib/utils";
 import { SessionHint } from "@/components/SessionHint";
 import { ModeratorWelcomeModal } from "@/components/ModeratorWelcomeModal";
 import { nanoid } from "nanoid";
+
+function VotingProgressRing({
+  voted,
+  total,
+}: {
+  voted: number;
+  total: number;
+}) {
+  const size = 48;
+  const stroke = 4;
+  const radius = (size - stroke) / 2;
+  const circumference = 2 * Math.PI * radius;
+  const progress = total > 0 ? voted / total : 0;
+  const offset = circumference - progress * circumference;
+  const allVoted = voted === total && total > 0;
+
+  return (
+    <div
+      className="relative shrink-0"
+      role="progressbar"
+      aria-valuenow={voted}
+      aria-valuemin={0}
+      aria-valuemax={total}
+      aria-label="Voting progress"
+    >
+      <svg width={size} height={size} className="-rotate-90">
+        <circle
+          cx={size / 2}
+          cy={size / 2}
+          r={radius}
+          fill="none"
+          stroke="currentColor"
+          className="text-muted"
+          strokeWidth={stroke}
+        />
+        <circle
+          cx={size / 2}
+          cy={size / 2}
+          r={radius}
+          fill="none"
+          strokeWidth={stroke}
+          strokeLinecap="round"
+          className={`transition-all duration-500 ease-out ${allVoted ? "text-green-500" : "text-primary"}`}
+          stroke="currentColor"
+          strokeDasharray={circumference}
+          strokeDashoffset={offset}
+        />
+      </svg>
+      <div className="absolute inset-0 flex items-center justify-center">
+        <span className="text-xs font-semibold">
+          {voted}/{total}
+        </span>
+      </div>
+    </div>
+  );
+}
 
 export default function SessionPage() {
   const params = useParams();
@@ -60,7 +123,8 @@ export default function SessionPage() {
   // Clean up timeout on unmount
   useEffect(() => {
     return () => {
-      if (linkCopiedTimeoutRef.current) clearTimeout(linkCopiedTimeoutRef.current);
+      if (linkCopiedTimeoutRef.current)
+        clearTimeout(linkCopiedTimeoutRef.current);
     };
   }, []);
 
@@ -77,9 +141,7 @@ export default function SessionPage() {
     setIsJoining(true);
 
     try {
-      const validateResponse = await fetch(
-        `/api/sessions/${roomId}/validate`
-      );
+      const validateResponse = await fetch(`/api/sessions/${roomId}/validate`);
 
       if (!validateResponse.ok) {
         if (validateResponse.status === 404) {
@@ -111,8 +173,12 @@ export default function SessionPage() {
     try {
       await navigator.clipboard.writeText(url);
       setLinkCopied(true);
-      if (linkCopiedTimeoutRef.current) clearTimeout(linkCopiedTimeoutRef.current);
-      linkCopiedTimeoutRef.current = setTimeout(() => setLinkCopied(false), 2000);
+      if (linkCopiedTimeoutRef.current)
+        clearTimeout(linkCopiedTimeoutRef.current);
+      linkCopiedTimeoutRef.current = setTimeout(
+        () => setLinkCopied(false),
+        2000
+      );
     } catch {
       // Clipboard API may be unavailable — show prompt as fallback
       window.prompt("Copy this link to share:", url);
@@ -120,151 +186,158 @@ export default function SessionPage() {
   };
 
   // Handle WebSocket messages
-  const handleMessage = useCallback((message: ServerMessage) => {
-    switch (message.type) {
-      case "session-state":
-        // Update participants from session state
-        setParticipants(message.participants);
-        // Update session name, deck type, moderator ID and current topic
-        setSessionName(message.sessionName || "");
-        setDeckType(message.deckType || "fibonacci");
-        setModeratorId(message.moderatorId);
-        // Show moderator welcome modal on first join
-        if (
-          userId &&
-          message.moderatorId === userId &&
-          !localStorage.getItem(`session_${roomId}_moderatorWelcomeDismissed`)
-        ) {
-          setShowModeratorModal(true);
-        }
-        setCurrentTopic(message.currentTopic || "");
-        setTopicInput(message.currentTopic || "");
-        // Update reveal state and voting open state
-        setIsRevealed(message.isRevealed);
-        setIsVotingOpen(message.isVotingOpen);
-        // Rebuild votedUserIds from message.votes
-        setVotedUserIds(new Set(Object.keys(message.votes)));
-        // Restore revealed votes and statistics if isRevealed
-        if (message.isRevealed && message.votes) {
-          const revealed: Record<string, Vote> = {};
-          for (const [uid, v] of Object.entries(message.votes)) {
-            if (v.value !== undefined) {
-              revealed[uid] = { userId: uid, value: v.value, submittedAt: 0 };
+  const handleMessage = useCallback(
+    (message: ServerMessage) => {
+      switch (message.type) {
+        case "session-state":
+          // Update participants from session state
+          setParticipants(message.participants);
+          // Update session name, deck type, moderator ID and current topic
+          setSessionName(message.sessionName || "");
+          setDeckType(message.deckType || "fibonacci");
+          setModeratorId(message.moderatorId);
+          // Show moderator welcome modal on first join
+          if (
+            userId &&
+            message.moderatorId === userId &&
+            !localStorage.getItem(`session_${roomId}_moderatorWelcomeDismissed`)
+          ) {
+            setShowModeratorModal(true);
+          }
+          setCurrentTopic(message.currentTopic || "");
+          setTopicInput(message.currentTopic || "");
+          // Update reveal state and voting open state
+          setIsRevealed(message.isRevealed);
+          setIsVotingOpen(message.isVotingOpen);
+          // Rebuild votedUserIds from message.votes
+          setVotedUserIds(new Set(Object.keys(message.votes)));
+          // Restore revealed votes and statistics if isRevealed
+          if (message.isRevealed && message.votes) {
+            const revealed: Record<string, Vote> = {};
+            for (const [uid, v] of Object.entries(message.votes)) {
+              if (v.value !== undefined) {
+                revealed[uid] = { userId: uid, value: v.value, submittedAt: 0 };
+              }
+            }
+            setRevealedVotes(revealed);
+          } else {
+            setRevealedVotes({});
+          }
+          setStatistics(message.statistics ?? null);
+          setRoundHistory(message.roundHistory || []);
+          // Sync observer state from participants
+          if (userId) {
+            const self = message.participants.find(
+              (p: Participant) => p.id === userId
+            );
+            setIsObserver(self?.isObserver ?? false);
+          }
+          // Sync selectedCard with server state (handles reconnect after round change)
+          if (userId) {
+            const myVote = message.votes[userId];
+            if (!myVote) {
+              // User hasn't voted in this round — clear stale selection
+              setSelectedCard(null);
+            } else if (message.isRevealed && myVote.value !== undefined) {
+              // Votes revealed — restore our selection
+              setSelectedCard(myVote.value);
             }
           }
-          setRevealedVotes(revealed);
-        } else {
+          break;
+
+        case "participant-joined":
+          // Add new participant to the list
+          setParticipants((prev) => {
+            // Avoid duplicates
+            if (prev.some((p) => p.id === message.participant.id)) {
+              return prev;
+            }
+            return [...prev, message.participant];
+          });
+          break;
+
+        case "participant-left":
+          // Mark participant as disconnected instead of removing
+          setParticipants((prev) =>
+            prev.map((p) =>
+              p.id === message.userId ? { ...p, isConnected: false } : p
+            )
+          );
+          break;
+
+        case "vote-submitted":
+          // Track which users have voted (without revealing values)
+          setVotedUserIds((prev) => new Set(prev).add(message.userId));
+          break;
+
+        case "topic-changed":
+          // Update the current topic when moderator changes it
+          setCurrentTopic(message.topic);
+          setTopicInput(message.topic);
+          break;
+
+        case "votes-revealed":
+          // Update reveal state when votes are revealed
+          setIsRevealed(true);
+          setIsVotingOpen(false);
+          setRevealedVotes(message.votes);
+          setStatistics(message.statistics);
+          break;
+
+        case "round-started":
+          // Reset UI state for new voting round
+          setIsRevealed(false);
+          setIsVotingOpen(true);
           setRevealedVotes({});
-        }
-        setStatistics(message.statistics ?? null);
-        setRoundHistory(message.roundHistory || []);
-        // Sync observer state from participants
-        if (userId) {
-          const self = message.participants.find((p: Participant) => p.id === userId);
-          setIsObserver(self?.isObserver ?? false);
-        }
-        // Sync selectedCard with server state (handles reconnect after round change)
-        if (userId) {
-          const myVote = message.votes[userId];
-          if (!myVote) {
-            // User hasn't voted in this round — clear stale selection
-            setSelectedCard(null);
-          } else if (message.isRevealed && myVote.value !== undefined) {
-            // Votes revealed — restore our selection
-            setSelectedCard(myVote.value);
-          }
-        }
-        break;
-
-      case "participant-joined":
-        // Add new participant to the list
-        setParticipants((prev) => {
-          // Avoid duplicates
-          if (prev.some((p) => p.id === message.participant.id)) {
-            return prev;
-          }
-          return [...prev, message.participant];
-        });
-        break;
-
-      case "participant-left":
-        // Mark participant as disconnected instead of removing
-        setParticipants((prev) =>
-          prev.map((p) =>
-            p.id === message.userId ? { ...p, isConnected: false } : p
-          )
-        );
-        break;
-
-      case "vote-submitted":
-        // Track which users have voted (without revealing values)
-        setVotedUserIds((prev) => new Set(prev).add(message.userId));
-        break;
-
-      case "topic-changed":
-        // Update the current topic when moderator changes it
-        setCurrentTopic(message.topic);
-        setTopicInput(message.topic);
-        break;
-
-      case "votes-revealed":
-        // Update reveal state when votes are revealed
-        setIsRevealed(true);
-        setIsVotingOpen(false);
-        setRevealedVotes(message.votes);
-        setStatistics(message.statistics);
-        break;
-
-      case "round-started":
-        // Reset UI state for new voting round
-        setIsRevealed(false);
-        setIsVotingOpen(true);
-        setRevealedVotes({});
-        setStatistics(null);
-        setSelectedCard(null);
-        setVotedUserIds(new Set());
-        setRoundHistory(message.roundHistory || []);
-        break;
-
-      case "observer-toggled":
-        // Update participant's observer status
-        setParticipants((prev) =>
-          prev.map((p) =>
-            p.id === message.userId ? { ...p, isObserver: message.isObserver } : p
-          )
-        );
-        // Update own observer state
-        if (message.userId === userId) {
-          setIsObserver(message.isObserver);
-          if (message.isObserver) {
-            setSelectedCard(null);
-            setVotedUserIds((prev) => {
-              const next = new Set(prev);
-              next.delete(message.userId);
-              return next;
-            });
-          }
-        }
-        break;
-
-      case "error":
-        // Revert optimistic card selection on vote-related errors
-        if (
-          message.code === "VOTES_REVEALED" ||
-          message.code === "VOTING_NOT_OPEN" ||
-          message.code === "INVALID_VOTE" ||
-          message.code === "VOTE_FAILED" ||
-          message.code === "NOT_A_PARTICIPANT" ||
-          message.code === "OBSERVER_CANNOT_VOTE"
-        ) {
+          setStatistics(null);
           setSelectedCard(null);
-        }
-        break;
+          setVotedUserIds(new Set());
+          setRoundHistory(message.roundHistory || []);
+          break;
 
-      default:
-        break;
-    }
-  }, [userId]);
+        case "observer-toggled":
+          // Update participant's observer status
+          setParticipants((prev) =>
+            prev.map((p) =>
+              p.id === message.userId
+                ? { ...p, isObserver: message.isObserver }
+                : p
+            )
+          );
+          // Update own observer state
+          if (message.userId === userId) {
+            setIsObserver(message.isObserver);
+            if (message.isObserver) {
+              setSelectedCard(null);
+              setVotedUserIds((prev) => {
+                const next = new Set(prev);
+                next.delete(message.userId);
+                return next;
+              });
+            }
+          }
+          break;
+
+        case "error":
+          // Revert optimistic card selection on vote-related errors
+          if (
+            message.code === "VOTES_REVEALED" ||
+            message.code === "VOTING_NOT_OPEN" ||
+            message.code === "INVALID_VOTE" ||
+            message.code === "VOTE_FAILED" ||
+            message.code === "NOT_A_PARTICIPANT" ||
+            message.code === "OBSERVER_CANNOT_VOTE"
+          ) {
+            setSelectedCard(null);
+          }
+          break;
+
+        default:
+          break;
+      }
+    },
+    [userId]
+  );
 
   // Handle starting a round with the current topic (moderator only)
   const handleStartRound = () => {
@@ -284,7 +357,11 @@ export default function SessionPage() {
   const handleRevealVotes = () => {
     const notVotedCount = voterCount - votedUserIds.size;
     if (notVotedCount > 0) {
-      if (!window.confirm(`${notVotedCount} of ${voterCount} voters haven't voted yet. Reveal anyway?`)) {
+      if (
+        !window.confirm(
+          `${notVotedCount} of ${voterCount} voters haven't voted yet. Reveal anyway?`
+        )
+      ) {
         return;
       }
     }
@@ -295,7 +372,8 @@ export default function SessionPage() {
 
   // Check if current user is moderator
   const isModerator = userId === moderatorId;
-  const moderatorName = participants.find(p => p.id === moderatorId)?.name ?? "the moderator";
+  const moderatorName =
+    participants.find((p) => p.id === moderatorId)?.name ?? "the moderator";
   const hasVoted = userId ? votedUserIds.has(userId) : false;
   const voters = participants.filter((p) => !p.isObserver);
   const voterCount = voters.length;
@@ -338,13 +416,16 @@ export default function SessionPage() {
   });
 
   // Handle card selection and vote submission
-  const handleSelectCard = useCallback((value: CardValue) => {
-    setSelectedCard(value);
-    sendMessage({
-      type: "submit-vote",
-      value,
-    });
-  }, [sendMessage]);
+  const handleSelectCard = useCallback(
+    (value: CardValue) => {
+      setSelectedCard(value);
+      sendMessage({
+        type: "submit-vote",
+        value,
+      });
+    },
+    [sendMessage]
+  );
 
   // Handle toggle observer
   const handleToggleObserver = useCallback(() => {
@@ -372,7 +453,10 @@ export default function SessionPage() {
   // Show join form if user has no credentials for this room
   if (needsName) {
     return (
-      <main id="main-content" className="flex min-h-screen flex-col items-center justify-center p-4 sm:p-8">
+      <main
+        id="main-content"
+        className="flex min-h-screen flex-col items-center justify-center p-4 sm:p-8"
+      >
         <div className="w-full max-w-md space-y-6 sm:space-y-8">
           <div className="text-center">
             <h1 className="text-2xl font-bold mb-2">Join Planning Poker</h1>
@@ -406,7 +490,11 @@ export default function SessionPage() {
             </div>
 
             {joinError && (
-              <div id="joinError" role="alert" className="rounded-lg bg-red-50 dark:bg-red-900/20 border border-red-200 dark:border-red-800 px-4 py-3 text-sm text-red-800 dark:text-red-200">
+              <div
+                id="joinError"
+                role="alert"
+                className="rounded-lg bg-red-50 dark:bg-red-900/20 border border-red-200 dark:border-red-800 px-4 py-3 text-sm text-red-800 dark:text-red-200"
+              >
                 {joinError}
               </div>
             )}
@@ -427,17 +515,28 @@ export default function SessionPage() {
   // Don't render until we have a userId
   if (!isInitialized || !userId) {
     return (
-      <main id="main-content" className="flex min-h-screen flex-col items-center justify-center p-4 sm:p-8">
+      <main
+        id="main-content"
+        className="flex min-h-screen flex-col items-center justify-center p-4 sm:p-8"
+      >
         <div className="text-center space-y-4">
-          <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-primary mx-auto" aria-hidden="true"></div>
-          <p className="text-muted-foreground" role="status" aria-live="polite">Loading room...</p>
+          <div
+            className="animate-spin rounded-full h-12 w-12 border-b-2 border-primary mx-auto"
+            aria-hidden="true"
+          ></div>
+          <p className="text-muted-foreground" role="status" aria-live="polite">
+            Loading room...
+          </p>
         </div>
       </main>
     );
   }
 
   return (
-    <main id="main-content" className="flex lg:min-h-screen flex-col p-4 sm:p-8">
+    <main
+      id="main-content"
+      className="flex lg:min-h-screen flex-col p-4 sm:p-8 bg-gradient-to-b from-primary/5 to-transparent"
+    >
       {showModeratorModal && (
         <ModeratorWelcomeModal
           roomId={roomId}
@@ -448,7 +547,9 @@ export default function SessionPage() {
         <div className="mb-4 sm:mb-8">
           <div className="flex items-start justify-between gap-2">
             <div>
-              <h1 className="text-xl sm:text-3xl font-bold mb-1 sm:mb-2">{sessionName || "Planning Poker"}</h1>
+              <h1 className="text-xl sm:text-3xl font-bold mb-1 sm:mb-2">
+                {sessionName || "Planning Poker"}
+              </h1>
               <div className="flex items-center gap-2">
                 <p className="text-sm text-muted-foreground">
                   Room Code:{" "}
@@ -470,7 +571,11 @@ export default function SessionPage() {
                 <button
                   onClick={handleToggleObserver}
                   disabled={!isConnected || isModerator}
-                  title={isModerator ? "Moderators cannot switch to observer" : undefined}
+                  title={
+                    isModerator
+                      ? "Moderators cannot switch to observer"
+                      : undefined
+                  }
                   className={`text-xs px-2 py-1 rounded border transition-colors ${
                     isObserver
                       ? "bg-amber-100 border-amber-400 text-amber-700 dark:bg-amber-900/30 dark:border-amber-600 dark:text-amber-300"
@@ -492,7 +597,11 @@ export default function SessionPage() {
                 }`}
                 aria-hidden="true"
               />
-              <span className="text-xs sm:text-sm text-muted-foreground" role="status" aria-live="polite">
+              <span
+                className="text-xs sm:text-sm text-muted-foreground"
+                role="status"
+                aria-live="polite"
+              >
                 {isConnected
                   ? "Connected"
                   : isConnecting
@@ -512,9 +621,17 @@ export default function SessionPage() {
 
           {/* Error message banner */}
           {error && (
-            <div role="alert" className="mt-4 p-4 rounded-lg border border-red-200 dark:border-red-800 bg-red-50 dark:bg-red-900/20 flex items-start justify-between">
+            <div
+              role="alert"
+              className="mt-4 p-4 rounded-lg border border-red-200 dark:border-red-800 bg-red-50 dark:bg-red-900/20 flex items-start justify-between"
+            >
               <div className="flex items-start gap-3">
-                <div className="text-red-600 dark:text-red-400 mt-0.5" aria-hidden="true">⚠️</div>
+                <div
+                  className="text-red-600 dark:text-red-400 mt-0.5"
+                  aria-hidden="true"
+                >
+                  ⚠️
+                </div>
                 <div>
                   <p className="text-sm font-semibold text-red-900 dark:text-red-100">
                     Connection Error
@@ -549,8 +666,10 @@ export default function SessionPage() {
           {/* Voting area */}
           <div className="lg:col-span-2 space-y-4 sm:space-y-6 order-1 lg:order-2">
             {/* Topic & moderator controls */}
-            <div className="rounded-lg border border-border bg-card p-3 sm:p-6">
-              <h2 className="text-base sm:text-lg font-semibold mb-2 sm:mb-4">Topic</h2>
+            <div className="rounded-lg glass-card p-3 sm:p-6">
+              <h2 className="text-base sm:text-lg font-semibold mb-2 sm:mb-4">
+                Topic
+              </h2>
               {isModerator ? (
                 <div className="space-y-3">
                   <input
@@ -582,7 +701,9 @@ export default function SessionPage() {
                         onClick={handleRevealVotes}
                         disabled={!isConnected}
                         className={`px-6 py-3 bg-primary text-primary-foreground rounded-lg hover:bg-primary/90 disabled:opacity-50 disabled:cursor-not-allowed font-semibold ${
-                          isVotingOpen && votedUserIds.size > 0 && votedUserIds.size >= Math.ceil(voterCount / 2)
+                          isVotingOpen &&
+                          votedUserIds.size > 0 &&
+                          votedUserIds.size >= Math.ceil(voterCount / 2)
                             ? "animate-pulse ring-2 ring-primary/50"
                             : ""
                         }`}
@@ -592,21 +713,14 @@ export default function SessionPage() {
                     )}
                   </div>
                   {isVotingOpen && (
-                    <div className="space-y-1.5">
-                      <div className="flex justify-between text-xs text-muted-foreground">
-                        <span>{votedUserIds.size} of {voterCount} voted</span>
-                        <span>{voterCount > 0 ? Math.round((votedUserIds.size / voterCount) * 100) : 0}%</span>
-                      </div>
-                      <div className="w-full h-2 rounded-full bg-muted overflow-hidden" role="progressbar" aria-valuenow={votedUserIds.size} aria-valuemin={0} aria-valuemax={voterCount} aria-label="Voting progress">
-                        <div
-                          className={`h-full rounded-full transition-all duration-300 ${
-                            votedUserIds.size === voterCount
-                              ? "bg-green-500"
-                              : "bg-primary"
-                          }`}
-                          style={{ width: `${voterCount > 0 ? (votedUserIds.size / voterCount) * 100 : 0}%` }}
-                        />
-                      </div>
+                    <div className="flex items-center gap-3">
+                      <VotingProgressRing
+                        voted={votedUserIds.size}
+                        total={voterCount}
+                      />
+                      <span className="text-sm text-muted-foreground">
+                        {votedUserIds.size} of {voterCount} voted
+                      </span>
                     </div>
                   )}
                 </div>
@@ -623,8 +737,15 @@ export default function SessionPage() {
 
             {/* Vote results (shown after reveal, above cards) */}
             {isRevealed && statistics && (
-              <div ref={resultsRef} tabIndex={-1} aria-label="Voting results revealed" className="rounded-lg border border-border bg-card p-3 sm:p-6 focus:outline-none">
-                <h2 className="text-base sm:text-lg font-semibold mb-2 sm:mb-4">Results</h2>
+              <div
+                ref={resultsRef}
+                tabIndex={-1}
+                aria-label="Voting results revealed"
+                className="rounded-lg glass-card p-3 sm:p-6 focus:outline-none"
+              >
+                <h2 className="text-base sm:text-lg font-semibold mb-2 sm:mb-4">
+                  Results
+                </h2>
                 <VoteResults
                   votes={revealedVotes}
                   participants={participants}
@@ -647,11 +768,13 @@ export default function SessionPage() {
             />
 
             {/* Card deck */}
-            <div className={`rounded-lg border bg-card p-3 sm:p-6 ${
-              isVotingOpen && !hasVoted && !isModerator && !isObserver
-                ? "border-amber-300 dark:border-amber-700 ring-2 ring-amber-300/50 dark:ring-amber-700/50"
-                : "border-border"
-            }`}>
+            <div
+              className={`rounded-lg p-3 sm:p-6 ${
+                isVotingOpen && !hasVoted && !isModerator && !isObserver
+                  ? "glass-card border-amber-300 dark:border-amber-700 ring-2 ring-amber-300/50 dark:ring-amber-700/50"
+                  : "glass-card"
+              }`}
+            >
               <CardDeck
                 selectedValue={selectedCard}
                 onSelectCard={handleSelectCard}
