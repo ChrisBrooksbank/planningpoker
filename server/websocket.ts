@@ -661,6 +661,14 @@ export class PlanningPokerWebSocketServer {
     return users;
   }
 
+  public getConnectionCount(): number {
+    return this.clients.size;
+  }
+
+  public getRoomCount(): number {
+    return this.roomClients.size;
+  }
+
   /**
    * Shut down the WebSocket server and clear the heartbeat interval
    */

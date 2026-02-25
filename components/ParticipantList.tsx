@@ -21,7 +21,7 @@ function getInitials(name: string): string {
   if (parts.length >= 2) {
     return (parts[0][0] + parts[parts.length - 1][0]).toUpperCase();
   }
-  return name.slice(0, 2).toUpperCase();
+  return name.slice(0, 1).toUpperCase();
 }
 
 export function ParticipantList({
