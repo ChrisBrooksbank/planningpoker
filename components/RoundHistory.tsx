@@ -43,6 +43,7 @@ export function RoundHistory({
                 }
                 className="w-full flex items-center justify-between px-3 py-2.5 sm:px-4 sm:py-3 hover:bg-muted/50 transition-colors text-left"
                 aria-expanded={isExpanded}
+                aria-label={`${isExpanded ? "Collapse" : "Expand"} round ${roundNumber} details`}
               >
                 <div className="flex items-center gap-2 min-w-0">
                   <span className="text-xs font-mono text-muted-foreground shrink-0">

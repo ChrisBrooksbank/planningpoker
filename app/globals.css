@@ -196,6 +196,36 @@
   animation: consensus-glow 2s ease-in-out 0.5s infinite;
 }
 
+@media (forced-colors: active) {
+  button,
+  input,
+  select,
+  textarea,
+  [role="button"] {
+    border: 1px solid ButtonText;
+  }
+
+  button:focus,
+  input:focus,
+  select:focus,
+  textarea:focus,
+  [role="button"]:focus {
+    outline: 2px solid Highlight;
+    outline-offset: 2px;
+  }
+
+  a {
+    color: LinkText;
+  }
+
+  [aria-selected="true"],
+  [aria-pressed="true"],
+  [aria-checked="true"] {
+    border-color: Highlight;
+    outline: 2px solid Highlight;
+  }
+}
+
 @media (prefers-reduced-motion: reduce) {
   *,
   *::before,

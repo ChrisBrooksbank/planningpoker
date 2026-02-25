@@ -29,6 +29,25 @@ export function ModeratorWelcomeModal({
       if (e.key === "Escape") {
         onClose();
       }
+      if (e.key === "Tab" && dialogRef.current) {
+        const focusable = dialogRef.current.querySelectorAll<HTMLElement>(
+          'button, [href], input, select, textarea, [tabindex]:not([tabindex="-1"])'
+        );
+        if (focusable.length === 0) return;
+        const first = focusable[0];
+        const last = focusable[focusable.length - 1];
+        if (e.shiftKey) {
+          if (document.activeElement === first) {
+            e.preventDefault();
+            last.focus();
+          }
+        } else {
+          if (document.activeElement === last) {
+            e.preventDefault();
+            first.focus();
+          }
+        }
+      }
     };
 
     document.addEventListener("keydown", handleKeyDown);
@@ -69,17 +88,12 @@ export function ModeratorWelcomeModal({
         aria-labelledby="moderator-modal-title"
         className="w-full max-w-md mx-4 rounded-lg border border-border bg-card p-6 shadow-lg"
       >
-        <h2
-          id="moderator-modal-title"
-          className="text-xl font-bold mb-4"
-        >
+        <h2 id="moderator-modal-title" className="text-xl font-bold mb-4">
           Welcome, Moderator!
         </h2>
 
         <div className="space-y-3 text-sm text-muted-foreground">
-          <p>
-            You are the moderator of this room. As moderator you can:
-          </p>
+          <p>You are the moderator of this room. As moderator you can:</p>
           <ul className="list-disc pl-5 space-y-1">
             <li>Set the topic for each estimation round</li>
             <li>Start voting rounds and reveal results</li>
@@ -87,9 +101,7 @@ export function ModeratorWelcomeModal({
           </ul>
 
           <div className="mt-4 rounded-lg border border-border bg-muted/50 p-4">
-            <p className="font-medium text-foreground mb-2">
-              Invite your team
-            </p>
+            <p className="font-medium text-foreground mb-2">Invite your team</p>
             <p className="mb-3">
               Share this link with your team so they can join this room:
             </p>

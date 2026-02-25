@@ -77,6 +77,7 @@ export function ParticipantList({
             <span>All moderators are offline.</span>
             <button
               onClick={onClaimModerator}
+              aria-label="Claim moderator role"
               className="shrink-0 px-2 py-1 rounded bg-amber-600 text-white text-xs font-medium hover:bg-amber-700 transition-colors"
             >
               Become Moderator
@@ -86,7 +87,9 @@ export function ParticipantList({
 
       <ul
         className="space-y-2 max-h-[180px] lg:max-h-none overflow-y-auto"
+        role="region"
         aria-label="Participant list"
+        tabIndex={0}
       >
         {participants.map((participant) => {
           const isYou = participant.id === currentUserId;
@@ -186,6 +189,7 @@ export function ParticipantList({
                 {showPromote && (
                   <button
                     onClick={() => onPromoteToModerator(participant.id)}
+                    aria-label={`Promote ${participant.name} to moderator`}
                     className="text-xs px-2 py-0.5 rounded border border-border text-muted-foreground hover:bg-muted hover:text-foreground transition-colors"
                   >
                     Promote
@@ -194,6 +198,7 @@ export function ParticipantList({
                 {showStepDown && (
                   <button
                     onClick={onDemoteSelf}
+                    aria-label="Step down as moderator"
                     className="text-xs px-2 py-0.5 rounded border border-border text-muted-foreground hover:bg-muted hover:text-foreground transition-colors"
                   >
                     Step Down

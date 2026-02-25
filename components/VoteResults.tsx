@@ -81,6 +81,10 @@ export function VoteResults({
       {/* Consensus celebration with fireworks */}
       {isConsensus && (
         <>
+          <div role="status" aria-live="polite" className="sr-only">
+            Consensus reached! Everyone voted {consensusValue}
+          </div>
+
           {/* Full-screen canvas fireworks */}
           <FireworksCanvas />
 
