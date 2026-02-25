@@ -3,8 +3,10 @@ import { test, expect } from "@playwright/test";
 test("capture landing page screenshot", async ({ page }) => {
   await page.goto("/");
 
-  await expect(page.getByRole("button", { name: /create session/i })).toBeVisible();
-  await expect(page.getByRole("button", { name: /join session/i })).toBeVisible();
+  await expect(
+    page.getByRole("button", { name: /create room/i })
+  ).toBeVisible();
+  await expect(page.getByRole("button", { name: /enter room/i })).toBeVisible();
 
   await page.screenshot({
     path: "e2e/screenshots/landing-page.png",
@@ -32,7 +34,7 @@ test("capture session page screenshot", async ({ page, request }) => {
       localStorage.setItem(`session_${roomId}_userId`, moderatorId);
       localStorage.setItem(`session_${roomId}_name`, "Moderator");
     },
-    { roomId, moderatorId },
+    { roomId, moderatorId }
   );
 
   // Navigate to the session page

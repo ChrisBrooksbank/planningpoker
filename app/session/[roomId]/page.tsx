@@ -358,7 +358,7 @@ export default function SessionPage() {
           break;
       }
     },
-    [userId]
+    [userId, roomId]
   );
 
   // Handle starting a round with the current topic (moderator only)
@@ -395,8 +395,7 @@ export default function SessionPage() {
   const moderators = participants.filter((p) => p.isModerator);
   const moderatorCount = moderators.length;
   const allModeratorsDisconnected =
-    moderatorCount === 0 ||
-    moderators.every((p) => !p.isConnected);
+    moderatorCount === 0 || moderators.every((p) => !p.isConnected);
   const moderatorName =
     moderators.length === 1
       ? moderators[0].name

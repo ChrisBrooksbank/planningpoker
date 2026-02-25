@@ -43,10 +43,7 @@ describe("generateRoomCode", () => {
   });
 
   it("should throw error after max attempts with collision", () => {
-    // Mock nanoid to always return the same value to force collision
-    const originalNanoid = generateRoomCode;
-
-    // Create a Set that claims to have every possible code
+    // Create a Set that claims to have every possible code to force collisions
     const infiniteSet = {
       has: () => true, // Always returns true, simulating all codes taken
     } as unknown as Set<string>;
@@ -62,4 +59,3 @@ describe("generateRoomCode", () => {
     expect(code).toHaveLength(6);
   });
 });
-
