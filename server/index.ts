@@ -197,7 +197,9 @@ app.prepare().then(() => {
     for (const roomId of sessionStorage.getAllSessionIds()) {
       const session = sessionStorage.getSession(roomId);
       if (session) {
-        moderatorIds.add(session.session.moderatorId);
+        for (const p of session.participants) {
+          if (p.isModerator) moderatorIds.add(p.id);
+        }
       }
     }
 

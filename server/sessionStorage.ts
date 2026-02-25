@@ -475,6 +475,54 @@ export class SessionStorage {
   }
 
   /**
+   * Set a participant's moderator status
+   * @param roomId - The room ID
+   * @param userId - The participant's user ID
+   * @param isModerator - Whether the participant should be a moderator
+   * @returns True if successful, false if session or participant not found
+   */
+  setModeratorStatus(
+    roomId: string,
+    userId: string,
+    isModerator: boolean
+  ): boolean {
+    const sessionState = this.sessions.get(roomId);
+    if (!sessionState) return false;
+
+    const participant = sessionState.participants.find((p) => p.id === userId);
+    if (!participant) return false;
+
+    participant.isModerator = isModerator;
+    return true;
+  }
+
+  /**
+   * Count participants with moderator status in a session
+   * @param roomId - The room ID
+   * @returns Number of moderators, or 0 if session not found
+   */
+  getModeratorCount(roomId: string): number {
+    const sessionState = this.sessions.get(roomId);
+    if (!sessionState) return 0;
+
+    return sessionState.participants.filter((p) => p.isModerator).length;
+  }
+
+  /**
+   * Check if any moderator is currently connected in a session
+   * @param roomId - The room ID
+   * @returns True if at least one moderator is connected
+   */
+  hasConnectedModerator(roomId: string): boolean {
+    const sessionState = this.sessions.get(roomId);
+    if (!sessionState) return false;
+
+    return sessionState.participants.some(
+      (p) => p.isModerator && p.isConnected
+    );
+  }
+
+  /**
    * Get all active session IDs
    * @returns Array of room IDs
    */

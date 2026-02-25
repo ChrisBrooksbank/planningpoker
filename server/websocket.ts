@@ -12,6 +12,7 @@ import type {
   RevealVotesMessage,
   NewRoundMessage,
   ToggleObserverMessage,
+  PromoteToModeratorMessage,
   SessionStateMessage,
 } from "../lib/websocket-messages.js";
 import { getDeckValues } from "../lib/types.js";
@@ -222,6 +223,15 @@ export class PlanningPokerWebSocketServer {
       case "toggle-observer":
         this.handleToggleObserver(ws, client);
         break;
+      case "promote-to-moderator":
+        this.handlePromoteToModerator(ws, client, message);
+        break;
+      case "demote-self":
+        this.handleDemoteSelf(ws, client);
+        break;
+      case "claim-moderator":
+        this.handleClaimModerator(ws, client);
+        break;
       default:
         this.sendError(ws, "UNKNOWN_MESSAGE_TYPE", "Unknown message type");
     }
@@ -407,7 +417,8 @@ export class PlanningPokerWebSocketServer {
       return;
     }
 
-    if (session.session.moderatorId !== userId) {
+    const senderSetTopic = session.participants.find((p) => p.id === userId);
+    if (!senderSetTopic?.isModerator) {
       this.sendError(ws, "UNAUTHORIZED", "Only moderator can set topic");
       return;
     }
@@ -439,7 +450,8 @@ export class PlanningPokerWebSocketServer {
       return;
     }
 
-    if (session.session.moderatorId !== userId) {
+    const senderReveal = session.participants.find((p) => p.id === userId);
+    if (!senderReveal?.isModerator) {
       this.sendError(ws, "UNAUTHORIZED", "Only moderator can reveal votes");
       return;
     }
@@ -494,7 +506,8 @@ export class PlanningPokerWebSocketServer {
       return;
     }
 
-    if (session.session.moderatorId !== userId) {
+    const senderNewRound = session.participants.find((p) => p.id === userId);
+    if (!senderNewRound?.isModerator) {
       this.sendError(ws, "UNAUTHORIZED", "Only moderator can start new round");
       return;
     }
@@ -538,6 +551,137 @@ export class PlanningPokerWebSocketServer {
       type: "observer-toggled",
       userId,
       isObserver: result,
+    });
+  }
+
+  /**
+   * Handle promote-to-moderator message
+   */
+  private handlePromoteToModerator(
+    ws: WebSocket,
+    client: RoomClient,
+    message: PromoteToModeratorMessage
+  ) {
+    const { roomId, userId } = client;
+    const { targetParticipantId } = message;
+
+    const session = sessionStorage.getSession(roomId);
+    if (!session) {
+      this.sendError(ws, "SESSION_NOT_FOUND", "Session does not exist");
+      return;
+    }
+
+    // Verify sender is a moderator
+    const sender = session.participants.find((p) => p.id === userId);
+    if (!sender?.isModerator) {
+      this.sendError(
+        ws,
+        "UNAUTHORIZED",
+        "Only moderators can promote participants"
+      );
+      return;
+    }
+
+    // Verify target exists and isn't already a moderator
+    const target = session.participants.find(
+      (p) => p.id === targetParticipantId
+    );
+    if (!target) {
+      this.sendError(
+        ws,
+        "PARTICIPANT_NOT_FOUND",
+        "Target participant not found"
+      );
+      return;
+    }
+    if (target.isModerator) {
+      this.sendError(
+        ws,
+        "ALREADY_MODERATOR",
+        "Participant is already a moderator"
+      );
+      return;
+    }
+
+    sessionStorage.setModeratorStatus(roomId, targetParticipantId, true);
+    this.broadcastToRoom(roomId, {
+      type: "moderator-changed",
+      userId: targetParticipantId,
+      isModerator: true,
+    });
+  }
+
+  /**
+   * Handle demote-self message
+   */
+  private handleDemoteSelf(ws: WebSocket, client: RoomClient) {
+    const { roomId, userId } = client;
+
+    const session = sessionStorage.getSession(roomId);
+    if (!session) {
+      this.sendError(ws, "SESSION_NOT_FOUND", "Session does not exist");
+      return;
+    }
+
+    // Verify sender is a moderator
+    const sender = session.participants.find((p) => p.id === userId);
+    if (!sender?.isModerator) {
+      this.sendError(ws, "UNAUTHORIZED", "You are not a moderator");
+      return;
+    }
+
+    // Prevent stepping down if you're the only moderator
+    if (sessionStorage.getModeratorCount(roomId) <= 1) {
+      this.sendError(
+        ws,
+        "LAST_MODERATOR",
+        "Cannot step down as the only moderator"
+      );
+      return;
+    }
+
+    sessionStorage.setModeratorStatus(roomId, userId, false);
+    this.broadcastToRoom(roomId, {
+      type: "moderator-changed",
+      userId,
+      isModerator: false,
+    });
+  }
+
+  /**
+   * Handle claim-moderator message
+   */
+  private handleClaimModerator(ws: WebSocket, client: RoomClient) {
+    const { roomId, userId } = client;
+
+    const session = sessionStorage.getSession(roomId);
+    if (!session) {
+      this.sendError(ws, "SESSION_NOT_FOUND", "Session does not exist");
+      return;
+    }
+
+    // Verify no connected moderator exists
+    if (sessionStorage.hasConnectedModerator(roomId)) {
+      this.sendError(
+        ws,
+        "MODERATOR_CONNECTED",
+        "A moderator is still connected"
+      );
+      return;
+    }
+
+    // Verify sender is a connected participant
+    const sender = session.participants.find((p) => p.id === userId);
+    if (!sender || !sender.isConnected) {
+      this.sendError(ws, "NOT_A_PARTICIPANT", "You are not a participant");
+      return;
+    }
+
+    sessionStorage.setModeratorStatus(roomId, userId, true);
+    this.broadcastToRoom(roomId, {
+      type: "moderator-changed",
+      userId,
+      isModerator: true,
     });
   }
 

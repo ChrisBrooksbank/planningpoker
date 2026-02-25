@@ -94,7 +94,6 @@ export default function SessionPage() {
   const [votedUserIds, setVotedUserIds] = useState<Set<string>>(new Set());
   const [currentTopic, setCurrentTopic] = useState<string>("");
   const [topicInput, setTopicInput] = useState<string>("");
-  const [moderatorId, setModeratorId] = useState<string | null>(null);
   const [isRevealed, setIsRevealed] = useState<boolean>(false);
   const [isVotingOpen, setIsVotingOpen] = useState<boolean>(false);
   const [revealedVotes, setRevealedVotes] = useState<Record<string, Vote>>({});
@@ -192,14 +191,15 @@ export default function SessionPage() {
         case "session-state":
           // Update participants from session state
           setParticipants(message.participants);
-          // Update session name, deck type, moderator ID and current topic
+          // Update session name, deck type, and current topic
           setSessionName(message.sessionName || "");
           setDeckType(message.deckType || "fibonacci");
-          setModeratorId(message.moderatorId);
-          // Show moderator welcome modal on first join
+          // Show moderator welcome modal on first join (session creator)
           if (
             userId &&
-            message.moderatorId === userId &&
+            message.participants.some(
+              (p: Participant) => p.id === userId && p.isModerator
+            ) &&
             !localStorage.getItem(`session_${roomId}_moderatorWelcomeDismissed`)
           ) {
             setShowModeratorModal(true);
@@ -330,6 +330,16 @@ export default function SessionPage() {
           }
           break;
 
+        case "moderator-changed":
+          setParticipants((prev) =>
+            prev.map((p) =>
+              p.id === message.userId
+                ? { ...p, isModerator: message.isModerator }
+                : p
+            )
+          );
+          break;
+
         case "error":
           // Revert optimistic card selection on vote-related errors
           if (
@@ -378,10 +388,21 @@ export default function SessionPage() {
     });
   };
 
-  // Check if current user is moderator
-  const isModerator = userId === moderatorId;
+  // Check if current user is moderator (based on participant flag, not just creator)
+  const isModerator = participants.some(
+    (p) => p.id === userId && p.isModerator
+  );
+  const moderators = participants.filter((p) => p.isModerator);
+  const moderatorCount = moderators.length;
+  const allModeratorsDisconnected =
+    moderatorCount === 0 ||
+    moderators.every((p) => !p.isConnected);
   const moderatorName =
-    participants.find((p) => p.id === moderatorId)?.name ?? "the moderator";
+    moderators.length === 1
+      ? moderators[0].name
+      : moderators.length > 1
+        ? "a moderator"
+        : "the moderator";
   const hasVoted = userId ? votedUserIds.has(userId) : false;
   const voters = participants.filter((p) => !p.isObserver);
   const voterCount = voters.length;
@@ -422,6 +443,27 @@ export default function SessionPage() {
     onDisconnect: handleDisconnect,
     onError: handleError,
   });
+
+  // Handle promote to moderator
+  const handlePromoteToModerator = useCallback(
+    (targetId: string) => {
+      sendMessage({
+        type: "promote-to-moderator",
+        targetParticipantId: targetId,
+      });
+    },
+    [sendMessage]
+  );
+
+  // Handle demote self (step down)
+  const handleDemoteSelf = useCallback(() => {
+    sendMessage({ type: "demote-self" });
+  }, [sendMessage]);
+
+  // Handle claim moderator
+  const handleClaimModerator = useCallback(() => {
+    sendMessage({ type: "claim-moderator" });
+  }, [sendMessage]);
 
   // Handle card selection and vote submission
   const handleSelectCard = useCallback(
@@ -668,6 +710,13 @@ export default function SessionPage() {
               participants={participants}
               currentUserId={userId}
               votedUserIds={votedUserIds}
+              isModerator={isModerator}
+              moderatorCount={moderatorCount}
+              allModeratorsDisconnected={allModeratorsDisconnected}
+              isConnected={isConnected}
+              onPromoteToModerator={handlePromoteToModerator}
+              onDemoteSelf={handleDemoteSelf}
+              onClaimModerator={handleClaimModerator}
             />
           </div>
 

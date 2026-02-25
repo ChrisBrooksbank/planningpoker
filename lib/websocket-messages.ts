@@ -65,6 +65,28 @@ export interface ToggleObserverMessage extends BaseMessage {
   type: "toggle-observer";
 }
 
+/**
+ * Moderator promotes another participant to moderator
+ */
+export interface PromoteToModeratorMessage extends BaseMessage {
+  type: "promote-to-moderator";
+  targetParticipantId: string;
+}
+
+/**
+ * Moderator demotes themselves (step down)
+ */
+export interface DemoteSelfMessage extends BaseMessage {
+  type: "demote-self";
+}
+
+/**
+ * Participant claims moderator when all moderators are disconnected
+ */
+export interface ClaimModeratorMessage extends BaseMessage {
+  type: "claim-moderator";
+}
+
 // Union type of all client->server messages
 export type ClientMessage =
   | JoinSessionMessage
@@ -72,7 +94,10 @@ export type ClientMessage =
   | SetTopicMessage
   | RevealVotesMessage
   | NewRoundMessage
-  | ToggleObserverMessage;
+  | ToggleObserverMessage
+  | PromoteToModeratorMessage
+  | DemoteSelfMessage
+  | ClaimModeratorMessage;
 
 // ============================================================================
 // Server -> Client Messages
@@ -177,6 +202,15 @@ export interface ParticipantRemovedMessage extends BaseMessage {
 }
 
 /**
+ * A participant's moderator status changed
+ */
+export interface ModeratorChangedMessage extends BaseMessage {
+  type: "moderator-changed";
+  userId: string;
+  isModerator: boolean;
+}
+
+/**
  * Error message from server
  */
 export interface ErrorMessage extends BaseMessage {
@@ -197,6 +231,7 @@ export type ServerMessage =
   | VotesRevealedMessage
   | RoundStartedMessage
   | ObserverToggledMessage
+  | ModeratorChangedMessage
   | ErrorMessage;
 
 // Union type of all messages
@@ -216,5 +251,8 @@ export function isClientMessage(
     "reveal-votes",
     "new-round",
     "toggle-observer",
+    "promote-to-moderator",
+    "demote-self",
+    "claim-moderator",
   ].includes(message.type);
 }

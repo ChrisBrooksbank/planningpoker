@@ -1126,7 +1126,7 @@ describe("SessionPage", () => {
           moderatorId: "moderator123",
           isRevealed: false,
           isVotingOpen: false,
-          participants: [],
+          participants: [{ id: "moderator123", name: "Moderator", isModerator: true, isConnected: true, isObserver: false }],
           votes: {},
         });
       });
@@ -1272,7 +1272,7 @@ describe("SessionPage", () => {
           moderatorId: "moderator123",
           isRevealed: false,
           isVotingOpen: false,
-          participants: [],
+          participants: [{ id: "moderator123", name: "Moderator", isModerator: true, isConnected: true, isObserver: false }],
           votes: {},
         });
       });
@@ -1394,7 +1394,7 @@ describe("SessionPage", () => {
           moderatorId: "moderator123",
           isRevealed: false,
           isVotingOpen: false,
-          participants: [],
+          participants: [{ id: "moderator123", name: "Moderator", isModerator: true, isConnected: true, isObserver: false }],
           votes: {},
         });
       });
@@ -1444,7 +1444,7 @@ describe("SessionPage", () => {
           moderatorId: "moderator123",
           isRevealed: false,
           isVotingOpen: true,
-          participants: [],
+          participants: [{ id: "moderator123", name: "Moderator", isModerator: true, isConnected: true, isObserver: false }],
           votes: {},
         });
       });
@@ -1494,7 +1494,7 @@ describe("SessionPage", () => {
           currentTopic: "Existing topic",
           isRevealed: false,
           isVotingOpen: true,
-          participants: [],
+          participants: [{ id: "moderator123", name: "Moderator", isModerator: true, isConnected: true, isObserver: false }],
           votes: {},
         });
       });
@@ -1546,7 +1546,7 @@ describe("SessionPage", () => {
           moderatorId: "moderator123",
           isRevealed: false,
           isVotingOpen: false,
-          participants: [],
+          participants: [{ id: "moderator123", name: "Moderator", isModerator: true, isConnected: true, isObserver: false }],
           votes: {},
         });
       });
@@ -1610,7 +1610,7 @@ describe("SessionPage", () => {
           moderatorId: "moderator123",
           isRevealed: false,
           isVotingOpen: true,
-          participants: [],
+          participants: [{ id: "moderator123", name: "Moderator", isModerator: true, isConnected: true, isObserver: false }],
           votes: {},
         });
       });
@@ -1706,7 +1706,7 @@ describe("SessionPage", () => {
           moderatorId: "moderator123",
           isRevealed: true,
           isVotingOpen: false,
-          participants: [],
+          participants: [{ id: "moderator123", name: "Moderator", isModerator: true, isConnected: true, isObserver: false }],
           votes: {},
         });
       });
@@ -1757,12 +1757,15 @@ describe("SessionPage", () => {
           moderatorId: "moderator123",
           isRevealed: false,
           isVotingOpen: true,
-          participants: [],
+          participants: [{ id: "moderator123", name: "Moderator", isModerator: true, isConnected: true, isObserver: false }],
           votes: {},
         });
       });
 
       const button = await screen.findByText("Reveal");
+
+      // Mock window.confirm to allow reveal with unvoted participants
+      vi.spyOn(window, "confirm").mockReturnValue(true);
 
       // Click Reveal Votes button
       await user.click(button);
@@ -1811,7 +1814,7 @@ describe("SessionPage", () => {
           moderatorId: "moderator123",
           isRevealed: false,
           isVotingOpen: true,
-          participants: [],
+          participants: [{ id: "moderator123", name: "Moderator", isModerator: true, isConnected: true, isObserver: false }],
           votes: {},
         });
       });
@@ -1857,7 +1860,7 @@ describe("SessionPage", () => {
           moderatorId: "moderator123",
           isRevealed: false,
           isVotingOpen: true,
-          participants: [],
+          participants: [{ id: "moderator123", name: "Moderator", isModerator: true, isConnected: true, isObserver: false }],
           votes: {},
         });
       });
@@ -2183,7 +2186,7 @@ describe("SessionPage", () => {
           moderatorId: "moderator123",
           isRevealed: false,
           isVotingOpen: true,
-          participants: [],
+          participants: [{ id: "moderator123", name: "Moderator", isModerator: true, isConnected: true, isObserver: false }],
           votes: {},
         });
       });
@@ -2366,7 +2369,7 @@ describe("SessionPage", () => {
           moderatorId: "moderator123",
           isRevealed: false,
           isVotingOpen: true,
-          participants: [],
+          participants: [{ id: "moderator123", name: "Moderator", isModerator: true, isConnected: true, isObserver: false }],
           votes: {},
         });
       });
@@ -2596,7 +2599,7 @@ describe("SessionPage", () => {
           moderatorId: "moderator123",
           isRevealed: false,
           isVotingOpen: true,
-          participants: [],
+          participants: [{ id: "moderator123", name: "Moderator", isModerator: true, isConnected: true, isObserver: false }],
           votes: {},
         });
       });
@@ -2731,7 +2734,7 @@ describe("SessionPage", () => {
           moderatorId: "moderator123",
           isRevealed: false,
           isVotingOpen: false,
-          participants: [],
+          participants: [{ id: "moderator123", name: "Moderator", isModerator: true, isConnected: true, isObserver: false }],
           votes: {},
         });
       });
@@ -2782,7 +2785,7 @@ describe("SessionPage", () => {
           moderatorId: "moderator123",
           isRevealed: false,
           isVotingOpen: false,
-          participants: [],
+          participants: [{ id: "moderator123", name: "Moderator", isModerator: true, isConnected: true, isObserver: false }],
           votes: {},
         });
       });
@@ -2836,7 +2839,7 @@ describe("SessionPage", () => {
           moderatorId: "moderator123",
           isRevealed: false,
           isVotingOpen: false,
-          participants: [],
+          participants: [{ id: "moderator123", name: "Moderator", isModerator: true, isConnected: true, isObserver: false }],
           votes: {},
         });
       });

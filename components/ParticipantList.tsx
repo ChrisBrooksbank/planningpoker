@@ -4,6 +4,13 @@ interface ParticipantListProps {
   participants: Participant[];
   currentUserId: string;
   votedUserIds?: Set<string>;
+  isModerator?: boolean;
+  moderatorCount?: number;
+  allModeratorsDisconnected?: boolean;
+  isConnected?: boolean;
+  onPromoteToModerator?: (targetId: string) => void;
+  onDemoteSelf?: () => void;
+  onClaimModerator?: () => void;
 }
 
 function getAvatarColor(name: string): string {
@@ -28,6 +35,13 @@ export function ParticipantList({
   participants,
   currentUserId,
   votedUserIds = new Set(),
+  isModerator = false,
+  moderatorCount = 0,
+  allModeratorsDisconnected = false,
+  isConnected = false,
+  onPromoteToModerator,
+  onDemoteSelf,
+  onClaimModerator,
 }: ParticipantListProps) {
   if (participants.length === 0) {
     return (
@@ -41,6 +55,9 @@ export function ParticipantList({
   }
 
   const votedCount = participants.filter((p) => votedUserIds.has(p.id)).length;
+  const currentUserIsModerator = participants.find(
+    (p) => p.id === currentUserId
+  )?.isModerator;
 
   return (
     <div className="rounded-lg border border-border bg-card p-3 sm:p-6">
@@ -50,6 +67,23 @@ export function ParticipantList({
       <span role="status" aria-live="polite" className="sr-only">
         {participants.length} participants, {votedCount} voted
       </span>
+
+      {/* Claim moderator banner */}
+      {allModeratorsDisconnected &&
+        !currentUserIsModerator &&
+        isConnected &&
+        onClaimModerator && (
+          <div className="mb-3 p-2 rounded-md bg-amber-50 dark:bg-amber-900/20 border border-amber-200 dark:border-amber-800 text-sm text-amber-800 dark:text-amber-200 flex items-center justify-between gap-2">
+            <span>All moderators are offline.</span>
+            <button
+              onClick={onClaimModerator}
+              className="shrink-0 px-2 py-1 rounded bg-amber-600 text-white text-xs font-medium hover:bg-amber-700 transition-colors"
+            >
+              Become Moderator
+            </button>
+          </div>
+        )}
+
       <ul
         className="space-y-2 max-h-[180px] lg:max-h-none overflow-y-auto"
         aria-label="Participant list"
@@ -73,6 +107,22 @@ export function ParticipantList({
 
           const avatarColor = getAvatarColor(participant.name);
           const initials = getInitials(participant.name);
+
+          // Show promote button: current user is moderator, target is not moderator and not self
+          const showPromote =
+            isModerator &&
+            !participant.isModerator &&
+            !isYou &&
+            isConnected &&
+            onPromoteToModerator;
+
+          // Show step down button: on your own row, you're a moderator, and there's more than 1 moderator
+          const showStepDown =
+            isYou &&
+            participant.isModerator &&
+            moderatorCount > 1 &&
+            isConnected &&
+            onDemoteSelf;
 
           return (
             <li
@@ -133,6 +183,22 @@ export function ParticipantList({
                 )}
               </div>
               <div className="flex items-center gap-2">
+                {showPromote && (
+                  <button
+                    onClick={() => onPromoteToModerator(participant.id)}
+                    className="text-xs px-2 py-0.5 rounded border border-border text-muted-foreground hover:bg-muted hover:text-foreground transition-colors"
+                  >
+                    Promote
+                  </button>
+                )}
+                {showStepDown && (
+                  <button
+                    onClick={onDemoteSelf}
+                    className="text-xs px-2 py-0.5 rounded border border-border text-muted-foreground hover:bg-muted hover:text-foreground transition-colors"
+                  >
+                    Step Down
+                  </button>
+                )}
                 <div
                   className={`h-2 w-2 rounded-full ${
                     participant.isConnected
