@@ -420,7 +420,10 @@ describe("WebSocket Performance - Real-Time Sync", () => {
           });
 
           ws2.on("error", reject);
-        } else if (message.type === "participant-joined" && message.participant.id === userId2) {
+        } else if (
+          message.type === "participant-joined" &&
+          message.participant.id === userId2
+        ) {
           const endTime = Date.now();
           const propagationTime = endTime - startTime;
 

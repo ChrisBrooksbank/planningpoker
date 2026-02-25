@@ -109,6 +109,7 @@ curl -s https://$APP_NAME.azurewebsites.net -o /dev/null -w "%{http_code}"
 ```
 
 Test by:
+
 1. Creating a session
 2. Opening the room link in a second browser tab
 3. Joining and submitting votes from both tabs

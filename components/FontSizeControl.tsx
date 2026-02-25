@@ -12,7 +12,9 @@ export function FontSizeControl() {
   useEffect(() => {
     const stored = localStorage.getItem(STORAGE_KEY);
     if (stored) {
-      const idx = FONT_SIZES.indexOf(Number(stored) as (typeof FONT_SIZES)[number]);
+      const idx = FONT_SIZES.indexOf(
+        Number(stored) as (typeof FONT_SIZES)[number]
+      );
       if (idx !== -1) {
         setSizeIndex(idx);
         document.documentElement.style.fontSize = `${FONT_SIZES[idx]}px`;
@@ -39,11 +41,21 @@ export function FontSizeControl() {
 
   if (!mounted) {
     return (
-      <div role="group" aria-label="Font size controls" className="flex items-center gap-1">
-        <button className="p-2 rounded-md border border-border bg-card/80 text-sm font-semibold" disabled>
+      <div
+        role="group"
+        aria-label="Font size controls"
+        className="flex items-center gap-1"
+      >
+        <button
+          className="p-2 rounded-md border border-border bg-card/80 text-sm font-semibold"
+          disabled
+        >
           A-
         </button>
-        <button className="p-2 rounded-md border border-border bg-card/80 text-sm font-semibold" disabled>
+        <button
+          className="p-2 rounded-md border border-border bg-card/80 text-sm font-semibold"
+          disabled
+        >
           A+
         </button>
       </div>
@@ -51,7 +63,11 @@ export function FontSizeControl() {
   }
 
   return (
-    <div role="group" aria-label="Font size controls" className="flex items-center gap-1">
+    <div
+      role="group"
+      aria-label="Font size controls"
+      className="flex items-center gap-1"
+    >
       <button
         onClick={decrease}
         disabled={sizeIndex === 0}
@@ -60,7 +76,10 @@ export function FontSizeControl() {
       >
         A-
       </button>
-      <span className="text-xs text-muted-foreground w-8 text-center" aria-live="polite">
+      <span
+        className="text-xs text-muted-foreground w-8 text-center"
+        aria-live="polite"
+      >
         {FONT_SIZES[sizeIndex]}
       </span>
       <button

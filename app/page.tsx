@@ -105,7 +105,10 @@ export default function Home() {
       // Room exists, generate a participant ID and navigate to session
       const participantId = nanoid();
       localStorage.setItem(`session_${trimmedCode}_userId`, participantId);
-      localStorage.setItem(`session_${trimmedCode}_name`, participantName.trim());
+      localStorage.setItem(
+        `session_${trimmedCode}_name`,
+        participantName.trim()
+      );
 
       router.push(`/session/${trimmedCode}`);
     } catch (err) {
@@ -118,10 +121,15 @@ export default function Home() {
 
   if (mode === "landing") {
     return (
-      <main id="main-content" className="flex min-h-screen flex-col items-center justify-center p-4 sm:p-8">
+      <main
+        id="main-content"
+        className="flex min-h-screen flex-col items-center justify-center p-4 sm:p-8"
+      >
         <div className="w-full max-w-md space-y-6 sm:space-y-8">
           <div className="text-center">
-            <h1 className="text-3xl sm:text-4xl font-bold mb-3 sm:mb-4">Planning Poker</h1>
+            <h1 className="text-3xl sm:text-4xl font-bold mb-3 sm:mb-4">
+              Planning Poker
+            </h1>
             <p className="text-base sm:text-lg text-muted-foreground">
               Real-time collaborative story point estimation
             </p>
@@ -149,7 +157,10 @@ export default function Home() {
 
   if (mode === "create") {
     return (
-      <main id="main-content" className="flex min-h-screen flex-col items-center justify-center p-4 sm:p-8">
+      <main
+        id="main-content"
+        className="flex min-h-screen flex-col items-center justify-center p-4 sm:p-8"
+      >
         <div className="w-full max-w-md space-y-6 sm:space-y-8">
           <button
             onClick={() => {
@@ -219,7 +230,9 @@ export default function Home() {
             </div>
 
             <fieldset className="space-y-2" disabled={isLoading}>
-              <legend className="block text-sm font-medium mb-1">Card Deck</legend>
+              <legend className="block text-sm font-medium mb-1">
+                Card Deck
+              </legend>
               <div className="flex flex-col sm:flex-row gap-2">
                 <label
                   className={`flex-1 flex items-center gap-2 rounded-lg border px-4 py-3 cursor-pointer transition-colors ${
@@ -238,7 +251,9 @@ export default function Home() {
                   />
                   <div>
                     <span className="font-medium text-sm">Fibonacci</span>
-                    <span className="block text-xs text-muted-foreground">1, 2, 3, 5, 8, 13, 21</span>
+                    <span className="block text-xs text-muted-foreground">
+                      1, 2, 3, 5, 8, 13, 21
+                    </span>
                   </div>
                 </label>
                 <label
@@ -258,14 +273,20 @@ export default function Home() {
                   />
                   <div>
                     <span className="font-medium text-sm">T-Shirt</span>
-                    <span className="block text-xs text-muted-foreground">XS, S, M, L, XL, XXL</span>
+                    <span className="block text-xs text-muted-foreground">
+                      XS, S, M, L, XL, XXL
+                    </span>
                   </div>
                 </label>
               </div>
             </fieldset>
 
             {error && (
-              <div id="formError" role="alert" className="rounded-lg bg-red-50 dark:bg-red-900/20 border border-red-200 dark:border-red-800 px-4 py-3 text-sm text-red-800 dark:text-red-200">
+              <div
+                id="formError"
+                role="alert"
+                className="rounded-lg bg-red-50 dark:bg-red-900/20 border border-red-200 dark:border-red-800 px-4 py-3 text-sm text-red-800 dark:text-red-200"
+              >
                 {error}
               </div>
             )}
@@ -285,7 +306,10 @@ export default function Home() {
 
   // Join mode
   return (
-    <main id="main-content" className="flex min-h-screen flex-col items-center justify-center p-4 sm:p-8">
+    <main
+      id="main-content"
+      className="flex min-h-screen flex-col items-center justify-center p-4 sm:p-8"
+    >
       <div className="w-full max-w-md space-y-6 sm:space-y-8">
         <button
           onClick={() => {
@@ -354,7 +378,11 @@ export default function Home() {
           </div>
 
           {error && (
-            <div id="formError" role="alert" className="rounded-lg bg-red-50 dark:bg-red-900/20 border border-red-200 dark:border-red-800 px-4 py-3 text-sm text-red-800 dark:text-red-200">
+            <div
+              id="formError"
+              role="alert"
+              className="rounded-lg bg-red-50 dark:bg-red-900/20 border border-red-200 dark:border-red-800 px-4 py-3 text-sm text-red-800 dark:text-red-200"
+            >
               {error}
             </div>
           )}

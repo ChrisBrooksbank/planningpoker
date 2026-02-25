@@ -1126,7 +1126,15 @@ describe("SessionPage", () => {
           moderatorId: "moderator123",
           isRevealed: false,
           isVotingOpen: false,
-          participants: [{ id: "moderator123", name: "Moderator", isModerator: true, isConnected: true, isObserver: false }],
+          participants: [
+            {
+              id: "moderator123",
+              name: "Moderator",
+              isModerator: true,
+              isConnected: true,
+              isObserver: false,
+            },
+          ],
           votes: {},
         });
       });
@@ -1272,7 +1280,15 @@ describe("SessionPage", () => {
           moderatorId: "moderator123",
           isRevealed: false,
           isVotingOpen: false,
-          participants: [{ id: "moderator123", name: "Moderator", isModerator: true, isConnected: true, isObserver: false }],
+          participants: [
+            {
+              id: "moderator123",
+              name: "Moderator",
+              isModerator: true,
+              isConnected: true,
+              isObserver: false,
+            },
+          ],
           votes: {},
         });
       });
@@ -1394,7 +1410,15 @@ describe("SessionPage", () => {
           moderatorId: "moderator123",
           isRevealed: false,
           isVotingOpen: false,
-          participants: [{ id: "moderator123", name: "Moderator", isModerator: true, isConnected: true, isObserver: false }],
+          participants: [
+            {
+              id: "moderator123",
+              name: "Moderator",
+              isModerator: true,
+              isConnected: true,
+              isObserver: false,
+            },
+          ],
           votes: {},
         });
       });
@@ -1444,7 +1468,15 @@ describe("SessionPage", () => {
           moderatorId: "moderator123",
           isRevealed: false,
           isVotingOpen: true,
-          participants: [{ id: "moderator123", name: "Moderator", isModerator: true, isConnected: true, isObserver: false }],
+          participants: [
+            {
+              id: "moderator123",
+              name: "Moderator",
+              isModerator: true,
+              isConnected: true,
+              isObserver: false,
+            },
+          ],
           votes: {},
         });
       });
@@ -1494,7 +1526,15 @@ describe("SessionPage", () => {
           currentTopic: "Existing topic",
           isRevealed: false,
           isVotingOpen: true,
-          participants: [{ id: "moderator123", name: "Moderator", isModerator: true, isConnected: true, isObserver: false }],
+          participants: [
+            {
+              id: "moderator123",
+              name: "Moderator",
+              isModerator: true,
+              isConnected: true,
+              isObserver: false,
+            },
+          ],
           votes: {},
         });
       });
@@ -1546,7 +1586,15 @@ describe("SessionPage", () => {
           moderatorId: "moderator123",
           isRevealed: false,
           isVotingOpen: false,
-          participants: [{ id: "moderator123", name: "Moderator", isModerator: true, isConnected: true, isObserver: false }],
+          participants: [
+            {
+              id: "moderator123",
+              name: "Moderator",
+              isModerator: true,
+              isConnected: true,
+              isObserver: false,
+            },
+          ],
           votes: {},
         });
       });
@@ -1610,7 +1658,15 @@ describe("SessionPage", () => {
           moderatorId: "moderator123",
           isRevealed: false,
           isVotingOpen: true,
-          participants: [{ id: "moderator123", name: "Moderator", isModerator: true, isConnected: true, isObserver: false }],
+          participants: [
+            {
+              id: "moderator123",
+              name: "Moderator",
+              isModerator: true,
+              isConnected: true,
+              isObserver: false,
+            },
+          ],
           votes: {},
         });
       });
@@ -1706,7 +1762,15 @@ describe("SessionPage", () => {
           moderatorId: "moderator123",
           isRevealed: true,
           isVotingOpen: false,
-          participants: [{ id: "moderator123", name: "Moderator", isModerator: true, isConnected: true, isObserver: false }],
+          participants: [
+            {
+              id: "moderator123",
+              name: "Moderator",
+              isModerator: true,
+              isConnected: true,
+              isObserver: false,
+            },
+          ],
           votes: {},
         });
       });
@@ -1757,7 +1821,15 @@ describe("SessionPage", () => {
           moderatorId: "moderator123",
           isRevealed: false,
           isVotingOpen: true,
-          participants: [{ id: "moderator123", name: "Moderator", isModerator: true, isConnected: true, isObserver: false }],
+          participants: [
+            {
+              id: "moderator123",
+              name: "Moderator",
+              isModerator: true,
+              isConnected: true,
+              isObserver: false,
+            },
+          ],
           votes: {},
         });
       });
@@ -1814,7 +1886,15 @@ describe("SessionPage", () => {
           moderatorId: "moderator123",
           isRevealed: false,
           isVotingOpen: true,
-          participants: [{ id: "moderator123", name: "Moderator", isModerator: true, isConnected: true, isObserver: false }],
+          participants: [
+            {
+              id: "moderator123",
+              name: "Moderator",
+              isModerator: true,
+              isConnected: true,
+              isObserver: false,
+            },
+          ],
           votes: {},
         });
       });
@@ -1860,7 +1940,15 @@ describe("SessionPage", () => {
           moderatorId: "moderator123",
           isRevealed: false,
           isVotingOpen: true,
-          participants: [{ id: "moderator123", name: "Moderator", isModerator: true, isConnected: true, isObserver: false }],
+          participants: [
+            {
+              id: "moderator123",
+              name: "Moderator",
+              isModerator: true,
+              isConnected: true,
+              isObserver: false,
+            },
+          ],
           votes: {},
         });
       });
@@ -2186,7 +2274,15 @@ describe("SessionPage", () => {
           moderatorId: "moderator123",
           isRevealed: false,
           isVotingOpen: true,
-          participants: [{ id: "moderator123", name: "Moderator", isModerator: true, isConnected: true, isObserver: false }],
+          participants: [
+            {
+              id: "moderator123",
+              name: "Moderator",
+              isModerator: true,
+              isConnected: true,
+              isObserver: false,
+            },
+          ],
           votes: {},
         });
       });
@@ -2369,7 +2465,15 @@ describe("SessionPage", () => {
           moderatorId: "moderator123",
           isRevealed: false,
           isVotingOpen: true,
-          participants: [{ id: "moderator123", name: "Moderator", isModerator: true, isConnected: true, isObserver: false }],
+          participants: [
+            {
+              id: "moderator123",
+              name: "Moderator",
+              isModerator: true,
+              isConnected: true,
+              isObserver: false,
+            },
+          ],
           votes: {},
         });
       });
@@ -2599,7 +2703,15 @@ describe("SessionPage", () => {
           moderatorId: "moderator123",
           isRevealed: false,
           isVotingOpen: true,
-          participants: [{ id: "moderator123", name: "Moderator", isModerator: true, isConnected: true, isObserver: false }],
+          participants: [
+            {
+              id: "moderator123",
+              name: "Moderator",
+              isModerator: true,
+              isConnected: true,
+              isObserver: false,
+            },
+          ],
           votes: {},
         });
       });
@@ -2734,7 +2846,15 @@ describe("SessionPage", () => {
           moderatorId: "moderator123",
           isRevealed: false,
           isVotingOpen: false,
-          participants: [{ id: "moderator123", name: "Moderator", isModerator: true, isConnected: true, isObserver: false }],
+          participants: [
+            {
+              id: "moderator123",
+              name: "Moderator",
+              isModerator: true,
+              isConnected: true,
+              isObserver: false,
+            },
+          ],
           votes: {},
         });
       });
@@ -2785,7 +2905,15 @@ describe("SessionPage", () => {
           moderatorId: "moderator123",
           isRevealed: false,
           isVotingOpen: false,
-          participants: [{ id: "moderator123", name: "Moderator", isModerator: true, isConnected: true, isObserver: false }],
+          participants: [
+            {
+              id: "moderator123",
+              name: "Moderator",
+              isModerator: true,
+              isConnected: true,
+              isObserver: false,
+            },
+          ],
           votes: {},
         });
       });
@@ -2839,7 +2967,15 @@ describe("SessionPage", () => {
           moderatorId: "moderator123",
           isRevealed: false,
           isVotingOpen: false,
-          participants: [{ id: "moderator123", name: "Moderator", isModerator: true, isConnected: true, isObserver: false }],
+          participants: [
+            {
+              id: "moderator123",
+              name: "Moderator",
+              isModerator: true,
+              isConnected: true,
+              isObserver: false,
+            },
+          ],
           votes: {},
         });
       });

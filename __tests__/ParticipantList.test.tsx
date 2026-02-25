@@ -230,9 +230,7 @@ describe("ParticipantList", () => {
 
     // Should show checkmark indicators for user-1 (Alice) and user-3 (Charlie)
     // Voted participants have aria-label containing "Voted"
-    const votedItems = container.querySelectorAll(
-      'li[aria-label*="Voted"]'
-    );
+    const votedItems = container.querySelectorAll('li[aria-label*="Voted"]');
     expect(votedItems.length).toBe(2);
   });
 
@@ -248,9 +246,7 @@ describe("ParticipantList", () => {
     );
 
     // Only one voted indicator should appear
-    const votedItems = container.querySelectorAll(
-      'li[aria-label*="Voted"]'
-    );
+    const votedItems = container.querySelectorAll('li[aria-label*="Voted"]');
     expect(votedItems.length).toBe(1);
   });
 
@@ -265,9 +261,7 @@ describe("ParticipantList", () => {
       />
     );
 
-    const votedItems = container.querySelectorAll(
-      'li[aria-label*="Voted"]'
-    );
+    const votedItems = container.querySelectorAll('li[aria-label*="Voted"]');
     expect(votedItems.length).toBe(0);
   });
 
@@ -277,9 +271,7 @@ describe("ParticipantList", () => {
     );
 
     // No voted indicators should appear
-    const votedItems = container.querySelectorAll(
-      'li[aria-label*="Voted"]'
-    );
+    const votedItems = container.querySelectorAll('li[aria-label*="Voted"]');
     expect(votedItems.length).toBe(0);
   });
 });

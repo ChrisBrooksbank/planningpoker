@@ -2,20 +2,20 @@ const CACHE_NAME = "planning-poker-v3";
 
 // Pre-cache the app shell on install
 self.addEventListener("install", (event) => {
-  event.waitUntil(
-    caches.open(CACHE_NAME).then((cache) => cache.addAll(["/"]))
-  );
+  event.waitUntil(caches.open(CACHE_NAME).then((cache) => cache.addAll(["/"])));
   self.skipWaiting();
 });
 
 // Clean up old caches on activate
 self.addEventListener("activate", (event) => {
   event.waitUntil(
-    caches.keys().then((keys) =>
-      Promise.all(
-        keys.filter((k) => k !== CACHE_NAME).map((k) => caches.delete(k))
+    caches
+      .keys()
+      .then((keys) =>
+        Promise.all(
+          keys.filter((k) => k !== CACHE_NAME).map((k) => caches.delete(k))
+        )
       )
-    )
   );
   self.clients.claim();
 });
@@ -33,7 +33,9 @@ self.addEventListener("fetch", (event) => {
         // Cache successful responses
         if (response.ok) {
           const clone = response.clone();
-          caches.open(CACHE_NAME).then((cache) => cache.put(event.request, clone));
+          caches
+            .open(CACHE_NAME)
+            .then((cache) => cache.put(event.request, clone));
         }
         return response;
       })

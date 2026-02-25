@@ -173,16 +173,12 @@ describe("SessionHint component", () => {
 
   it("renders secondary hint when present", () => {
     render(<SessionHint {...baseProps} isVotingOpen={true} />);
-    expect(
-      screen.getByText(/Your vote is private/)
-    ).toBeInTheDocument();
+    expect(screen.getByText(/Your vote is private/)).toBeInTheDocument();
   });
 
   it("does not render secondary hint when absent", () => {
     render(<SessionHint {...baseProps} />);
-    expect(
-      screen.queryByText(/Your vote is private/)
-    ).not.toBeInTheDocument();
+    expect(screen.queryByText(/Your vote is private/)).not.toBeInTheDocument();
   });
 
   it("has role=status for accessibility", () => {

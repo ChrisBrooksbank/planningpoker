@@ -187,7 +187,12 @@ describe("WebSocket Message Protocol", () => {
         ws1.on("message", (data) => {
           const message = JSON.parse(data.toString());
           if (message.type === "connected") {
-            ws1.send(JSON.stringify({ type: "join-session", participantName: "User One" }));
+            ws1.send(
+              JSON.stringify({
+                type: "join-session",
+                participantName: "User One",
+              })
+            );
           } else if (message.type === "session-state") {
             checkReady();
           }
@@ -196,7 +201,12 @@ describe("WebSocket Message Protocol", () => {
         ws2.on("message", (data) => {
           const message = JSON.parse(data.toString());
           if (message.type === "connected") {
-            ws2.send(JSON.stringify({ type: "join-session", participantName: "User Two" }));
+            ws2.send(
+              JSON.stringify({
+                type: "join-session",
+                participantName: "User Two",
+              })
+            );
           } else if (message.type === "session-state") {
             checkReady();
           } else if (message.type === "vote-submitted") {
@@ -225,7 +235,12 @@ describe("WebSocket Message Protocol", () => {
         ws.on("message", (data) => {
           const message = JSON.parse(data.toString());
           if (message.type === "connected") {
-            ws.send(JSON.stringify({ type: "join-session", participantName: "User One" }));
+            ws.send(
+              JSON.stringify({
+                type: "join-session",
+                participantName: "User One",
+              })
+            );
           } else if (message.type === "session-state" && !joined) {
             joined = true;
             ws.send(JSON.stringify({ type: "submit-vote", value: "3" }));
@@ -265,7 +280,9 @@ describe("WebSocket Message Protocol", () => {
         ws.on("message", (data) => {
           const message = JSON.parse(data.toString());
           if (message.type === "connected") {
-            ws.send(JSON.stringify({ type: "join-session", participantName: "Mod" }));
+            ws.send(
+              JSON.stringify({ type: "join-session", participantName: "Mod" })
+            );
           } else if (message.type === "session-state" && !joined) {
             joined = true;
             // Try to vote before round starts

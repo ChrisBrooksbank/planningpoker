@@ -12,5 +12,10 @@
     "declaration": false,
     "sourceMap": false
   },
-  "include": ["server/**/*.ts", "lib/types.ts", "lib/utils.ts", "lib/websocket-messages.ts"]
+  "include": [
+    "server/**/*.ts",
+    "lib/types.ts",
+    "lib/utils.ts",
+    "lib/websocket-messages.ts"
+  ]
 }

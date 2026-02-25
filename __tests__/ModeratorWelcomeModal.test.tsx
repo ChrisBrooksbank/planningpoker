@@ -26,10 +26,7 @@ describe("ModeratorWelcomeModal", () => {
     render(<ModeratorWelcomeModal roomId="ABC123" onClose={mockOnClose} />);
     const dialog = screen.getByRole("dialog");
     expect(dialog).toHaveAttribute("aria-modal", "true");
-    expect(dialog).toHaveAttribute(
-      "aria-labelledby",
-      "moderator-modal-title"
-    );
+    expect(dialog).toHaveAttribute("aria-labelledby", "moderator-modal-title");
   });
 
   it("displays moderator capabilities", () => {

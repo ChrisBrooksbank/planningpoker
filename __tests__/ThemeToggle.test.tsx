@@ -19,47 +19,35 @@ describe("ThemeToggle", () => {
 
   it('shows "Switch to dark mode" label when theme is light', () => {
     renderWithTheme("light");
-    expect(
-      screen.getByLabelText("Switch to dark mode")
-    ).toBeInTheDocument();
+    expect(screen.getByLabelText("Switch to dark mode")).toBeInTheDocument();
   });
 
   it('shows "Switch to system mode" label when theme is dark', () => {
     renderWithTheme("dark");
-    expect(
-      screen.getByLabelText("Switch to system mode")
-    ).toBeInTheDocument();
+    expect(screen.getByLabelText("Switch to system mode")).toBeInTheDocument();
   });
 
   it('shows "Switch to light mode" label when theme is system', () => {
     renderWithTheme("system");
-    expect(
-      screen.getByLabelText("Switch to light mode")
-    ).toBeInTheDocument();
+    expect(screen.getByLabelText("Switch to light mode")).toBeInTheDocument();
   });
 
   it("cycles from light to dark on click", () => {
     renderWithTheme("light");
     fireEvent.click(screen.getByRole("button"));
-    expect(
-      screen.getByLabelText("Switch to system mode")
-    ).toBeInTheDocument();
+    expect(screen.getByLabelText("Switch to system mode")).toBeInTheDocument();
   });
 
   it("cycles from dark to system on click", () => {
     renderWithTheme("dark");
     fireEvent.click(screen.getByRole("button"));
-    expect(
-      screen.getByLabelText("Switch to light mode")
-    ).toBeInTheDocument();
+    expect(screen.getByLabelText("Switch to light mode")).toBeInTheDocument();
   });
 
   it("cycles from system to light on click", () => {
     renderWithTheme("system");
     fireEvent.click(screen.getByRole("button"));
-    expect(
-      screen.getByLabelText("Switch to dark mode")
-    ).toBeInTheDocument();
+    expect(screen.getByLabelText("Switch to dark mode")).toBeInTheDocument();
   });
 
   it("cycles through all three themes in order", () => {
@@ -68,21 +56,15 @@ describe("ThemeToggle", () => {
 
     // light -> dark
     fireEvent.click(button);
-    expect(
-      screen.getByLabelText("Switch to system mode")
-    ).toBeInTheDocument();
+    expect(screen.getByLabelText("Switch to system mode")).toBeInTheDocument();
 
     // dark -> system
     fireEvent.click(button);
-    expect(
-      screen.getByLabelText("Switch to light mode")
-    ).toBeInTheDocument();
+    expect(screen.getByLabelText("Switch to light mode")).toBeInTheDocument();
 
     // system -> light
     fireEvent.click(button);
-    expect(
-      screen.getByLabelText("Switch to dark mode")
-    ).toBeInTheDocument();
+    expect(screen.getByLabelText("Switch to dark mode")).toBeInTheDocument();
   });
 
   it("renders an SVG icon for each theme", () => {

@@ -189,7 +189,12 @@ describe("Multiple Simultaneous Rooms", () => {
         room1User.on("message", (data) => {
           const message = JSON.parse(data.toString());
           if (message.type === "connected") {
-            room1User.send(JSON.stringify({ type: "join-session", participantName: "R1 User 1" }));
+            room1User.send(
+              JSON.stringify({
+                type: "join-session",
+                participantName: "R1 User 1",
+              })
+            );
           } else if (message.type === "session-state") {
             checkAllJoined();
           } else if (message.type === "vote-submitted") {
@@ -204,7 +209,12 @@ describe("Multiple Simultaneous Rooms", () => {
         room2User.on("message", (data) => {
           const message = JSON.parse(data.toString());
           if (message.type === "connected") {
-            room2User.send(JSON.stringify({ type: "join-session", participantName: "R2 User 1" }));
+            room2User.send(
+              JSON.stringify({
+                type: "join-session",
+                participantName: "R2 User 1",
+              })
+            );
           } else if (message.type === "session-state") {
             checkAllJoined();
           } else if (message.type === "vote-submitted") {
@@ -536,7 +546,12 @@ describe("Multiple Simultaneous Rooms", () => {
       room1User1.on("message", (data) => {
         const message = JSON.parse(data.toString());
         if (message.type === "connected") {
-          room1User1.send(JSON.stringify({ type: "join-session", participantName: "R1 User 1" }));
+          room1User1.send(
+            JSON.stringify({
+              type: "join-session",
+              participantName: "R1 User 1",
+            })
+          );
         } else if (message.type === "session-state") {
           checkAllJoined();
         }
@@ -545,7 +560,12 @@ describe("Multiple Simultaneous Rooms", () => {
       room1User2.on("message", (data) => {
         const message = JSON.parse(data.toString());
         if (message.type === "connected") {
-          room1User2.send(JSON.stringify({ type: "join-session", participantName: "R1 User 2" }));
+          room1User2.send(
+            JSON.stringify({
+              type: "join-session",
+              participantName: "R1 User 2",
+            })
+          );
         } else if (message.type === "session-state") {
           checkAllJoined();
         }
@@ -568,7 +588,12 @@ describe("Multiple Simultaneous Rooms", () => {
       room2User1.on("message", (data) => {
         const message = JSON.parse(data.toString());
         if (message.type === "connected") {
-          room2User1.send(JSON.stringify({ type: "join-session", participantName: "R2 User 1" }));
+          room2User1.send(
+            JSON.stringify({
+              type: "join-session",
+              participantName: "R2 User 1",
+            })
+          );
         } else if (message.type === "session-state") {
           checkAllJoined();
         }
@@ -577,7 +602,12 @@ describe("Multiple Simultaneous Rooms", () => {
       room2User2.on("message", (data) => {
         const message = JSON.parse(data.toString());
         if (message.type === "connected") {
-          room2User2.send(JSON.stringify({ type: "join-session", participantName: "R2 User 2" }));
+          room2User2.send(
+            JSON.stringify({
+              type: "join-session",
+              participantName: "R2 User 2",
+            })
+          );
         } else if (message.type === "session-state") {
           checkAllJoined();
         }
@@ -608,7 +638,12 @@ describe("Multiple Simultaneous Rooms", () => {
       room1User.on("message", (data) => {
         const message = JSON.parse(data.toString());
         if (message.type === "connected") {
-          room1User.send(JSON.stringify({ type: "join-session", participantName: "R1 User 1" }));
+          room1User.send(
+            JSON.stringify({
+              type: "join-session",
+              participantName: "R1 User 1",
+            })
+          );
         } else if (message.type === "session-state") {
           checkAllJoined();
         } else if (message.type === "vote-submitted") {
@@ -625,7 +660,12 @@ describe("Multiple Simultaneous Rooms", () => {
       room2User.on("message", (data) => {
         const message = JSON.parse(data.toString());
         if (message.type === "connected") {
-          room2User.send(JSON.stringify({ type: "join-session", participantName: "R2 User 1" }));
+          room2User.send(
+            JSON.stringify({
+              type: "join-session",
+              participantName: "R2 User 1",
+            })
+          );
         } else if (message.type === "session-state") {
           checkAllJoined();
         } else if (message.type === "vote-submitted") {

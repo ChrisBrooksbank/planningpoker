@@ -3,24 +3,9 @@
 // Deck Types
 export type DeckType = "fibonacci" | "tshirt";
 
-export const FIBONACCI_VALUES = [
-  "1",
-  "2",
-  "3",
-  "5",
-  "8",
-  "13",
-  "21",
-] as const;
+export const FIBONACCI_VALUES = ["1", "2", "3", "5", "8", "13", "21"] as const;
 
-export const TSHIRT_VALUES = [
-  "XS",
-  "S",
-  "M",
-  "L",
-  "XL",
-  "XXL",
-] as const;
+export const TSHIRT_VALUES = ["XS", "S", "M", "L", "XL", "XXL"] as const;
 
 export function getDeckValues(deckType: DeckType): readonly string[] {
   return deckType === "tshirt" ? TSHIRT_VALUES : FIBONACCI_VALUES;
@@ -48,7 +33,9 @@ export interface Participant {
 }
 
 // Vote Types
-export type CardValue = (typeof FIBONACCI_VALUES)[number] | (typeof TSHIRT_VALUES)[number];
+export type CardValue =
+  | (typeof FIBONACCI_VALUES)[number]
+  | (typeof TSHIRT_VALUES)[number];
 
 export interface Vote {
   userId: string;

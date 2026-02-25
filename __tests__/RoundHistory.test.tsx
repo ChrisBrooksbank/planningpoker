@@ -3,9 +3,7 @@ import { render, screen, fireEvent } from "@testing-library/react";
 import { RoundHistory } from "@/components/RoundHistory";
 import type { RoundHistoryEntry, VoteStatistics } from "@/lib/types";
 
-function makeStats(
-  overrides: Partial<VoteStatistics> = {}
-): VoteStatistics {
+function makeStats(overrides: Partial<VoteStatistics> = {}): VoteStatistics {
   return {
     average: null,
     mode: null,
@@ -60,9 +58,7 @@ describe("RoundHistory", () => {
   });
 
   it("shows mode badge in collapsed header when mode exists", () => {
-    const history = [
-      makeEntry({ statistics: makeStats({ mode: "5" }) }),
-    ];
+    const history = [makeEntry({ statistics: makeStats({ mode: "5" }) })];
     render(<RoundHistory history={history} />);
     // mode should appear in the header even when collapsed
     expect(screen.getByText("5")).toBeInTheDocument();
@@ -244,6 +240,8 @@ describe("RoundHistory", () => {
     render(<RoundHistory history={history} />);
     fireEvent.click(screen.getByRole("button"));
 
-    expect(screen.getByRole("list", { name: "Round 1 votes" })).toBeInTheDocument();
+    expect(
+      screen.getByRole("list", { name: "Round 1 votes" })
+    ).toBeInTheDocument();
   });
 });
