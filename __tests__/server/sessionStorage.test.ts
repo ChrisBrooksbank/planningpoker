@@ -440,6 +440,86 @@ describe("SessionStorage", () => {
     });
   });
 
+  describe("getStaleDisconnectedParticipants", () => {
+    it("should return participants disconnected longer than threshold", () => {
+      const state = storage.createSession("Team Standup", "user1", "Alice");
+      storage.addParticipant(state.session.id, "user2", "Bob");
+      storage.markParticipantDisconnected(state.session.id, "user2");
+
+      // With threshold of 0ms, any disconnected participant is stale
+      const stale = storage.getStaleDisconnectedParticipants(0);
+      expect(stale).toEqual([{ roomId: state.session.id, userId: "user2" }]);
+    });
+
+    it("should skip participants within threshold", () => {
+      const state = storage.createSession("Team Standup", "user1", "Alice");
+      storage.addParticipant(state.session.id, "user2", "Bob");
+      storage.markParticipantDisconnected(state.session.id, "user2");
+
+      // With a very large threshold, nothing should be stale
+      const stale = storage.getStaleDisconnectedParticipants(999_999_999);
+      expect(stale).toEqual([]);
+    });
+
+    it("should skip exempt user IDs (moderator)", () => {
+      const state = storage.createSession("Team Standup", "mod1", "Alice");
+      storage.markParticipantDisconnected(state.session.id, "mod1");
+
+      const stale = storage.getStaleDisconnectedParticipants(
+        0,
+        new Set(["mod1"])
+      );
+      expect(stale).toEqual([]);
+    });
+
+    it("should clear timestamp when participant reconnects via addParticipant", () => {
+      const state = storage.createSession("Team Standup", "user1", "Alice");
+      storage.addParticipant(state.session.id, "user2", "Bob");
+      storage.markParticipantDisconnected(state.session.id, "user2");
+
+      // Reconnect
+      storage.addParticipant(state.session.id, "user2", "Bob");
+
+      const stale = storage.getStaleDisconnectedParticipants(0);
+      expect(stale).toEqual([]);
+    });
+
+    it("should clear timestamp when participant is removed", () => {
+      const state = storage.createSession("Team Standup", "user1", "Alice");
+      storage.addParticipant(state.session.id, "user2", "Bob");
+      storage.markParticipantDisconnected(state.session.id, "user2");
+      storage.removeParticipant(state.session.id, "user2");
+
+      const stale = storage.getStaleDisconnectedParticipants(0);
+      expect(stale).toEqual([]);
+    });
+
+    it("should clear timestamps when session is deleted", () => {
+      const state = storage.createSession("Team Standup", "user1", "Alice");
+      storage.addParticipant(state.session.id, "user2", "Bob");
+      storage.markParticipantDisconnected(state.session.id, "user2");
+      storage.deleteSession(state.session.id);
+
+      const stale = storage.getStaleDisconnectedParticipants(0);
+      expect(stale).toEqual([]);
+    });
+
+    it("should record timestamp when markParticipantDisconnected is called", () => {
+      const state = storage.createSession("Team Standup", "user1", "Alice");
+      storage.addParticipant(state.session.id, "user2", "Bob");
+
+      // Before disconnect, no stale entries
+      expect(storage.getStaleDisconnectedParticipants(0)).toEqual([]);
+
+      storage.markParticipantDisconnected(state.session.id, "user2");
+
+      // After disconnect, user2 appears as stale (with 0ms threshold)
+      const stale = storage.getStaleDisconnectedParticipants(0);
+      expect(stale).toHaveLength(1);
+      expect(stale[0].userId).toBe("user2");
+    });
+  });
+
   describe("getAllSessionIds", () => {
     it("should return all active session IDs", () => {
       const state1 = storage.createSession("Session 1", "user1", "Alice");

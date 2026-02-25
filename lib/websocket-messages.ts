@@ -169,6 +169,14 @@ export interface ObserverToggledMessage extends BaseMessage {
 }
 
 /**
+ * A participant was auto-removed from the session (e.g., after prolonged disconnect)
+ */
+export interface ParticipantRemovedMessage extends BaseMessage {
+  type: "participant-removed";
+  userId: string;
+}
+
+/**
  * Error message from server
  */
 export interface ErrorMessage extends BaseMessage {
@@ -183,6 +191,7 @@ export type ServerMessage =
   | SessionStateMessage
   | ParticipantJoinedMessage
   | ParticipantLeftMessage
+  | ParticipantRemovedMessage
   | VoteSubmittedMessage
   | TopicChangedMessage
   | VotesRevealedMessage

@@ -35,6 +35,7 @@ const MAX_PARTICIPANTS_PER_SESSION = 50;
 
 export class SessionStorage {
   private sessions: Map<string, SessionState> = new Map();
+  private disconnectedAt: Map<string, Map<string, number>> = new Map();
 
   /**
    * Create a new session with a unique room code
@@ -139,6 +140,8 @@ export class SessionStorage {
       // Update existing participant to connected
       existingParticipant.isConnected = true;
       existingParticipant.name = userName; // Update name in case it changed
+      // Clear disconnect timestamp on reconnect
+      this.disconnectedAt.get(roomId)?.delete(userId);
     } else {
       // Add new participant
       const participant: Participant = {
@@ -172,6 +175,13 @@ export class SessionStorage {
     const participant = sessionState.participants.find((p) => p.id === userId);
     if (participant) {
       participant.isConnected = false;
+      // Record disconnect timestamp
+      let roomMap = this.disconnectedAt.get(roomId);
+      if (!roomMap) {
+        roomMap = new Map();
+        this.disconnectedAt.set(roomId, roomMap);
+      }
+      roomMap.set(userId, Date.now());
     }
 
     return sessionState.participants;
@@ -195,6 +205,9 @@ export class SessionStorage {
 
     // Also remove their vote if they had one
     sessionState.votes.delete(userId);
+
+    // Clear disconnect timestamp
+    this.disconnectedAt.get(roomId)?.delete(userId);
 
     return sessionState.participants;
   }
@@ -432,7 +445,33 @@ export class SessionStorage {
    * @returns True if session was deleted, false if not found
    */
   deleteSession(roomId: string): boolean {
+    this.disconnectedAt.delete(roomId);
     return this.sessions.delete(roomId);
+  }
+
+  /**
+   * Get participants that have been disconnected longer than the threshold.
+   * @param maxDisconnectMs - Maximum disconnect duration in milliseconds
+   * @param exemptUserIds - Optional set of user IDs to skip (e.g., moderators)
+   * @returns Array of { roomId, userId } entries for stale participants
+   */
+  getStaleDisconnectedParticipants(
+    maxDisconnectMs: number,
+    exemptUserIds?: Set<string>
+  ): Array<{ roomId: string; userId: string }> {
+    const now = Date.now();
+    const stale: Array<{ roomId: string; userId: string }> = [];
+
+    for (const [roomId, roomMap] of this.disconnectedAt) {
+      for (const [userId, timestamp] of roomMap) {
+        if (now - timestamp >= maxDisconnectMs) {
+          if (exemptUserIds && exemptUserIds.has(userId)) continue;
+          stale.push({ roomId, userId });
+        }
+      }
+    }
+
+    return stale;
   }
 
   /**

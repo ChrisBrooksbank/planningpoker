@@ -35,8 +35,14 @@ function readBody(req: IncomingMessage): Promise<string> {
       }
       data += chunk;
     });
-    req.on("end", () => { clearTimeout(timer); resolve(data); });
-    req.on("error", (err) => { clearTimeout(timer); reject(err); });
+    req.on("end", () => {
+      clearTimeout(timer);
+      resolve(data);
+    });
+    req.on("error", (err) => {
+      clearTimeout(timer);
+      reject(err);
+    });
   });
 }
 
@@ -48,7 +54,10 @@ function sendJson(res: ServerResponse, status: number, body: unknown) {
 const MAX_SESSIONS = 1000;
 const SESSION_RATE_LIMIT = 10; // max sessions per IP per minute
 const SESSION_RATE_WINDOW_MS = 60_000;
-const sessionCreationRateLimit = new Map<string, { count: number; windowStart: number }>();
+const sessionCreationRateLimit = new Map<
+  string,
+  { count: number; windowStart: number }
+>();
 
 function getClientIp(req: IncomingMessage): string {
   const forwarded = req.headers["x-forwarded-for"];
@@ -77,11 +86,15 @@ app.prepare().then(() => {
 
     if (pathname === "/api/sessions" && req.method === "POST") {
       if (sessionStorage.getSessionCount() >= MAX_SESSIONS) {
-        return sendJson(res, 503, { error: "Server is at capacity, please try again later" });
+        return sendJson(res, 503, {
+          error: "Server is at capacity, please try again later",
+        });
       }
       const ip = getClientIp(req);
       if (isSessionRateLimited(ip)) {
-        return sendJson(res, 429, { error: "Too many sessions created, please try again later" });
+        return sendJson(res, 429, {
+          error: "Too many sessions created, please try again later",
+        });
       }
       try {
         const body = JSON.parse(await readBody(req));
@@ -94,7 +107,12 @@ app.prepare().then(() => {
         }
         const deckType = rawDeckType === "tshirt" ? "tshirt" : "fibonacci";
         const moderatorId = nanoid();
-        const sessionState = sessionStorage.createSession(sessionName, moderatorId, moderatorName, deckType);
+        const sessionState = sessionStorage.createSession(
+          sessionName,
+          moderatorId,
+          moderatorName,
+          deckType
+        );
         return sendJson(res, 200, {
           roomId: sessionState.session.id,
           sessionName: sessionState.session.name,
@@ -105,7 +123,9 @@ app.prepare().then(() => {
       }
     }
 
-    const validateMatch = pathname?.match(/^\/api\/sessions\/([^/]+)\/validate$/);
+    const validateMatch = pathname?.match(
+      /^\/api\/sessions\/([^/]+)\/validate$/
+    );
     if (validateMatch && req.method === "GET") {
       const roomId = validateMatch[1];
       if (sessionStorage.sessionExists(roomId)) {
@@ -123,31 +143,70 @@ app.prepare().then(() => {
   console.log("WebSocket server initialized");
 
   // Clean up stale sessions and rate-limit entries hourly
-  const cleanupInterval = setInterval(() => {
-    const now = Date.now();
-    const TTL = 24 * 60 * 60 * 1000;
-    for (const roomId of sessionStorage.getAllSessionIds()) {
-      const session = sessionStorage.getSession(roomId);
-      if (session && now - session.lastActivity > TTL) {
-        const hasConnected = session.participants.some(p => p.isConnected);
-        if (!hasConnected) {
-          sessionStorage.deleteSession(roomId);
-          console.log(`Cleaned up stale session: ${roomId}`);
+  const cleanupInterval = setInterval(
+    () => {
+      const now = Date.now();
+      const TTL = 24 * 60 * 60 * 1000;
+      for (const roomId of sessionStorage.getAllSessionIds()) {
+        const session = sessionStorage.getSession(roomId);
+        if (session && now - session.lastActivity > TTL) {
+          const hasConnected = session.participants.some((p) => p.isConnected);
+          if (!hasConnected) {
+            sessionStorage.deleteSession(roomId);
+            console.log(`Cleaned up stale session: ${roomId}`);
+          }
         }
       }
-    }
-    // Purge expired rate-limit entries
-    for (const [ip, entry] of sessionCreationRateLimit) {
-      if (now - entry.windowStart > SESSION_RATE_WINDOW_MS) {
-        sessionCreationRateLimit.delete(ip);
+      // Purge expired rate-limit entries
+      for (const [ip, entry] of sessionCreationRateLimit) {
+        if (now - entry.windowStart > SESSION_RATE_WINDOW_MS) {
+          sessionCreationRateLimit.delete(ip);
+        }
+      }
+    },
+    60 * 60 * 1000
+  );
+
+  // Auto-remove participants disconnected for more than 5 minutes
+  const DISCONNECT_TIMEOUT_MS = 5 * 60 * 1000;
+  const disconnectCleanupInterval = setInterval(() => {
+    // Build set of moderator IDs to exempt from auto-removal
+    const moderatorIds = new Set<string>();
+    for (const roomId of sessionStorage.getAllSessionIds()) {
+      const session = sessionStorage.getSession(roomId);
+      if (session) {
+        moderatorIds.add(session.session.moderatorId);
       }
     }
-  }, 60 * 60 * 1000);
+
+    const stale = sessionStorage.getStaleDisconnectedParticipants(
+      DISCONNECT_TIMEOUT_MS,
+      moderatorIds
+    );
+
+    for (const { roomId, userId } of stale) {
+      // Race condition guard: verify participant is still disconnected
+      const session = sessionStorage.getSession(roomId);
+      if (!session) continue;
+      const participant = session.participants.find((p) => p.id === userId);
+      if (!participant || participant.isConnected) continue;
+
+      sessionStorage.removeParticipant(roomId, userId);
+      wsServer.broadcastToRoom(roomId, {
+        type: "participant-removed",
+        userId,
+      });
+      console.log(
+        `Auto-removed disconnected participant ${userId} from room ${roomId}`
+      );
+    }
+  }, 60_000);
 
   // Graceful shutdown
   const shutdown = () => {
     console.log("Shutting down gracefully...");
     clearInterval(cleanupInterval);
+    clearInterval(disconnectCleanupInterval);
     wsServer.close();
     server.close(() => {
       console.log("Server closed");

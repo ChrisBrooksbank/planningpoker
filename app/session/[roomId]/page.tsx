@@ -265,6 +265,18 @@ export default function SessionPage() {
           );
           break;
 
+        case "participant-removed":
+          // Fully remove participant from the list (auto-removed after disconnect timeout)
+          setParticipants((prev) =>
+            prev.filter((p) => p.id !== message.userId)
+          );
+          setVotedUserIds((prev) => {
+            const next = new Set(prev);
+            next.delete(message.userId);
+            return next;
+          });
+          break;
+
         case "vote-submitted":
           // Track which users have voted (without revealing values)
           setVotedUserIds((prev) => new Set(prev).add(message.userId));
