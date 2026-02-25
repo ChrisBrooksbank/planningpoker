@@ -147,13 +147,27 @@ app.prepare().then(() => {
     () => {
       const now = Date.now();
       const TTL = 24 * 60 * 60 * 1000;
+      const MAX_LIFETIME = 12 * 60 * 60 * 1000;
+      let cleaned = 0;
       for (const roomId of sessionStorage.getAllSessionIds()) {
         const session = sessionStorage.getSession(roomId);
-        if (session && now - session.lastActivity > TTL) {
+        if (!session) continue;
+
+        // Absolute max lifetime: remove sessions older than 12 hours
+        if (now - session.session.createdAt > MAX_LIFETIME) {
+          sessionStorage.deleteSession(roomId);
+          console.log(`Cleaned up expired session (max lifetime): ${roomId}`);
+          cleaned++;
+          continue;
+        }
+
+        // Stale session: inactive for 24h with no connected participants
+        if (now - session.lastActivity > TTL) {
           const hasConnected = session.participants.some((p) => p.isConnected);
           if (!hasConnected) {
             sessionStorage.deleteSession(roomId);
             console.log(`Cleaned up stale session: ${roomId}`);
+            cleaned++;
           }
         }
       }
@@ -163,6 +177,14 @@ app.prepare().then(() => {
           sessionCreationRateLimit.delete(ip);
         }
       }
+
+      // Log resource usage for observability
+      console.log(
+        `[cleanup] sessions=${sessionStorage.getSessionCount()} ` +
+          `connections=${wsServer.getConnectionCount()} ` +
+          `rooms=${wsServer.getRoomCount()} ` +
+          `cleaned=${cleaned}`
+      );
     },
     60 * 60 * 1000
   );
