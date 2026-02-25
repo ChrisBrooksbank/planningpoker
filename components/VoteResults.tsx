@@ -1,5 +1,6 @@
 import type { Vote, VoteStatistics, Participant, DeckType } from "@/lib/types";
 import { VoteValueDisplay } from "./VoteValueDisplay";
+import { FireworksCanvas } from "./FireworksCanvas";
 
 interface VoteResultsProps {
   votes: Record<string, Vote>;
@@ -31,26 +32,12 @@ const CONFETTI_COLORS = [
   "#ffffff",
 ];
 
-const CONFETTI_PIECES = [
-  { left: "5%", delay: "0s", w: "w-2", h: "h-3" },
-  { left: "10%", delay: "0.15s", w: "w-3", h: "h-2" },
-  { left: "15%", delay: "0.4s", w: "w-2", h: "h-2" },
-  { left: "22%", delay: "0.1s", w: "w-2", h: "h-3" },
-  { left: "28%", delay: "0.55s", w: "w-3", h: "h-2" },
-  { left: "33%", delay: "0.25s", w: "w-2", h: "h-2" },
-  { left: "40%", delay: "0.7s", w: "w-2", h: "h-3" },
-  { left: "45%", delay: "0.05s", w: "w-3", h: "h-2" },
-  { left: "50%", delay: "0.35s", w: "w-2", h: "h-2" },
-  { left: "55%", delay: "0.6s", w: "w-2", h: "h-3" },
-  { left: "60%", delay: "0.2s", w: "w-3", h: "h-2" },
-  { left: "65%", delay: "0.45s", w: "w-2", h: "h-2" },
-  { left: "70%", delay: "0.8s", w: "w-2", h: "h-3" },
-  { left: "75%", delay: "0.3s", w: "w-3", h: "h-2" },
-  { left: "80%", delay: "0.1s", w: "w-2", h: "h-2" },
-  { left: "85%", delay: "0.5s", w: "w-2", h: "h-3" },
-  { left: "90%", delay: "0.65s", w: "w-3", h: "h-2" },
-  { left: "95%", delay: "0.15s", w: "w-2", h: "h-2" },
-];
+const CONFETTI_PIECES = Array.from({ length: 35 }, (_, i) => ({
+  left: `${2 + ((i * 2.8) % 96)}%`,
+  delay: `${(i * 0.13) % 2}s`,
+  w: i % 3 === 0 ? "w-3" : i % 3 === 1 ? "w-2.5" : "w-2",
+  h: i % 3 === 0 ? "h-4" : i % 3 === 1 ? "h-3" : "h-3.5",
+}));
 
 const SPARKLE_POSITIONS = [
   { left: "12%", top: "20%", delay: "0.3s" },
@@ -93,47 +80,13 @@ export function VoteResults({
     <div className="space-y-6">
       {/* Consensus celebration with fireworks */}
       {isConsensus && (
-        <div className="relative overflow-hidden rounded-xl consensus-banner consensus-glow">
-          {/* Main banner */}
-          <div className="relative bg-gradient-to-r from-amber-500 via-green-500 to-emerald-500 px-4 py-5 text-center text-white font-bold text-xl sm:text-2xl">
-            {/* Shimmer sweep overlay */}
-            <div
-              className="absolute inset-0 pointer-events-none consensus-shimmer"
-              aria-hidden="true"
-              style={{
-                background:
-                  "linear-gradient(90deg, transparent, rgba(255,255,255,0.3), transparent)",
-                width: "50%",
-              }}
-            />
-            <span className="relative z-10">
-              🏆 Consensus! Everyone voted{" "}
-              <VoteValueDisplay value={consensusValue!} /> 🎉
-            </span>
-          </div>
+        <>
+          {/* Full-screen canvas fireworks */}
+          <FireworksCanvas />
 
-          {/* Firework bursts */}
+          {/* Full-screen confetti rain */}
           <div
-            className="absolute inset-0 pointer-events-none overflow-visible"
-            aria-hidden="true"
-          >
-            <div
-              className="firework firework-1"
-              style={{ left: "20%", bottom: "10px" }}
-            />
-            <div
-              className="firework firework-2"
-              style={{ left: "50%", bottom: "10px" }}
-            />
-            <div
-              className="firework firework-3"
-              style={{ left: "78%", bottom: "10px" }}
-            />
-          </div>
-
-          {/* Confetti rain */}
-          <div
-            className="absolute inset-0 pointer-events-none"
+            className="fixed inset-0 z-40 pointer-events-none"
             aria-hidden="true"
           >
             {CONFETTI_PIECES.map((piece, i) => (
@@ -149,26 +102,47 @@ export function VoteResults({
             ))}
           </div>
 
-          {/* Sparkle overlay */}
-          <div
-            className="absolute inset-0 pointer-events-none"
-            aria-hidden="true"
-          >
-            {SPARKLE_POSITIONS.map((pos, i) => (
+          {/* Consensus banner */}
+          <div className="relative overflow-hidden rounded-xl consensus-banner consensus-glow">
+            {/* Main banner */}
+            <div className="relative bg-gradient-to-r from-amber-500 via-green-500 to-emerald-500 px-4 py-5 text-center text-white font-bold text-xl sm:text-2xl">
+              {/* Shimmer sweep overlay */}
               <div
-                key={`sparkle-${i}`}
-                className="absolute text-yellow-200 text-sm sparkle"
+                className="absolute inset-0 pointer-events-none consensus-shimmer"
+                aria-hidden="true"
                 style={{
-                  left: pos.left,
-                  top: pos.top,
-                  animationDelay: pos.delay,
+                  background:
+                    "linear-gradient(90deg, transparent, rgba(255,255,255,0.3), transparent)",
+                  width: "50%",
                 }}
-              >
-                ✦
-              </div>
-            ))}
+              />
+              <span className="relative z-10">
+                🏆 Consensus! Everyone voted{" "}
+                <VoteValueDisplay value={consensusValue!} /> 🎉
+              </span>
+            </div>
+
+            {/* Sparkle overlay */}
+            <div
+              className="absolute inset-0 pointer-events-none"
+              aria-hidden="true"
+            >
+              {SPARKLE_POSITIONS.map((pos, i) => (
+                <div
+                  key={`sparkle-${i}`}
+                  className="absolute text-yellow-200 text-sm sparkle"
+                  style={{
+                    left: pos.left,
+                    top: pos.top,
+                    animationDelay: pos.delay,
+                  }}
+                >
+                  ✦
+                </div>
+              ))}
+            </div>
           </div>
-        </div>
+        </>
       )}
 
       {/* Votes section with flip animation */}
