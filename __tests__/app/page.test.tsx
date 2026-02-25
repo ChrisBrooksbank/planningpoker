@@ -225,7 +225,7 @@ describe("Home Page", () => {
 
     it("shows loading state while creating session", async () => {
       (global.fetch as any).mockImplementationOnce(
-        () => new Promise((resolve) => setTimeout(resolve, 100))
+        () => new Promise(() => {}) // never resolves — we only need to observe loading state
       );
 
       render(<Home />);
@@ -447,7 +447,7 @@ describe("Home Page", () => {
 
     it("shows loading state while joining session", async () => {
       (global.fetch as any).mockImplementationOnce(
-        () => new Promise((resolve) => setTimeout(resolve, 100))
+        () => new Promise(() => {}) // never resolves — we only need to observe loading state
       );
 
       render(<Home />);
