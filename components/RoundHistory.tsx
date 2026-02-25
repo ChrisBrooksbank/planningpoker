@@ -24,7 +24,7 @@ export function RoundHistory({
       <h2 className="text-base sm:text-lg font-semibold mb-2 sm:mb-4">
         Round History ({history.length})
       </h2>
-      <div className="space-y-2">
+      <div className="space-y-2 max-h-[300px] sm:max-h-[400px] overflow-y-auto">
         {reversedHistory.map((entry, displayIndex) => {
           const roundNumber = history.length - displayIndex;
           const isExpanded = expandedRound === roundNumber;
