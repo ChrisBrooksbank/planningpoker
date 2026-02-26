@@ -196,6 +196,30 @@
   animation: consensus-glow 2s ease-in-out 0.5s infinite;
 }
 
+/* Burst particles radiating from consensus banner */
+@keyframes burst-particle {
+  0% {
+    opacity: 1;
+    transform: translate(0, 0) scale(0);
+  }
+  30% {
+    opacity: 1;
+    transform: translate(var(--bx), var(--by)) scale(1);
+  }
+  100% {
+    opacity: 0;
+    transform: translate(calc(var(--bx) * 1.8), calc(var(--by) * 1.8))
+      scale(0.3);
+  }
+}
+
+.burst-particle {
+  position: absolute;
+  border-radius: 50%;
+  pointer-events: none;
+  animation: burst-particle 1.2s ease-out both;
+}
+
 @media (forced-colors: active) {
   button,
   input,

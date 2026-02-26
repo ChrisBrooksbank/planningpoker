@@ -1,7 +1,5 @@
 import type { Vote, VoteStatistics, Participant, DeckType } from "@/lib/types";
 import { VoteValueDisplay } from "./VoteValueDisplay";
-import { FireworksCanvas } from "./FireworksCanvas";
-
 interface VoteResultsProps {
   votes: Record<string, Vote>;
   participants: Participant[];
@@ -38,6 +36,29 @@ const CONFETTI_PIECES = Array.from({ length: 35 }, (_, i) => ({
   w: i % 3 === 0 ? "w-3" : i % 3 === 1 ? "w-2.5" : "w-2",
   h: i % 3 === 0 ? "h-4" : i % 3 === 1 ? "h-3" : "h-3.5",
 }));
+
+const BURST_COLORS = [
+  "#fbbf24",
+  "#22c55e",
+  "#3b82f6",
+  "#8b5cf6",
+  "#ec4899",
+  "#f59e0b",
+  "#06b6d4",
+  "#ef4444",
+];
+
+const BURST_PARTICLES = Array.from({ length: 24 }, (_, i) => {
+  const angle = (Math.PI * 2 * i) / 24;
+  const distance = 80 + (i % 3) * 40; // vary distance
+  return {
+    bx: `${Math.cos(angle) * distance}px`,
+    by: `${Math.sin(angle) * distance}px`,
+    delay: `${(i * 0.017).toFixed(3)}s`,
+    size: i % 3 === 0 ? 10 : i % 3 === 1 ? 8 : 6,
+    color: BURST_COLORS[i % BURST_COLORS.length],
+  };
+});
 
 const SPARKLE_POSITIONS = [
   { left: "12%", top: "20%", delay: "0.3s" },
@@ -85,9 +106,6 @@ export function VoteResults({
             Consensus reached! Everyone voted {consensusValue}
           </div>
 
-          {/* Full-screen canvas fireworks */}
-          <FireworksCanvas />
-
           {/* Full-screen confetti rain */}
           <div
             className="fixed inset-0 z-40 pointer-events-none"
@@ -124,6 +142,31 @@ export function VoteResults({
                 🏆 Consensus! Everyone voted{" "}
                 <VoteValueDisplay value={consensusValue!} /> 🎉
               </span>
+            </div>
+
+            {/* Burst particles radiating outward */}
+            <div
+              className="absolute inset-0 pointer-events-none"
+              aria-hidden="true"
+            >
+              {BURST_PARTICLES.map((p, i) => (
+                <div
+                  key={`burst-${i}`}
+                  className="burst-particle"
+                  style={
+                    {
+                      left: "50%",
+                      top: "50%",
+                      width: p.size,
+                      height: p.size,
+                      backgroundColor: p.color,
+                      animationDelay: p.delay,
+                      "--bx": p.bx,
+                      "--by": p.by,
+                    } as React.CSSProperties
+                  }
+                />
+              ))}
             </div>
 
             {/* Sparkle overlay */}
