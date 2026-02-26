@@ -1,0 +1,13 @@
+# Normalize all text files to LF in the repo, checkout as OS-native
+* text=auto
+
+# Force LF for files that must stay LF (scripts, CI)
+*.sh text eol=lf
+*.yml text eol=lf
+*.yaml text eol=lf
+
+# Binary files — don't touch
+*.png binary
+*.ico binary
+*.woff binary
+*.woff2 binary
