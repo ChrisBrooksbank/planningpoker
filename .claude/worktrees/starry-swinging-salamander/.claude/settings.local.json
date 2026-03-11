@@ -1,0 +1,11 @@
+{
+  "permissions": {
+    "allow": [
+      "Bash(cd /c/code/planningpoker && npm run typecheck 2>&1)",
+      "Bash(cd /c/code/planningpoker && npx vitest run __tests__/ParticipantList.test.tsx __tests__/session-page.test.tsx 2>)",
+      "Bash(cd /c/code/planningpoker && npx vitest run __tests__/session-page.test.tsx 2>&1)",
+      "Bash(tail:*)",
+      "Bash(cd:*)"
+    ]
+  }
+}

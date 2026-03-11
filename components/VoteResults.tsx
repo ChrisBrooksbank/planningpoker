@@ -90,12 +90,16 @@ export function VoteResults({
   const { entries: distribution, max: maxCount } = getVoteDistribution(votes);
   const totalVotes = Object.keys(votes).length;
 
+  // Map vote value → list of participant names (for showing under distribution bars)
+  const votersByValue = new Map<string, string[]>();
+  for (const { participantName, vote } of votesArray) {
+    const names = votersByValue.get(vote.value) || [];
+    names.push(participantName);
+    votersByValue.set(vote.value, names);
+  }
+
   const isConsensus = totalVotes > 1 && distribution.length === 1;
   const consensusValue = isConsensus ? distribution[0][0] : null;
-
-  function getVoteLabel(value: string): string {
-    return value;
-  }
 
   return (
     <div className="space-y-6">
@@ -192,79 +196,54 @@ export function VoteResults({
         </>
       )}
 
-      {/* Votes section with flip animation */}
-      <div>
-        <h3 className="text-base sm:text-lg font-semibold mb-2 sm:mb-4">
-          Votes
-        </h3>
-        {votesArray.length === 0 ? (
-          <p className="text-muted-foreground italic">No votes yet</p>
-        ) : (
-          <ul
-            className="space-y-2 flip-card-container"
-            aria-label="Individual votes"
-          >
-            {votesArray.map(({ userId, participantName, vote }, index) => (
-              <li
-                key={userId}
-                className="flex items-center justify-between p-3 rounded-md bg-muted/50 flip-card-animate"
-                style={{ animationDelay: `${index * 100}ms` }}
-                aria-label={`${participantName} voted ${getVoteLabel(vote.value)}`}
-              >
-                <span
-                  className="font-medium truncate max-w-[140px] sm:max-w-[200px]"
-                  title={participantName}
-                >
-                  {participantName}
-                </span>
-                <span className="px-3 py-1 rounded-md font-semibold bg-primary/20 text-primary">
-                  <VoteValueDisplay value={vote.value} />
-                </span>
-              </li>
-            ))}
-          </ul>
-        )}
-      </div>
-
-      {/* Vote distribution chart */}
-      {distribution.length > 0 && (
+      {/* Vote distribution chart with voter names */}
+      {distribution.length > 0 ? (
         <div>
           <h3 className="text-base sm:text-lg font-semibold mb-2 sm:mb-4">
             Distribution
           </h3>
-          <div className="space-y-2">
+          <div className="space-y-3">
             {distribution.map(([value, count]) => {
               const pct = Math.round((count / totalVotes) * 100);
+              const voters = votersByValue.get(value) || [];
               return (
-                <div
-                  key={value}
-                  className="flex items-center gap-3"
-                  aria-label={`${value}: ${count} vote${count !== 1 ? "s" : ""} (${pct}%)`}
-                >
-                  <span className="w-10 text-right font-semibold text-sm shrink-0">
-                    <VoteValueDisplay value={value} />
-                  </span>
-                  <div className="flex-1 h-7 bg-muted rounded-md overflow-hidden">
-                    <div
-                      className="h-full bg-primary/70 rounded-md transition-all duration-500 ease-out flex items-center justify-end pr-2"
-                      style={{
-                        width: `${(count / maxCount) * 100}%`,
-                        minWidth: "2rem",
-                      }}
-                    >
-                      <span className="text-xs font-medium text-primary-foreground">
-                        {count}
-                      </span>
+                <div key={value}>
+                  <div
+                    className="flex items-center gap-3"
+                    aria-label={`${value}: ${count} vote${count !== 1 ? "s" : ""} (${pct}%) — ${voters.join(", ")}`}
+                  >
+                    <span className="w-10 text-right font-semibold text-sm shrink-0">
+                      <VoteValueDisplay value={value} />
+                    </span>
+                    <div className="flex-1 h-7 bg-muted rounded-md overflow-hidden">
+                      <div
+                        className="h-full bg-primary/70 rounded-md transition-all duration-500 ease-out flex items-center justify-end pr-2"
+                        style={{
+                          width: `${(count / maxCount) * 100}%`,
+                          minWidth: "2rem",
+                        }}
+                      >
+                        <span className="text-xs font-medium text-primary-foreground">
+                          {count}
+                        </span>
+                      </div>
                     </div>
+                    <span className="text-xs text-muted-foreground w-10 shrink-0">
+                      {pct}%
+                    </span>
                   </div>
-                  <span className="text-xs text-muted-foreground w-10 shrink-0">
-                    {pct}%
-                  </span>
+                  <div className="mt-1 flex flex-wrap gap-x-1.5 gap-y-0.5 pl-[3.25rem]">
+                    <span className="text-xs text-muted-foreground">
+                      {voters.join(", ")}
+                    </span>
+                  </div>
                 </div>
               );
             })}
           </div>
         </div>
+      ) : (
+        <p className="text-muted-foreground italic">No votes yet</p>
       )}
 
       {/* Statistics section */}

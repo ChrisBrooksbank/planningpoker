@@ -57,19 +57,19 @@ describe("VoteResults", () => {
     expect(screen.getAllByText("8").length).toBeGreaterThan(0);
   });
 
-  it("should sort votes by participant name alphabetically", () => {
+  it("should show voter names under each distribution bar", () => {
     const votes: Record<string, Vote> = {
-      user3: { userId: "user3", value: "3", submittedAt: Date.now() },
+      user3: { userId: "user3", value: "5", submittedAt: Date.now() },
       user1: { userId: "user1", value: "5", submittedAt: Date.now() },
       user2: { userId: "user2", value: "8", submittedAt: Date.now() },
     };
 
     const statistics: VoteStatistics = {
-      average: 5.3,
-      mode: "3",
-      min: 3,
+      average: 6.0,
+      mode: "5",
+      min: 5,
       max: 8,
-      range: 5,
+      range: 3,
     };
 
     render(
@@ -80,10 +80,10 @@ describe("VoteResults", () => {
       />
     );
 
-    const names = screen
-      .getAllByText(/Alice|Bob|Charlie/)
-      .map((el) => el.textContent);
-    expect(names).toEqual(["Alice", "Bob", "Charlie"]);
+    // All voter names should appear in the distribution section
+    expect(screen.getByText(/Alice/)).toBeInTheDocument();
+    expect(screen.getByText(/Charlie/)).toBeInTheDocument();
+    expect(screen.getByText(/Bob/)).toBeInTheDocument();
   });
 
   it("should display average statistic correctly", () => {
@@ -246,7 +246,7 @@ describe("VoteResults", () => {
     expect(screen.getByText("Unknown")).toBeInTheDocument();
   });
 
-  it("should display votes section header", () => {
+  it("should display distribution section header", () => {
     const votes: Record<string, Vote> = {
       user1: { userId: "user1", value: "5", submittedAt: Date.now() },
     };
@@ -267,7 +267,7 @@ describe("VoteResults", () => {
       />
     );
 
-    expect(screen.getByText("Votes")).toBeInTheDocument();
+    expect(screen.getByText("Distribution")).toBeInTheDocument();
   });
 
   it("should display statistics section header", () => {

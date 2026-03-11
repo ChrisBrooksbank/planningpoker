@@ -2230,9 +2230,9 @@ describe("SessionPage", () => {
         });
       });
 
-      // Votes section should be visible
+      // Distribution section should be visible
       await waitFor(() => {
-        expect(screen.getByText("Votes")).toBeInTheDocument();
+        expect(screen.getByText("Distribution")).toBeInTheDocument();
       });
     });
   });
@@ -2568,8 +2568,8 @@ describe("SessionPage", () => {
         expect(screen.getByText("Results")).toBeInTheDocument();
       });
 
-      // Voter should see votes section
-      expect(screen.getByText("Votes")).toBeInTheDocument();
+      // Voter should see distribution section
+      expect(screen.getByText("Distribution")).toBeInTheDocument();
 
       // Voter should see statistics
       expect(screen.getByText("Statistics")).toBeInTheDocument();
@@ -2658,8 +2658,8 @@ describe("SessionPage", () => {
         expect(screen.getByText("Results")).toBeInTheDocument();
       });
 
-      // Moderator should see votes and statistics
-      expect(screen.getByText("Votes")).toBeInTheDocument();
+      // Moderator should see distribution and statistics
+      expect(screen.getByText("Distribution")).toBeInTheDocument();
       expect(screen.getByText("Statistics")).toBeInTheDocument();
       expect(screen.getByText("Average")).toBeInTheDocument();
       expect(screen.getByText("5.5")).toBeInTheDocument();
