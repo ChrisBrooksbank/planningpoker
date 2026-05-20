@@ -13,6 +13,7 @@ import type {
   NewRoundMessage,
   ToggleObserverMessage,
   PromoteToModeratorMessage,
+  KickParticipantMessage,
   SessionStateMessage,
 } from "../lib/websocket-messages.js";
 import { getDeckValues } from "../lib/types.js";
@@ -225,6 +226,9 @@ export class PlanningPokerWebSocketServer {
         break;
       case "promote-to-moderator":
         this.handlePromoteToModerator(ws, client, message);
+        break;
+      case "kick-participant":
+        this.handleKickParticipant(ws, client, message);
         break;
       case "demote-self":
         this.handleDemoteSelf(ws, client);
@@ -608,6 +612,72 @@ export class PlanningPokerWebSocketServer {
       type: "moderator-changed",
       userId: targetParticipantId,
       isModerator: true,
+    });
+  }
+
+  /**
+   * Handle kick-participant message
+   */
+  private handleKickParticipant(
+    ws: WebSocket,
+    client: RoomClient,
+    message: KickParticipantMessage
+  ) {
+    const { roomId, userId } = client;
+    const { targetParticipantId } = message;
+
+    const session = sessionStorage.getSession(roomId);
+    if (!session) {
+      this.sendError(ws, "SESSION_NOT_FOUND", "Session does not exist");
+      return;
+    }
+
+    const sender = session.participants.find((p) => p.id === userId);
+    if (!sender?.isModerator) {
+      this.sendError(
+        ws,
+        "UNAUTHORIZED",
+        "Only moderators can remove participants"
+      );
+      return;
+    }
+
+    if (targetParticipantId === userId) {
+      this.sendError(ws, "CANNOT_KICK_SELF", "You cannot remove yourself");
+      return;
+    }
+
+    const target = session.participants.find(
+      (p) => p.id === targetParticipantId
+    );
+    if (!target) {
+      this.sendError(
+        ws,
+        "PARTICIPANT_NOT_FOUND",
+        "Target participant not found"
+      );
+      return;
+    }
+
+    if (target.isModerator && sessionStorage.getModeratorCount(roomId) <= 1) {
+      this.sendError(
+        ws,
+        "LAST_MODERATOR",
+        "Cannot remove the only moderator"
+      );
+      return;
+    }
+
+    this.sendToUser(targetParticipantId, roomId, {
+      type: "participant-kicked",
+      userId: targetParticipantId,
+    });
+
+    sessionStorage.removeParticipant(roomId, targetParticipantId);
+    this.disconnectUser(targetParticipantId, roomId);
+    this.broadcastToRoom(roomId, {
+      type: "participant-removed",
+      userId: targetParticipantId,
     });
   }
 

@@ -74,6 +74,14 @@ export interface PromoteToModeratorMessage extends BaseMessage {
 }
 
 /**
+ * Moderator removes another participant from the room
+ */
+export interface KickParticipantMessage extends BaseMessage {
+  type: "kick-participant";
+  targetParticipantId: string;
+}
+
+/**
  * Moderator demotes themselves (step down)
  */
 export interface DemoteSelfMessage extends BaseMessage {
@@ -96,6 +104,7 @@ export type ClientMessage =
   | NewRoundMessage
   | ToggleObserverMessage
   | PromoteToModeratorMessage
+  | KickParticipantMessage
   | DemoteSelfMessage
   | ClaimModeratorMessage;
 
@@ -202,6 +211,14 @@ export interface ParticipantRemovedMessage extends BaseMessage {
 }
 
 /**
+ * Sent to a participant who was removed by a moderator
+ */
+export interface ParticipantKickedMessage extends BaseMessage {
+  type: "participant-kicked";
+  userId: string;
+}
+
+/**
  * A participant's moderator status changed
  */
 export interface ModeratorChangedMessage extends BaseMessage {
@@ -226,6 +243,7 @@ export type ServerMessage =
   | ParticipantJoinedMessage
   | ParticipantLeftMessage
   | ParticipantRemovedMessage
+  | ParticipantKickedMessage
   | VoteSubmittedMessage
   | TopicChangedMessage
   | VotesRevealedMessage
@@ -252,6 +270,7 @@ export function isClientMessage(
     "new-round",
     "toggle-observer",
     "promote-to-moderator",
+    "kick-participant",
     "demote-self",
     "claim-moderator",
   ].includes(message.type);

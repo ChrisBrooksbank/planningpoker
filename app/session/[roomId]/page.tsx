@@ -277,6 +277,21 @@ export default function SessionPage() {
           });
           break;
 
+        case "participant-kicked":
+          if (message.userId === userId) {
+            localStorage.removeItem(`session_${roomId}_userId`);
+            localStorage.removeItem(`session_${roomId}_name`);
+            setParticipants([]);
+            setSelectedCard(null);
+            setVotedUserIds(new Set());
+            setParticipantName(null);
+            setUserId(null);
+            setIsInitialized(false);
+            setNeedsName(true);
+            setJoinError("You were removed from this room.");
+          }
+          break;
+
         case "vote-submitted":
           // Track which users have voted (without revealing values)
           setVotedUserIds((prev) => new Set(prev).add(message.userId));
@@ -452,6 +467,24 @@ export default function SessionPage() {
       });
     },
     [sendMessage]
+  );
+
+  // Handle kick participant
+  const handleKickParticipant = useCallback(
+    (targetId: string) => {
+      const target = participants.find((p) => p.id === targetId);
+      if (
+        target &&
+        !window.confirm(`Remove ${target.name} from this room?`)
+      ) {
+        return;
+      }
+      sendMessage({
+        type: "kick-participant",
+        targetParticipantId: targetId,
+      });
+    },
+    [participants, sendMessage]
   );
 
   // Handle demote self (step down)
@@ -715,6 +748,7 @@ export default function SessionPage() {
               allModeratorsDisconnected={allModeratorsDisconnected}
               isConnected={isConnected}
               onPromoteToModerator={handlePromoteToModerator}
+              onKickParticipant={handleKickParticipant}
               onDemoteSelf={handleDemoteSelf}
               onClaimModerator={handleClaimModerator}
             />

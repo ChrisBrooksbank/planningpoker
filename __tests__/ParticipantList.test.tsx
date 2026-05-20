@@ -1,5 +1,6 @@
-import { describe, it, expect } from "vitest";
+import { describe, it, expect, vi } from "vitest";
 import { render, screen } from "@testing-library/react";
+import userEvent from "@testing-library/user-event";
 import { ParticipantList } from "@/components/ParticipantList";
 import type { Participant } from "@/lib/types";
 
@@ -273,5 +274,44 @@ describe("ParticipantList", () => {
     // No voted indicators should appear
     const votedItems = container.querySelectorAll('li[aria-label*="Voted"]');
     expect(votedItems.length).toBe(0);
+  });
+
+  it("shows kick controls to connected moderators for other participants", async () => {
+    const user = userEvent.setup();
+    const onKickParticipant = vi.fn();
+
+    render(
+      <ParticipantList
+        participants={mockParticipants}
+        currentUserId="user-1"
+        isModerator
+        isConnected
+        onKickParticipant={onKickParticipant}
+      />
+    );
+
+    expect(
+      screen.queryByRole("button", { name: /remove alice from room/i })
+    ).not.toBeInTheDocument();
+
+    await user.click(
+      screen.getByRole("button", { name: /remove bob from room/i })
+    );
+
+    expect(onKickParticipant).toHaveBeenCalledWith("user-2");
+  });
+
+  it("does not show kick controls to non-moderators", () => {
+    render(
+      <ParticipantList
+        participants={mockParticipants}
+        currentUserId="user-2"
+        isModerator={false}
+        isConnected
+        onKickParticipant={vi.fn()}
+      />
+    );
+
+    expect(screen.queryByRole("button", { name: /remove/i })).toBeNull();
   });
 });

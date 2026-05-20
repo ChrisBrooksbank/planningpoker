@@ -7,6 +7,8 @@ import type {
   ConnectedMessage,
   SessionStateMessage,
   ParticipantJoinedMessage,
+  ParticipantKickedMessage,
+  ParticipantRemovedMessage,
   VoteSubmittedMessage,
   TopicChangedMessage,
   VotesRevealedMessage,
@@ -503,6 +505,115 @@ describe("WebSocket Message Protocol", () => {
             const msg = message as ErrorMessage;
             expect(msg.code).toBe("UNAUTHORIZED");
             expect(msg.message).toContain("moderator");
+            ws.close();
+            resolve();
+          }
+        });
+      });
+    });
+  });
+
+  describe("kick-participant message", () => {
+    it("should allow moderator to kick a participant", () => {
+      return new Promise<void>((resolve) => {
+        const moderatorWs = new WebSocket(
+          `ws://localhost:${port}/ws?roomId=${roomId}&userId=moderator-123`
+        );
+        const participantWs = new WebSocket(
+          `ws://localhost:${port}/ws?roomId=${roomId}&userId=user-1`
+        );
+
+        let moderatorConnected = false;
+        let participantJoined = false;
+        let kicked = false;
+        let removed = false;
+
+        const finishIfReady = () => {
+          if (kicked && removed) {
+            expect(
+              sessionStorage
+                .getSession(roomId)
+                ?.participants.some((p) => p.id === "user-1")
+            ).toBe(false);
+            moderatorWs.close();
+            participantWs.close();
+            resolve();
+          }
+        };
+
+        const kickIfReady = () => {
+          if (moderatorConnected && participantJoined) {
+            moderatorWs.send(
+              JSON.stringify({
+                type: "kick-participant",
+                targetParticipantId: "user-1",
+              })
+            );
+          }
+        };
+
+        moderatorWs.on("message", (data) => {
+          const message = JSON.parse(data.toString());
+          if (message.type === "connected") {
+            moderatorConnected = true;
+            kickIfReady();
+          } else if (message.type === "participant-removed") {
+            const msg = message as ParticipantRemovedMessage;
+            expect(msg.userId).toBe("user-1");
+            removed = true;
+            finishIfReady();
+          }
+        });
+
+        participantWs.on("message", (data) => {
+          const message = JSON.parse(data.toString());
+          if (message.type === "connected") {
+            participantWs.send(
+              JSON.stringify({
+                type: "join-session",
+                participantName: "User One",
+              })
+            );
+          } else if (message.type === "session-state") {
+            participantJoined = true;
+            kickIfReady();
+          } else if (message.type === "participant-kicked") {
+            const msg = message as ParticipantKickedMessage;
+            expect(msg.userId).toBe("user-1");
+            kicked = true;
+            finishIfReady();
+          }
+        });
+      });
+    });
+
+    it("should reject kick-participant from non-moderator", () => {
+      return new Promise<void>((resolve) => {
+        sessionStorage.addParticipant(roomId, "user-2", "User Two");
+
+        const ws = new WebSocket(
+          `ws://localhost:${port}/ws?roomId=${roomId}&userId=user-1`
+        );
+
+        ws.on("message", (data) => {
+          const message = JSON.parse(data.toString());
+          if (message.type === "connected") {
+            ws.send(
+              JSON.stringify({
+                type: "join-session",
+                participantName: "User One",
+              })
+            );
+          } else if (message.type === "session-state") {
+            ws.send(
+              JSON.stringify({
+                type: "kick-participant",
+                targetParticipantId: "user-2",
+              })
+            );
+          } else if (message.type === "error") {
+            const msg = message as ErrorMessage;
+            expect(msg.code).toBe("UNAUTHORIZED");
             ws.close();
             resolve();
           }

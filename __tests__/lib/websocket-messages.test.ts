@@ -10,6 +10,7 @@ describe("isClientMessage", () => {
     "new-round",
     "toggle-observer",
     "promote-to-moderator",
+    "kick-participant",
     "demote-self",
     "claim-moderator",
   ])('should return true for client message type "%s"', (type) => {
@@ -22,6 +23,7 @@ describe("isClientMessage", () => {
     "participant-joined",
     "participant-left",
     "participant-removed",
+    "participant-kicked",
     "vote-submitted",
     "topic-changed",
     "votes-revealed",

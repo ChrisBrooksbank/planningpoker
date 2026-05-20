@@ -9,6 +9,7 @@ interface ParticipantListProps {
   allModeratorsDisconnected?: boolean;
   isConnected?: boolean;
   onPromoteToModerator?: (targetId: string) => void;
+  onKickParticipant?: (targetId: string) => void;
   onDemoteSelf?: () => void;
   onClaimModerator?: () => void;
 }
@@ -40,6 +41,7 @@ export function ParticipantList({
   allModeratorsDisconnected = false,
   isConnected = false,
   onPromoteToModerator,
+  onKickParticipant,
   onDemoteSelf,
   onClaimModerator,
 }: ParticipantListProps) {
@@ -127,6 +129,9 @@ export function ParticipantList({
             isConnected &&
             onDemoteSelf;
 
+          const showKick =
+            isModerator && !isYou && isConnected && onKickParticipant;
+
           return (
             <li
               key={participant.id}
@@ -202,6 +207,15 @@ export function ParticipantList({
                     className="text-xs px-2 py-0.5 rounded border border-border text-muted-foreground hover:bg-muted hover:text-foreground transition-colors"
                   >
                     Step Down
+                  </button>
+                )}
+                {showKick && (
+                  <button
+                    onClick={() => onKickParticipant(participant.id)}
+                    aria-label={`Remove ${participant.name} from room`}
+                    className="text-xs px-2 py-0.5 rounded border border-red-200 text-red-600 hover:bg-red-50 dark:border-red-900 dark:text-red-400 dark:hover:bg-red-950/40 transition-colors"
+                  >
+                    Kick
                   </button>
                 )}
                 <div
