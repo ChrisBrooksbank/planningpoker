@@ -95,7 +95,7 @@ export function ParticipantList({
         )}
 
       <ul
-        className="space-y-2 max-h-[180px] lg:max-h-none overflow-y-auto"
+        className="space-y-2 max-h-[180px] lg:max-h-none overflow-y-auto overflow-x-hidden"
         role="region"
         aria-label="Participant list"
         tabIndex={0}
@@ -156,10 +156,10 @@ export function ParticipantList({
           return (
             <li
               key={participant.id}
-              className="flex items-center justify-between py-2 px-3 rounded-md bg-muted/50"
+              className="flex min-w-0 items-start justify-between gap-2 overflow-hidden py-2 px-3 rounded-md bg-muted/50"
               aria-label={ariaLabel}
             >
-              <div className="flex items-center gap-2">
+              <div className="flex min-w-0 flex-1 flex-wrap items-center gap-1.5">
                 <div className="relative shrink-0">
                   <div
                     className="w-8 h-8 rounded-full flex items-center justify-center text-xs font-bold text-white"
@@ -190,7 +190,7 @@ export function ParticipantList({
                   )}
                 </div>
                 <span
-                  className="text-base font-medium truncate max-w-[120px] sm:max-w-[160px]"
+                  className="min-w-0 max-w-[9rem] truncate text-base font-medium sm:max-w-[11rem]"
                   title={participant.name}
                 >
                   {participant.name}
@@ -228,7 +228,7 @@ export function ParticipantList({
                   </span>
                 )}
               </div>
-              <div className="flex items-center gap-2">
+              <div className="flex shrink-0 flex-wrap items-center justify-end gap-1.5">
                 {showPromote && (
                   <button
                     onClick={() => onPromoteToModerator(participant.id)}
