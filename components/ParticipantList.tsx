@@ -210,21 +210,9 @@ export function ParticipantList({
                     Observer
                   </span>
                 )}
-                {showVotingStatus && !participant.isObserver && (
-                  <span
-                    className={`inline-flex items-center rounded-full px-2 py-0.5 text-xs font-medium ${
-                      hasVoted
-                        ? "bg-green-100 text-green-700 dark:bg-green-900/30 dark:text-green-300"
-                        : isOfflineDuringVote
-                          ? "bg-muted text-muted-foreground"
-                          : "bg-amber-100 text-amber-700 dark:bg-amber-900/30 dark:text-amber-300"
-                    }`}
-                  >
-                    {hasVoted
-                      ? "Voted"
-                      : isOfflineDuringVote
-                        ? "Offline"
-                        : "Waiting"}
+                {isOfflineDuringVote && (
+                  <span className="inline-flex items-center rounded-full bg-muted px-2 py-0.5 text-xs font-medium text-muted-foreground">
+                    Offline
                   </span>
                 )}
               </div>

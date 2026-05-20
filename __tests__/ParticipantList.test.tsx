@@ -236,8 +236,8 @@ describe("ParticipantList", () => {
     expect(votedItems.length).toBe(2);
   });
 
-  it("shows waiting status for eligible voters during an open vote", () => {
-    render(
+  it("keeps waiting status accessible without showing waiting text", () => {
+    const { container } = render(
       <ParticipantList
         participants={mockParticipants}
         currentUserId="user-2"
@@ -246,12 +246,19 @@ describe("ParticipantList", () => {
       />
     );
 
-    expect(screen.getByText("Voted")).toBeInTheDocument();
-    expect(screen.getAllByText("Waiting")).toHaveLength(1);
+    expect(screen.queryByText("Voted")).not.toBeInTheDocument();
+    expect(screen.queryByText("Waiting")).not.toBeInTheDocument();
     expect(screen.getAllByText("Offline").length).toBeGreaterThan(0);
+
+    const votedItems = container.querySelectorAll('li[aria-label*="Voted"]');
+    const waitingItems = container.querySelectorAll(
+      'li[aria-label*="Waiting"]'
+    );
+    expect(votedItems.length).toBe(1);
+    expect(waitingItems.length).toBe(1);
   });
 
-  it("does not show waiting status for observers", () => {
+  it("does not mark observers as waiting", () => {
     const participants: Participant[] = [
       ...mockParticipants,
       {
@@ -273,7 +280,7 @@ describe("ParticipantList", () => {
     );
 
     expect(screen.getByText("Observer")).toBeInTheDocument();
-    expect(screen.getAllByText("Waiting")).toHaveLength(1);
+    expect(screen.queryByText("Waiting")).not.toBeInTheDocument();
     expect(screen.getAllByText("Offline").length).toBeGreaterThan(0);
   });
 
