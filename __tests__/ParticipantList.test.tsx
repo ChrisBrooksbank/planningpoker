@@ -226,6 +226,7 @@ describe("ParticipantList", () => {
         participants={mockParticipants}
         currentUserId="user-2"
         votedUserIds={votedUserIds}
+        isVotingOpen
       />
     );
 
@@ -233,6 +234,47 @@ describe("ParticipantList", () => {
     // Voted participants have aria-label containing "Voted"
     const votedItems = container.querySelectorAll('li[aria-label*="Voted"]');
     expect(votedItems.length).toBe(2);
+  });
+
+  it("shows waiting status for eligible voters during an open vote", () => {
+    render(
+      <ParticipantList
+        participants={mockParticipants}
+        currentUserId="user-2"
+        votedUserIds={new Set(["user-1"])}
+        isVotingOpen
+      />
+    );
+
+    expect(screen.getByText("Voted")).toBeInTheDocument();
+    expect(screen.getAllByText("Waiting")).toHaveLength(1);
+    expect(screen.getAllByText("Offline").length).toBeGreaterThan(0);
+  });
+
+  it("does not show waiting status for observers", () => {
+    const participants: Participant[] = [
+      ...mockParticipants,
+      {
+        id: "observer-1",
+        name: "Dana",
+        isModerator: false,
+        isConnected: true,
+        isObserver: true,
+      },
+    ];
+
+    render(
+      <ParticipantList
+        participants={participants}
+        currentUserId="user-2"
+        votedUserIds={new Set(["user-1"])}
+        isVotingOpen
+      />
+    );
+
+    expect(screen.getByText("Observer")).toBeInTheDocument();
+    expect(screen.getAllByText("Waiting")).toHaveLength(1);
+    expect(screen.getAllByText("Offline").length).toBeGreaterThan(0);
   });
 
   it("does not show voted status for participants who have not voted", () => {
@@ -243,6 +285,7 @@ describe("ParticipantList", () => {
         participants={mockParticipants}
         currentUserId="user-2"
         votedUserIds={votedUserIds}
+        isVotingOpen
       />
     );
 
@@ -299,6 +342,7 @@ describe("ParticipantList", () => {
     );
 
     expect(onKickParticipant).toHaveBeenCalledWith("user-2");
+    expect(screen.getAllByText("Remove")).toHaveLength(2);
   });
 
   it("does not show kick controls to non-moderators", () => {

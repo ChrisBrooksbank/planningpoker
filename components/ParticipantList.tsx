@@ -4,6 +4,8 @@ interface ParticipantListProps {
   participants: Participant[];
   currentUserId: string;
   votedUserIds?: Set<string>;
+  isVotingOpen?: boolean;
+  isRevealed?: boolean;
   isModerator?: boolean;
   moderatorCount?: number;
   allModeratorsDisconnected?: boolean;
@@ -36,6 +38,8 @@ export function ParticipantList({
   participants,
   currentUserId,
   votedUserIds = new Set(),
+  isVotingOpen = false,
+  isRevealed = false,
   isModerator = false,
   moderatorCount = 0,
   allModeratorsDisconnected = false,
@@ -56,7 +60,10 @@ export function ParticipantList({
     );
   }
 
-  const votedCount = participants.filter((p) => votedUserIds.has(p.id)).length;
+  const showVotingStatus = isVotingOpen && !isRevealed;
+  const votedCount = participants.filter(
+    (p) => !p.isObserver && votedUserIds.has(p.id)
+  ).length;
   const currentUserIsModerator = participants.find(
     (p) => p.id === currentUserId
   )?.isModerator;
@@ -96,6 +103,16 @@ export function ParticipantList({
         {participants.map((participant) => {
           const isYou = participant.id === currentUserId;
           const hasVoted = votedUserIds.has(participant.id);
+          const isWaiting =
+            showVotingStatus &&
+            !participant.isObserver &&
+            participant.isConnected &&
+            !hasVoted;
+          const isOfflineDuringVote =
+            showVotingStatus &&
+            !participant.isObserver &&
+            !participant.isConnected &&
+            !hasVoted;
           const connectionStatus = participant.isConnected
             ? "Online"
             : "Offline";
@@ -104,7 +121,11 @@ export function ParticipantList({
             isYou ? "You" : null,
             participant.isModerator ? "Moderator" : null,
             participant.isObserver ? "Observer" : null,
-            hasVoted ? "Voted" : null,
+            showVotingStatus && !participant.isObserver && hasVoted
+              ? "Voted"
+              : null,
+            isWaiting ? "Waiting" : null,
+            isOfflineDuringVote ? "Offline, not counted" : null,
             connectionStatus,
           ]
             .filter(Boolean)
@@ -189,6 +210,23 @@ export function ParticipantList({
                     Observer
                   </span>
                 )}
+                {showVotingStatus && !participant.isObserver && (
+                  <span
+                    className={`inline-flex items-center rounded-full px-2 py-0.5 text-xs font-medium ${
+                      hasVoted
+                        ? "bg-green-100 text-green-700 dark:bg-green-900/30 dark:text-green-300"
+                        : isOfflineDuringVote
+                          ? "bg-muted text-muted-foreground"
+                          : "bg-amber-100 text-amber-700 dark:bg-amber-900/30 dark:text-amber-300"
+                    }`}
+                  >
+                    {hasVoted
+                      ? "Voted"
+                      : isOfflineDuringVote
+                        ? "Offline"
+                        : "Waiting"}
+                  </span>
+                )}
               </div>
               <div className="flex items-center gap-2">
                 {showPromote && (
@@ -215,7 +253,7 @@ export function ParticipantList({
                     aria-label={`Remove ${participant.name} from room`}
                     className="text-xs px-2 py-0.5 rounded border border-red-200 text-red-600 hover:bg-red-50 dark:border-red-900 dark:text-red-400 dark:hover:bg-red-950/40 transition-colors"
                   >
-                    Kick
+                    Remove
                   </button>
                 )}
                 <div

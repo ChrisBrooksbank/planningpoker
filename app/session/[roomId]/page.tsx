@@ -77,6 +77,16 @@ function VotingProgressRing({
   );
 }
 
+function formatParticipantNames(participants: Participant[]): string {
+  const names = participants.map((participant) => participant.name);
+
+  if (names.length === 0) return "";
+  if (names.length === 1) return names[0];
+  if (names.length === 2) return `${names[0]} and ${names[1]}`;
+
+  return `${names.slice(0, -1).join(", ")}, and ${names[names.length - 1]}`;
+}
+
 export default function SessionPage() {
   const params = useParams();
   const roomId = params.roomId as string;
@@ -388,7 +398,7 @@ export default function SessionPage() {
 
   // Handle reveal votes (moderator only)
   const handleRevealVotes = () => {
-    const notVotedCount = voterCount - votedUserIds.size;
+    const notVotedCount = waitingVoters.length;
     if (notVotedCount > 0) {
       if (
         !window.confirm(
@@ -419,7 +429,14 @@ export default function SessionPage() {
         : "the moderator";
   const hasVoted = userId ? votedUserIds.has(userId) : false;
   const voters = participants.filter((p) => !p.isObserver);
-  const voterCount = voters.length;
+  const activeVoters = voters.filter(
+    (p) => p.isConnected || votedUserIds.has(p.id)
+  );
+  const votedVoters = activeVoters.filter((p) => votedUserIds.has(p.id));
+  const waitingVoters = activeVoters.filter((p) => !votedUserIds.has(p.id));
+  const voterCount = activeVoters.length;
+  const votedVoterCount = votedVoters.length;
+  const waitingVoterNames = formatParticipantNames(waitingVoters);
 
   // Handle moderator modal dismiss
   const handleDismissModeratorModal = useCallback(() => {
@@ -473,10 +490,7 @@ export default function SessionPage() {
   const handleKickParticipant = useCallback(
     (targetId: string) => {
       const target = participants.find((p) => p.id === targetId);
-      if (
-        target &&
-        !window.confirm(`Remove ${target.name} from this room?`)
-      ) {
+      if (target && !window.confirm(`Remove ${target.name} from this room?`)) {
         return;
       }
       sendMessage({
@@ -743,6 +757,8 @@ export default function SessionPage() {
               participants={participants}
               currentUserId={userId}
               votedUserIds={votedUserIds}
+              isVotingOpen={isVotingOpen}
+              isRevealed={isRevealed}
               isModerator={isModerator}
               moderatorCount={moderatorCount}
               allModeratorsDisconnected={allModeratorsDisconnected}
@@ -793,8 +809,8 @@ export default function SessionPage() {
                         disabled={!isConnected}
                         className={`px-6 py-3 bg-primary text-primary-foreground rounded-lg hover:bg-primary/90 disabled:opacity-50 disabled:cursor-not-allowed font-semibold ${
                           isVotingOpen &&
-                          votedUserIds.size > 0 &&
-                          votedUserIds.size >= Math.ceil(voterCount / 2)
+                          votedVoterCount > 0 &&
+                          votedVoterCount >= Math.ceil(voterCount / 2)
                             ? "animate-pulse ring-2 ring-primary/50"
                             : ""
                         }`}
@@ -804,14 +820,28 @@ export default function SessionPage() {
                     )}
                   </div>
                   {isVotingOpen && (
-                    <div className="flex items-center gap-3">
+                    <div className="flex items-start gap-3">
                       <VotingProgressRing
-                        voted={votedUserIds.size}
+                        voted={votedVoterCount}
                         total={voterCount}
                       />
-                      <span className="text-sm text-muted-foreground">
-                        {votedUserIds.size} of {voterCount} voted
-                      </span>
+                      <div className="min-w-0 text-sm">
+                        <p className="text-muted-foreground">
+                          {votedVoterCount} of {voterCount} voted
+                        </p>
+                        <p
+                          className={`mt-1 ${
+                            waitingVoters.length === 0
+                              ? "text-green-600 dark:text-green-400"
+                              : "text-amber-700 dark:text-amber-300"
+                          }`}
+                          aria-live="polite"
+                        >
+                          {waitingVoters.length === 0
+                            ? "Everyone has voted"
+                            : `Waiting on ${waitingVoterNames}`}
+                        </p>
+                      </div>
                     </div>
                   )}
                 </div>
@@ -853,7 +883,7 @@ export default function SessionPage() {
               isRevealed={isRevealed}
               hasVoted={hasVoted}
               moderatorName={moderatorName}
-              votedCount={votedUserIds.size}
+              votedCount={votedVoterCount}
               totalParticipants={voterCount}
               isObserver={isObserver}
             />

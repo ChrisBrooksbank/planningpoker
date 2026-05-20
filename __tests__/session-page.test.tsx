@@ -3312,7 +3312,136 @@ describe("SessionPage", () => {
 
       await waitFor(() => {
         expect(screen.getByText("1 of 3 voted")).toBeInTheDocument();
+        expect(
+          screen.getByText("Waiting on Moderator and Bob")
+        ).toBeInTheDocument();
         expect(screen.getByRole("progressbar")).toBeInTheDocument();
+      });
+    });
+
+    it("should not count observers as waiting voters", async () => {
+      (
+        window.localStorage.getItem as ReturnType<typeof vi.fn>
+      ).mockImplementation((key: string) => {
+        if (key === "session_TEST123_userId") return "moderator123";
+        if (key === "session_TEST123_name") return "Moderator";
+        return null;
+      });
+
+      let onMessageCallback: (message: unknown) => void = () => {};
+      (useWebSocket as ReturnType<typeof vi.fn>).mockImplementation(
+        (config) => {
+          onMessageCallback = config.onMessage;
+          return {
+            isConnected: true,
+            sendMessage: mockSendMessage,
+            reconnect: mockReconnect,
+          };
+        }
+      );
+
+      render(<SessionPage />);
+
+      await act(async () => {
+        onMessageCallback({
+          type: "session-state",
+          sessionId: "TEST123",
+          sessionName: "Test Session",
+          moderatorId: "moderator123",
+          isRevealed: false,
+          isVotingOpen: true,
+          participants: [
+            {
+              id: "moderator123",
+              name: "Moderator",
+              isModerator: true,
+              isConnected: true,
+              isObserver: false,
+            },
+            {
+              id: "observer1",
+              name: "Dana",
+              isModerator: false,
+              isConnected: true,
+              isObserver: true,
+            },
+          ],
+          votes: {},
+        });
+      });
+
+      await waitFor(() => {
+        expect(screen.getByText("0 of 1 voted")).toBeInTheDocument();
+        expect(screen.getByText("Waiting on Moderator")).toBeInTheDocument();
+        expect(screen.queryByText("Waiting on Moderator and Dana")).toBeNull();
+      });
+    });
+
+    it("should not count disconnected non-voters as waiting voters", async () => {
+      (
+        window.localStorage.getItem as ReturnType<typeof vi.fn>
+      ).mockImplementation((key: string) => {
+        if (key === "session_TEST123_userId") return "moderator123";
+        if (key === "session_TEST123_name") return "Moderator";
+        return null;
+      });
+
+      let onMessageCallback: (message: unknown) => void = () => {};
+      (useWebSocket as ReturnType<typeof vi.fn>).mockImplementation(
+        (config) => {
+          onMessageCallback = config.onMessage;
+          return {
+            isConnected: true,
+            sendMessage: mockSendMessage,
+            reconnect: mockReconnect,
+          };
+        }
+      );
+
+      render(<SessionPage />);
+
+      await act(async () => {
+        onMessageCallback({
+          type: "session-state",
+          sessionId: "TEST123",
+          sessionName: "Test Session",
+          moderatorId: "moderator123",
+          isRevealed: false,
+          isVotingOpen: true,
+          participants: [
+            {
+              id: "moderator123",
+              name: "Moderator",
+              isModerator: true,
+              isConnected: true,
+              isObserver: false,
+            },
+            {
+              id: "user2",
+              name: "Alice",
+              isModerator: false,
+              isConnected: false,
+              isObserver: false,
+            },
+            {
+              id: "user3",
+              name: "Bob",
+              isModerator: false,
+              isConnected: true,
+              isObserver: false,
+            },
+          ],
+          votes: {
+            user3: { userId: "user3", value: 5, submittedAt: Date.now() },
+          },
+        });
+      });
+
+      await waitFor(() => {
+        expect(screen.getByText("1 of 2 voted")).toBeInTheDocument();
+        expect(screen.getByText("Waiting on Moderator")).toBeInTheDocument();
+        expect(screen.queryByText(/Alice/)).toBeInTheDocument();
+        expect(screen.queryByText("Waiting on Moderator and Alice")).toBeNull();
       });
     });
 
@@ -3422,6 +3551,7 @@ describe("SessionPage", () => {
 
       await waitFor(() => {
         expect(screen.getByText("2 of 2 voted")).toBeInTheDocument();
+        expect(screen.getByText("Everyone has voted")).toBeInTheDocument();
         expect(screen.getByRole("progressbar")).toBeInTheDocument();
       });
     });
