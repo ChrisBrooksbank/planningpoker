@@ -18,7 +18,7 @@ Small things that make the project easier to trust and show off.
 
 - [x] Add a `LICENSE` file.
 - [x] Refresh screenshots, now covering desktop and mobile, voting and results.
-- [ ] Add a short demo GIF to the README (create a room, vote, reveal, celebrate).
+- [x] Add a demo GIF to the README, re-recordable with `npm run demo`.
 - [ ] Smoke test in CI that hits the deployed site after each deploy.
 
 ## Next: estimating better

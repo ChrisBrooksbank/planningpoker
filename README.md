@@ -17,6 +17,8 @@ Create a room, share the link, vote together, reveal at the same moment.
 ![Deploy](https://img.shields.io/badge/deploy-Azure%20App%20Service-0078D4?logo=microsoftazure&logoColor=white)
 ![License](https://img.shields.io/badge/license-MIT-blue)
 
+<img src="e2e/demo/demo.gif" alt="Demo: create a room, vote, reveal a split result, then reach consensus" width="760" />
+
 <img src="e2e/screenshots/session-results-desktop.png" alt="Revealed votes with distribution chart and statistics" width="640" />
 
 <img src="e2e/screenshots/session-voting.png" alt="Voting in progress on mobile" width="220" />
@@ -108,6 +110,7 @@ Open <http://localhost:3000>, create a room, then open the link in a second brow
 | `npm run test:coverage` | Tests with coverage                                    |
 | `npm run check`         | Typecheck, lint, format and tests, the pre-commit gate |
 | `npm run screenshots`   | Regenerate the screenshots above with Playwright       |
+| `npm run demo`          | Re-record the demo GIF and MP4 (needs ffmpeg)          |
 
 ## Project structure
 

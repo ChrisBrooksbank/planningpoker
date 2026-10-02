@@ -15,7 +15,8 @@
     "test:run": "vitest run",
     "test:coverage": "vitest run --coverage",
     "check": "npm run typecheck && npm run lint && npm run format && npm run test:run",
-    "screenshots": "npx playwright test e2e/capture-screenshots.spec.ts"
+    "screenshots": "npx playwright test e2e/capture-screenshots.spec.ts",
+    "demo": "playwright test -c playwright.demo.config.ts && node scripts/make-demo-gif.mjs"
   },
   "dependencies": {
     "clsx": "^2.1.1",
